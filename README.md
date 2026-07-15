@@ -17,3 +17,4 @@ npm run build
 ```
 
 Vercel detects the Next.js framework automatically. No environment variables are required for the current version.
+Samiz AI official website
