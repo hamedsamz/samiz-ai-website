@@ -46,7 +46,9 @@ main { min-height:100vh; overflow:hidden; background:radial-gradient(circle at 7
 .portal { position:absolute; width:500px; height:90px; border:2px solid var(--gold); border-radius:50%; right:50px; bottom:35px; transform:perspective(250px) rotateX(68deg); box-shadow:0 0 35px var(--gold), inset 0 0 28px var(--gold); }
 .beam { position:absolute; height:1px; width:600px; background:linear-gradient(90deg,transparent,var(--light),transparent); box-shadow:0 0 15px var(--gold); transform-origin:right; right:150px; top:350px; }
 .beam-one { transform:rotate(-12deg); }.beam-two { transform:rotate(16deg); }
-.feature-stage { --wing-near:500px; --wing-far:790px; --wing-depth-near:150px; --wing-depth-far:330px; position:absolute; z-index:5; left:56px; right:56px; bottom:78px; height:360px; direction:ltr; perspective:1500px; perspective-origin:50% 48%; overflow:visible; }
+.feature-stage { --wing-near:500px; --wing-far:790px; --wing-depth-near:150px; --wing-depth-far:330px; position:absolute; z-index:5; left:56px; right:56px; bottom:78px; height:360px; direction:ltr; perspective:1500px; perspective-origin:50% 48%; overflow:visible; cursor:grab; touch-action:pan-y; user-select:none; }
+.feature-stage.dragging { cursor:grabbing; }
+.feature-stage.dragging .cylinder-card { transition:none; }
 .coverflow-track { position:relative; width:100%; height:100%; transform-style:preserve-3d; }
 .cylinder-card { position:absolute!important; top:0; left:50%; width:min(760px,72vw)!important; height:100%; pointer-events:none; transform-origin:center center; transition:transform .8s cubic-bezier(.22,.8,.28,1),filter .8s ease,opacity .8s ease; }
 .cylinder-card[data-active="true"] { pointer-events:auto; opacity:1; filter:brightness(1.08); }

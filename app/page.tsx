@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 type Lang = "en" | "fa";
 const SLIDE_COUNT = 4;
@@ -107,16 +107,19 @@ function Mark() {
 }
 
 export default function Home() {
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLang] = useState<Lang>("fa");
   const [menu, setMenu] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartX = useRef<number | null>(null);
+  const dragOffsetRef = useRef(0);
+  const didDrag = useRef(false);
   const t = copy[lang];
 
   useEffect(() => {
     const saved = localStorage.getItem("samiz-lang") as Lang | null;
-    const preferred = saved === "fa" || saved === "en"
-      ? saved
-      : navigator.language.toLowerCase().startsWith("fa") ? "fa" : "en";
+    const preferred = saved === "fa" || saved === "en" ? saved : "fa";
     const frame = requestAnimationFrame(() => setLang(preferred));
     return () => cancelAnimationFrame(frame);
   }, []);
@@ -134,6 +137,33 @@ export default function Home() {
     setActiveSlide(slide => (slide + direction + SLIDE_COUNT) % SLIDE_COUNT);
   };
 
+  const startDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    dragStartX.current = event.clientX;
+    dragOffsetRef.current = 0;
+    didDrag.current = false;
+    setIsDragging(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const updateDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (dragStartX.current === null) return;
+    const nextOffset = event.clientX - dragStartX.current;
+    dragOffsetRef.current = nextOffset;
+    if (Math.abs(nextOffset) > 6) didDrag.current = true;
+    setDragOffset(nextOffset);
+  };
+
+  const finishDrag = () => {
+    if (dragStartX.current === null) return;
+    const offset = dragOffsetRef.current;
+    dragStartX.current = null;
+    dragOffsetRef.current = 0;
+    setDragOffset(0);
+    setIsDragging(false);
+    if (Math.abs(offset) >= 70) moveSlider(offset < 0 ? 1 : -1);
+    window.setTimeout(() => { didDrag.current = false; }, 0);
+  };
+
   const slideStyle = (index: number) => {
     const wrapped = (index - activeSlide + SLIDE_COUNT) % SLIDE_COUNT;
     const position = wrapped > SLIDE_COUNT / 2 ? wrapped - SLIDE_COUNT : wrapped;
@@ -146,7 +176,7 @@ export default function Home() {
     const angle = distance === 0 ? 0 : side * (distance === 1 ? -42 : -65);
     const scale = distance === 0 ? 1 : distance === 1 ? .88 : .72;
     return {
-      transform: `translateX(-50%) translateX(${x}) translateZ(${z}) rotateY(${angle}deg) scale(${scale})`,
+      transform: `translateX(-50%) translateX(${x}) translateX(${dragOffset}px) translateZ(${z}) rotateY(${angle}deg) scale(${scale})`,
       opacity: distance === 0 ? 1 : distance === 1 ? .78 : .28,
       zIndex: 10 - distance,
     };
@@ -176,8 +206,17 @@ export default function Home() {
         <div className="gold-visual" aria-hidden="true"><div className="orb"></div><div className="beam beam-one"></div><div className="beam beam-two"></div><div className="portal"></div></div>
 
         <div
-          className="feature-stage"
+          className={`feature-stage${isDragging ? " dragging" : ""}`}
           aria-label={lang === "fa" ? "اسلایدر خدمات و دوره‌ها" : "Services and courses slider"}
+          onPointerDown={startDrag}
+          onPointerMove={updateDrag}
+          onPointerUp={finishDrag}
+          onPointerCancel={finishDrag}
+          onClickCapture={(event) => {
+            if (!didDrag.current) return;
+            event.preventDefault();
+            event.stopPropagation();
+          }}
         >
           <div className="coverflow-track">
             <article className="peek-card video-card cylinder-card" data-active={activeSlide === 0} style={slideStyle(0)}><div className="card-art play-art"><span>▶</span></div><div className="teaser-copy"><small>{t.videoKicker}</small><h3>{t.videoTitle}</h3><a className="outline-button" href="#services">{t.primary}</a></div></article>
