@@ -63,7 +63,8 @@ export default function RegisterPage() {
       <div className="registration-form-card">
         {capacity?.full ? <div className="full-state"><span>ظرفیت تکمیل شد</span><h2>ثبت‌نام این دوره بسته شده است.</h2><p>در صورت آزادشدن ظرفیت، فرم دوباره فعال می‌شود.</p></div> : <form onSubmit={submit}>
           <div><label htmlFor="fullName">نام و نام خانوادگی</label><input id="fullName" name="fullName" required minLength={3} maxLength={80} placeholder="نام کامل خود را وارد کنید" /></div>
-          <div><label htmlFor="phone">شماره تماس</label><input id="phone" name="phone" type="tel" required inputMode="tel" placeholder="مثلاً 09123456789" /></div>
+          <div><label htmlFor="phone">شماره تماس دارای واتساپ</label><input id="phone" name="phone" type="tel" required inputMode="tel" placeholder="مثلاً 09123456789" /></div>
+          <div><label htmlFor="email">ایمیل</label><input id="email" name="email" type="email" required autoComplete="email" maxLength={160} placeholder="مثلاً name@example.com" /></div>
           <div><label htmlFor="receipt">آپلود رسید خیریه</label><label className="upload-box" htmlFor="receipt"><span>انتخاب تصویر یا فایل رسید</span><small>JPG، PNG، WEBP یا PDF — حداکثر ۲.۵ مگابایت</small></label><input className="file-input" id="receipt" name="receipt" type="file" required accept="image/jpeg,image/png,image/webp,application/pdf" /></div>
           <label className="consent"><input type="checkbox" required /><span>تأیید می‌کنم این رسید مربوط به پرداخت من به یک مؤسسه خیریه است.</span></label>
           <button className="gold-button submit-button" disabled={busy}>{busy ? "در حال ارسال…" : "ارسال رسید و ثبت درخواست"}</button>
