@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import "./register-details.css";
 
 type Capacity = { remaining: number; capacity: number; full: boolean };
 
@@ -27,7 +28,38 @@ export default function RegisterPage() {
   return <main className="registration-page fa" dir="rtl">
     <header className="registration-header"><a href="/" className="registration-logo"><span className="mini-mark">S</span><b>SAMIZ AI</b></a><a href="/" className="back-link">بازگشت به سایت</a></header>
     <section className="registration-shell">
-      <div className="registration-intro"><p className="eyebrow">SAMIZ AI ACADEMY</p><h1>ثبت‌نام دوره مقدماتی مهندسی پرامپت</h1><p>برای تکمیل ثبت‌نام، مبلغ اعلام‌شده را مستقیماً به یکی از مؤسسات خیریه پرداخت کنید و تصویر رسید را در این صفحه بفرستید.</p><div className="capacity-card"><span>ظرفیت باقی‌مانده</span><strong>{capacity ? `${capacity.remaining} از ${capacity.capacity}` : "در حال بررسی…"}</strong><small>رسید شما حداکثر تا ۲۴ ساعت بررسی می‌شود.</small></div></div>
+      <div className="registration-intro">
+        <p className="eyebrow">SAMIZ AI ACADEMY</p>
+        <h1>ثبت‌نام دوره مقدماتی مهندسی پرامپت</h1>
+        <p>در این دوره، هزینه ثبت‌نام مستقیماً توسط شما به یک مؤسسه خیریه پرداخت می‌شود. برای رزرو جای خود، مراحل زیر را انجام دهید.</p>
+
+        <div className="donation-highlight">
+          <span>حداقل مبلغ حمایت</span>
+          <strong>۲٬۰۰۰٬۰۰۰ تومان</strong>
+          <p>پرداخت مستقیم به یکی از مؤسسات خیریه معتبر داخل کشور؛ ترجیحاً مؤسسات فعال در مناطق جنوب کشور.</p>
+        </div>
+
+        <div className="registration-steps">
+          <h2>مراحل ثبت‌نام</h2>
+          <ol>
+            <li><b>انتخاب خیریه</b><span>یک مؤسسه خیریه معتبر را انتخاب کنید.</span></li>
+            <li><b>انجام پرداخت</b><span>حداقل مبلغ اعلام‌شده را مستقیماً به خیریه بپردازید.</span></li>
+            <li><b>ارسال رسید</b><span>فرم روبه‌رو را تکمیل و تصویر رسید را بارگذاری کنید.</span></li>
+          </ol>
+        </div>
+
+        <div className="course-outline">
+          <div><span>سرفصل‌های اولیه دوره</span><small>این بخش بعداً تکمیل و به‌روزرسانی می‌شود.</small></div>
+          <ul>
+            <li>اصول پرامپت‌نویسی و ساختار یک درخواست حرفه‌ای</li>
+            <li>ایده‌پردازی و تولید محتوا با ابزارهای هوش مصنوعی</li>
+            <li>ساخت تصویر و ویدیوهای تبلیغاتی با AI</li>
+            <li>طراحی فرایند کاری و مسیرهای درآمدزایی</li>
+          </ul>
+        </div>
+
+        <div className="capacity-card"><span>ظرفیت باقی‌مانده</span><strong>{capacity ? `${capacity.remaining} از ${capacity.capacity}` : "در حال بررسی…"}</strong><small>رسید شما حداکثر تا ۲۴ ساعت بررسی می‌شود.</small></div>
+      </div>
       <div className="registration-form-card">
         {capacity?.full ? <div className="full-state"><span>ظرفیت تکمیل شد</span><h2>ثبت‌نام این دوره بسته شده است.</h2><p>در صورت آزادشدن ظرفیت، فرم دوباره فعال می‌شود.</p></div> : <form onSubmit={submit}>
           <div><label htmlFor="fullName">نام و نام خانوادگی</label><input id="fullName" name="fullName" required minLength={3} maxLength={80} placeholder="نام کامل خود را وارد کنید" /></div>
