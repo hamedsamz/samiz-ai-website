@@ -1,17 +1,16 @@
-import { bindings, isAdminRequest } from "../../../../../db/registrations";
+import { db } from "../../../../../db/registrations";
+import { isAdmin } from "../../../../../lib/admin-auth";
 
 export const dynamic = "force-dynamic";
-
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  if (!(await isAdminRequest())) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 403 });
+  if (!(await isAdmin())) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
   const { id } = await context.params;
-  const body = await request.json() as { status?: string };
-  if (body.status !== "approved" && body.status !== "rejected") return Response.json({ error: "وضعیت نامعتبر" }, { status: 400 });
-  const { DB } = await bindings();
-  const existing = await DB.prepare("SELECT status FROM registrations WHERE id = ?").bind(id).first<{ status: string }>();
-  if (!existing) return Response.json({ error: "ثبت‌نام پیدا نشد" }, { status: 404 });
-  if (existing.status !== "pending") return Response.json({ error: "این ثبت‌نام قبلاً بررسی شده است." }, { status: 409 });
-  await DB.prepare("UPDATE registrations SET status = ?, updated_at = ? WHERE id = ?").bind(body.status, Date.now(), id).run();
-  if (body.status === "rejected") await DB.prepare("UPDATE registration_slots SET registration_id = NULL, reserved_at = NULL WHERE registration_id = ?").bind(id).run();
+  const { status } = await request.json() as { status?: string };
+  if (status !== "approved" && status !== "rejected") return Response.json({ error: "وضعیت نامعتبر" }, { status: 400 });
+  const sql = db(); const existing = await sql`SELECT status FROM registrations WHERE id = ${id}`;
+  if (!existing.length) return Response.json({ error: "ثبت‌نام پیدا نشد" }, { status: 404 });
+  if (existing[0].status !== "pending") return Response.json({ error: "این ثبت‌نام قبلاً بررسی شده است." }, { status: 409 });
+  await sql`UPDATE registrations SET status = ${status}, updated_at = ${Date.now()} WHERE id = ${id}`;
+  if (status === "rejected") await sql`UPDATE registration_slots SET registration_id = NULL, reserved_at = NULL WHERE registration_id = ${id}`;
   return Response.json({ ok: true });
 }

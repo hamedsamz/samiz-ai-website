@@ -1,14 +1,12 @@
-import { bindings, isAdminRequest } from "../../../../../db/registrations";
+import { db } from "../../../../../db/registrations";
+import { isAdmin } from "../../../../../lib/admin-auth";
 
 export const dynamic = "force-dynamic";
-
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
-  if (!(await isAdminRequest())) return new Response("Unauthorized", { status: 403 });
+  if (!(await isAdmin())) return new Response("Unauthorized", { status: 401 });
   const { id } = await context.params;
-  const { DB, BUCKET } = await bindings();
-  const row = await DB.prepare("SELECT receipt_key AS receiptKey, receipt_name AS receiptName, receipt_type AS receiptType FROM registrations WHERE id = ?").bind(id).first<{ receiptKey: string; receiptName: string; receiptType: string }>();
-  if (!row) return new Response("Not found", { status: 404 });
-  const object = await BUCKET.get(row.receiptKey);
-  if (!object) return new Response("Not found", { status: 404 });
-  return new Response(object.body, { headers: { "Content-Type": row.receiptType, "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(row.receiptName)}`, "Cache-Control": "private, no-store" } });
+  const rows = await db()`SELECT receipt_name AS "receiptName", receipt_type AS "receiptType", receipt_data AS "receiptData" FROM registrations WHERE id = ${id}`;
+  if (!rows.length) return new Response("Not found", { status: 404 });
+  const row = rows[0] as { receiptName: string; receiptType: string; receiptData: string };
+  return new Response(Buffer.from(row.receiptData, "base64"), { headers: { "Content-Type": row.receiptType, "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(row.receiptName)}`, "Cache-Control": "private, no-store" } });
 }
