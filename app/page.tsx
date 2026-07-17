@@ -43,7 +43,7 @@ const copy = {
     academyTitle: "Introductory Prompt Engineering Course",
     parts: ["Prompt Engineering Principles & Content Creation", "Advertising Video Production & Monetization"],
     instructors: ["Hamed Sami Zadeh & Dr. Abutaleb Moradi", "Mage Bahrami"],
-    soon: "Registration opening soon",
+    soon: "Register now",
     event: "UPCOMING EVENT",
     eventTitle: "Practical AI for Content Creators",
     eventDesc: "A focused live session on turning AI tools into a repeatable creative workflow.",
@@ -96,7 +96,7 @@ const copy = {
     academyTitle: "دوره مقدماتی مهندسی پرامپت",
     parts: ["اصول مهندسی پرامپت و تولید محتوا", "ساخت ویدئوی تبلیغاتی و رسیدن به درآمد"],
     instructors: ["حامد سمیع زاده و دکتر ابوطالب مرادی", "میج بهرامی"],
-    soon: "ثبت‌نام به‌زودی آغاز می‌شود",
+    soon: "ثبت‌نام دوره",
     event: "رویداد آینده",
     eventTitle: "هوش مصنوعی کاربردی برای تولیدکنندگان محتوا",
     eventDesc: "یک جلسه زنده و متمرکز برای تبدیل ابزارهای AI به یک فرایند خلاقانه تکرارپذیر.",
@@ -276,8 +276,8 @@ export default function Home() {
                 </div>
               </div>
             </article>
-            <article className="peek-card video-card cylinder-card" data-active={activeSlide === 1} style={slideStyle(1)}><div className="card-art play-art"><span>▶</span></div><div className="teaser-copy"><small>{t.videoKicker}</small><h3>{t.videoTitle}</h3><a className="outline-button" href="#portfolio">{t.primary}</a></div></article>
-            <article className="peek-card news-card cylinder-card" data-active={activeSlide === 2} style={slideStyle(2)}><div className="card-art globe-art"><span>AI</span></div><div className="teaser-copy"><small>{t.newsKicker}</small><h3>{t.newsTitle}</h3><a className="outline-button" href="#news">{t.updates}</a></div></article>
+            <article className="peek-card video-card cylinder-card" data-active={activeSlide === 1} style={slideStyle(1)}><div className="teaser-copy"><small>{t.videoKicker}</small><h3>{t.videoTitle}</h3><a className="outline-button" href="#portfolio">{t.primary}</a></div><div className="card-art slide-image-art"><img src="/images/slide-video-ad.png" alt={lang === "fa" ? "تولید ویدیوی تبلیغاتی با هوش مصنوعی" : "AI advertising video production"} draggable={false} /><span className="slide-art-badge play-badge">▶</span></div></article>
+            <article className="peek-card news-card cylinder-card" data-active={activeSlide === 2} style={slideStyle(2)}><div className="teaser-copy"><small>{t.newsKicker}</small><h3>{t.newsTitle}</h3><a className="outline-button" href="#news">{t.updates}</a></div><div className="card-art slide-image-art"><img src="/images/slide-ai-news.png" alt={lang === "fa" ? "اخبار و تازه‌های هوش مصنوعی" : "Latest AI news"} draggable={false} /><span className="slide-art-badge ai-badge">AI</span></div></article>
           </div>
         </div>
         <div className="slider-controls">
@@ -295,7 +295,7 @@ export default function Home() {
 
       <section className="section academy" id="academy">
         <div className="academy-art"><div className="academy-ring"><Mark /></div><span className="float f1">ROLE</span><span className="float f2">GOAL</span><span className="float f3">CONTEXT</span></div>
-        <div className="academy-copy"><p className="eyebrow">{t.academy}</p><h2 className="academy-course-title">{t.academyTitle}</h2><div className="curriculum">{t.parts.map((part, i) => <div key={part}><p><b>{part}</b><small>{t.instructors[i]}</small></p></div>)}</div><button className="gold-button">{t.soon}</button></div>
+        <div className="academy-copy"><p className="eyebrow">{t.academy}</p><h2 className="academy-course-title">{t.academyTitle}</h2><div className="curriculum">{t.parts.map((part, i) => <div key={part}><p><b>{part}</b><small>{t.instructors[i]}</small></p></div>)}</div><a className="gold-button" href="/register">{t.soon}</a></div>
       </section>
 
       <section className="section video-showcase" id="portfolio">
