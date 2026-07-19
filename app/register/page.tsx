@@ -35,7 +35,7 @@ export default function RegisterPage() {
 
         <div className="donation-highlight">
           <span>حداقل مبلغ حمایت</span>
-          <strong>۲٬۰۰۰٬۰۰۰ تومان</strong>
+          <strong>یک میلیون تومان</strong>
           <p>پرداخت مستقیم به یکی از مؤسسات خیریه معتبر داخل کشور؛ ترجیحاً مؤسسات فعال در مناطق جنوب کشور.</p>
         </div>
 
