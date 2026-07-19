@@ -1,4 +1,4 @@
-import { capacityStatus, db } from "../../../db/registrations";
+import { CAPACITY, capacityStatus, db } from "../../../db/registrations";
 
 export const dynamic = "force-dynamic";
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const receiptData = Buffer.from(await receipt.arrayBuffer()).toString("base64");
     const inserted = await sql`WITH claimed AS (
       UPDATE registration_slots SET registration_id = ${registrationId}, reserved_at = ${now}
-      WHERE id = (SELECT id FROM registration_slots WHERE registration_id IS NULL ORDER BY id LIMIT 1)
+      WHERE id = (SELECT id FROM registration_slots WHERE id <= ${CAPACITY} AND registration_id IS NULL ORDER BY id LIMIT 1)
       RETURNING id
     ) INSERT INTO registrations (id, slot_id, full_name, phone, email, receipt_name, receipt_type, receipt_data, status, created_at, updated_at)
       SELECT ${registrationId}, id, ${fullName}, ${phone}, ${email}, ${receipt.name.slice(0, 160)}, ${receipt.type}, ${receiptData}, 'pending', ${now}, ${now} FROM claimed RETURNING id`;

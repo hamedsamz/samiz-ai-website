@@ -1,6 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 
-export const CAPACITY = 50;
+export const CAPACITY = 30;
 export const HOLD_MS = 24 * 60 * 60 * 1000;
 
 export function db() {
@@ -30,7 +30,7 @@ export async function releaseExpiredHolds(now = Date.now()) {
 export async function capacityStatus() {
   await ensureRegistrationSchema();
   await releaseExpiredHolds();
-  const rows = await db()`SELECT COUNT(*)::int AS used FROM registration_slots WHERE registration_id IS NOT NULL`;
+  const rows = await db()`SELECT COUNT(*)::int AS used FROM registrations WHERE status IN ('pending', 'approved')`;
   const used = Number(rows[0]?.used ?? 0);
   return { capacity: CAPACITY, used, remaining: Math.max(0, CAPACITY - used), full: used >= CAPACITY };
 }
