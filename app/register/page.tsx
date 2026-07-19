@@ -58,6 +58,7 @@ export default function RegisterPage() {
             <li>تولید محتوا با کمک AI</li>
             <li>تأثیر پرامپت در ساخت ویدیوهای تبلیغاتی با AI</li>
           </ul>
+          <p className="course-delivery-note">دوره به‌صورت ضبط‌شده ارائه می‌شود و ویدیوها به‌طور منظم در اختیار شما قرار می‌گیرند. همچنین تیم مدرسین پاسخ‌گوی پرسش‌های شما خواهد بود.</p>
         </div>
 
         <div className="capacity-card"><span>ظرفیت باقی‌مانده</span><strong>{capacity ? `${capacity.remaining} از ${capacity.capacity}` : "در حال بررسی…"}</strong><small>رسید شما حداکثر تا ۲۴ ساعت بررسی می‌شود.</small></div>
