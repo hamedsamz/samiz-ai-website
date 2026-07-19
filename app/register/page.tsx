@@ -30,7 +30,10 @@ export default function RegisterPage() {
     <section className="registration-shell">
       <div className="registration-intro">
         <p className="eyebrow">SAMIZ AI ACADEMY</p>
-        <h1>ثبت‌نام دوره ورود به دنیای هوش مصنوعی با یادگیری مهندسی پرامپت</h1>
+        <h1 className="registration-page-title">
+          <span className="registration-title-prefix">ثبت‌نام دوره</span>
+          <span className="registration-course-name">«ورود به دنیای هوش مصنوعی با یادگیری مهندسی پرامپت»</span>
+        </h1>
         <p>در این دوره، هزینه ثبت‌نام مستقیماً توسط شما به یک مؤسسه خیریه پرداخت می‌شود. برای رزرو جای خود، مراحل زیر را انجام دهید.</p>
 
         <div className="donation-highlight">
