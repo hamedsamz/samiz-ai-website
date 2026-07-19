@@ -30,7 +30,7 @@ export default function RegisterPage() {
     <section className="registration-shell">
       <div className="registration-intro">
         <p className="eyebrow">SAMIZ AI ACADEMY</p>
-        <h1>ثبت‌نام دوره مقدماتی مهندسی پرامپت</h1>
+        <h1>ثبت‌نام دوره ورود به دنیای هوش مصنوعی با یادگیری مهندسی پرامپت</h1>
         <p>در این دوره، هزینه ثبت‌نام مستقیماً توسط شما به یک مؤسسه خیریه پرداخت می‌شود. برای رزرو جای خود، مراحل زیر را انجام دهید.</p>
 
         <div className="donation-highlight">
@@ -49,12 +49,11 @@ export default function RegisterPage() {
         </div>
 
         <div className="course-outline">
-          <div><span>سرفصل‌های اولیه دوره</span><small>این بخش بعداً تکمیل و به‌روزرسانی می‌شود.</small></div>
+          <div><span>دوره شامل ۳ بخش است:</span></div>
           <ul>
-            <li>اصول پرامپت‌نویسی و ساختار یک درخواست حرفه‌ای</li>
-            <li>ایده‌پردازی و تولید محتوا با ابزارهای هوش مصنوعی</li>
-            <li>ساخت تصویر و ویدیوهای تبلیغاتی با AI</li>
-            <li>طراحی فرایند کاری و مسیرهای درآمدزایی</li>
+            <li>مهندسی پرامپت</li>
+            <li>تولید محتوا با کمک AI</li>
+            <li>تأثیر پرامپت در ساخت ویدیوهای تبلیغاتی با AI</li>
           </ul>
         </div>
 

@@ -74,8 +74,8 @@ const copy = {
     primary: "مشاهده نمونه‌کارها",
     secondary: "مشاهده دوره‌ها",
     featured: "دوره ویژه",
-    course: "مهندسی پرامپت",
-    courseSub: "از پرامپت بهتر تا نتیجه واقعی",
+    course: "ورود به دنیای هوش مصنوعی با یادگیری مهندسی پرامپت",
+    courseSub: "از یادگیری پرامپت تا تولید محتوای حرفه‌ای با AI",
     meta: ["کلاس زنده", "۶ هفته", "فارسی + انگلیسی"],
     view: "مشاهده دوره",
     videoKicker: "خدمات ویدیویی AI",
@@ -93,8 +93,8 @@ const copy = {
       ["سخنگوی هوش مصنوعی", "محتوای طبیعی با مجری، بدون نیاز به فیلم‌برداری سنتی."],
     ],
     academy: "آکادمی سمیز",
-    academyTitle: "دوره مقدماتی مهندسی پرامپت",
-    parts: ["اصول مهندسی پرامپت و تولید محتوا", "ساخت ویدئوی تبلیغاتی و رسیدن به درآمد"],
+    academyTitle: "ورود به دنیای هوش مصنوعی با یادگیری مهندسی پرامپت",
+    parts: ["مهندسی پرامپت و تولید محتوا با کمک AI", "تأثیر پرامپت در ساخت ویدیوهای تبلیغاتی با AI"],
     instructors: ["حامد سمیع زاده و دکتر ابوطالب مرادی", "میج بهرامی"],
     soon: "ثبت‌نام دوره",
     event: "رویداد آینده",
@@ -265,8 +265,8 @@ export default function Home() {
               <div className="course-slide-content">
                 <div className="course-slide-copy">
                   <span className="course-slide-kicker">SAMIZ AI ACADEMY</span>
-                  <h2>{lang === "fa" ? "دوره مقدماتی مهندسی پرامپت" : "Introductory Prompt Engineering Course"}</h2>
-                  <p>{lang === "fa" ? "اصول پرامپت نویسی، تولید محتوا و ساخت ویدیوهای تبلیغاتی" : "Prompt writing fundamentals, content creation, and advertising video production"}</p>
+                  <h2>{lang === "fa" ? "ورود به دنیای هوش مصنوعی با یادگیری مهندسی پرامپت" : "Introductory Prompt Engineering Course"}</h2>
+                  <p>{lang === "fa" ? "مهندسی پرامپت، تولید محتوا با کمک AI و تأثیر پرامپت در ساخت ویدیوهای تبلیغاتی" : "Prompt writing fundamentals, content creation, and advertising video production"}</p>
                   <a className="course-details-button" href="#academy">{lang === "fa" ? "جزئیات بیشتر" : "More details"}<span>↓</span></a>
                 </div>
                 <div className="course-slide-art" aria-hidden="true">
