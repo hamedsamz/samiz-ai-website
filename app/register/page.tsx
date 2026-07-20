@@ -42,6 +42,12 @@ export default function RegisterPage() {
           <p>پرداخت مستقیم به یکی از مؤسسات خیریه معتبر داخل کشور؛ ترجیحاً مؤسسات فعال در مناطق جنوب کشور.</p>
         </div>
 
+        <div className="course-start-card">
+          <span>تاریخ شروع دوره</span>
+          <strong>۱۰ مرداد</strong>
+          <p>اولین جلسه دوره در این تاریخ آپلود خواهد شد.</p>
+        </div>
+
         <div className="registration-steps">
           <h2>مراحل ثبت‌نام</h2>
           <ol>
