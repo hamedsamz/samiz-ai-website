@@ -14,6 +14,8 @@ export async function ensureRegistrationSchema() {
   await sql`CREATE TABLE IF NOT EXISTS registrations (id TEXT PRIMARY KEY, slot_id INTEGER NOT NULL, full_name TEXT NOT NULL, phone TEXT NOT NULL, receipt_name TEXT NOT NULL, receipt_type TEXT NOT NULL, receipt_data TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', created_at BIGINT NOT NULL, updated_at BIGINT NOT NULL)`;
   await sql`ALTER TABLE registrations DROP CONSTRAINT IF EXISTS registrations_slot_id_key`;
   await sql`ALTER TABLE registrations ADD COLUMN IF NOT EXISTS email TEXT`;
+  await sql`ALTER TABLE registrations ADD COLUMN IF NOT EXISTS confirmation_email_sent_at BIGINT`;
+  await sql`CREATE TABLE IF NOT EXISTS external_confirmation_emails (email TEXT PRIMARY KEY, full_name TEXT NOT NULL, sent_at BIGINT NOT NULL)`;
   await sql`CREATE TABLE IF NOT EXISTS registration_slots (id INTEGER PRIMARY KEY, registration_id TEXT UNIQUE, reserved_at BIGINT)`;
   await sql`CREATE INDEX IF NOT EXISTS registrations_phone_idx ON registrations(phone)`;
   await sql`INSERT INTO registration_slots (id) SELECT generate_series(1, ${CAPACITY}) ON CONFLICT (id) DO NOTHING`;
