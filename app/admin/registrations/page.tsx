@@ -1,6 +1,7 @@
 import AdminPanel from "./AdminPanel";
+import Link from "next/link";
 import "./admin.css";
 export const dynamic = "force-dynamic";
 export default function AdminRegistrationsPage() {
-  return <main className="admin-page fa" dir="rtl"><header className="admin-header"><div><p className="eyebrow">SAMIZ AI ACADEMY</p><h1>مدیریت ثبت‌نام‌ها</h1></div><a href="/">بازگشت به سایت</a></header><AdminPanel /></main>;
+  return <main className="admin-page fa" dir="rtl"><header className="admin-header"><div><p className="eyebrow">SAMIZ AI ACADEMY</p><h1>مدیریت ثبت‌نام‌ها</h1></div><div><Link href="/admin/registrations-2">مدیریت دوره جدید</Link><Link href="/">بازگشت به سایت</Link></div></header><AdminPanel /></main>;
 }
