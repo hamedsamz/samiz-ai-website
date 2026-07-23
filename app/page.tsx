@@ -43,7 +43,7 @@ const copy = {
     academyTitle: "Introductory Prompt Engineering Course",
     parts: ["Prompt Engineering Principles & Content Creation", "Advertising Video Production & Monetization"],
     instructors: ["Hamed Sami Zadeh & Dr. Abutaleb Moradi", "Mage Bahrami"],
-    soon: "Register now",
+    soon: "Register for the new course",
     event: "UPCOMING EVENT",
     eventTitle: "Practical AI for Content Creators",
     eventDesc: "A focused live session on turning AI tools into a repeatable creative workflow.",
@@ -96,7 +96,7 @@ const copy = {
     academyTitle: "ورود به دنیای هوش مصنوعی با یادگیری مهندسی پرامپت",
     parts: ["مهندسی پرامپت و تولید محتوا با کمک AI", "تأثیر پرامپت در ساخت ویدیوهای تبلیغاتی با AI"],
     instructors: ["حامد سمیع زاده و دکتر ابوطالب مرادی", "میج بهرامی"],
-    soon: "ثبت‌نام دوره",
+    soon: "ثبت‌نام دوره جدید",
     event: "رویداد آینده",
     eventTitle: "هوش مصنوعی کاربردی برای تولیدکنندگان محتوا",
     eventDesc: "یک جلسه زنده و متمرکز برای تبدیل ابزارهای AI به یک فرایند خلاقانه تکرارپذیر.",
@@ -295,7 +295,7 @@ export default function Home() {
 
       <section className="section academy" id="academy">
         <div className="academy-art"><div className="academy-ring"><Mark /></div><span className="float f1">ROLE</span><span className="float f2">GOAL</span><span className="float f3">CONTEXT</span></div>
-        <div className="academy-copy"><p className="eyebrow">{t.academy}</p><h2 className="academy-course-title">{t.academyTitle}</h2><div className="curriculum">{t.parts.map((part, i) => <div key={part}><p><b>{part}</b><small>{t.instructors[i]}</small></p></div>)}</div><a className="gold-button" href="/register">{t.soon}</a></div>
+        <div className="academy-copy"><p className="eyebrow">{t.academy}</p><h2 className="academy-course-title">{t.academyTitle}</h2><div className="curriculum">{t.parts.map((part, i) => <div key={part}><p><b>{part}</b><small>{t.instructors[i]}</small></p></div>)}</div><a className="gold-button" href="/register-2">{t.soon}</a></div>
       </section>
 
       <section className="section video-showcase" id="portfolio">
