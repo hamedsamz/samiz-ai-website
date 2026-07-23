@@ -11,7 +11,7 @@ export async function ensureCourse2Schema() {
   const sql = db();
   await sql`CREATE TABLE IF NOT EXISTS course2_registrations (
     id TEXT PRIMARY KEY,
-    slot_id INTEGER NOT NULL UNIQUE,
+    slot_id INTEGER NOT NULL,
     payment_type TEXT NOT NULL,
     full_name TEXT NOT NULL,
     age INTEGER NOT NULL,
@@ -30,6 +30,7 @@ export async function ensureCourse2Schema() {
     created_at BIGINT NOT NULL,
     updated_at BIGINT NOT NULL
   )`;
+  await sql`ALTER TABLE course2_registrations DROP CONSTRAINT IF EXISTS course2_registrations_slot_id_key`;
   await sql`CREATE TABLE IF NOT EXISTS course2_registration_slots (id INTEGER PRIMARY KEY, registration_id TEXT UNIQUE, reserved_at BIGINT)`;
   await sql`CREATE TABLE IF NOT EXISTS course2_external_confirmation_emails (email TEXT PRIMARY KEY, full_name TEXT NOT NULL, sent_at BIGINT NOT NULL)`;
   await sql`CREATE INDEX IF NOT EXISTS course2_registrations_phone_idx ON course2_registrations(phone)`;
