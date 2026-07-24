@@ -81,9 +81,10 @@ export default function Course2AdminPanel() {
 
   const pending = items.filter(item => item.status === "pending").length;
   const approved = items.filter(item => item.status === "approved").length;
+  const approvedItems = useMemo(() => items.filter(item => item.status === "approved"), [items]);
   const visibleItems = useMemo(() => filter === "all" ? items : items.filter(item => item.paymentType === filter), [filter, items]);
   const demographics = useMemo(() => {
-    const ages = items.map(item => Number(item.age)).filter(age => Number.isFinite(age));
+    const ages = approvedItems.map(item => Number(item.age)).filter(age => Number.isFinite(age));
     const ageGroups = ([
       ["کمتر از ۲۰ سال", ages.filter(age => age < 20).length],
       ["۲۰ تا ۲۹ سال", ages.filter(age => age >= 20 && age < 30).length],
@@ -96,26 +97,28 @@ export default function Course2AdminPanel() {
       minimumAge: ages.length ? Math.min(...ages) : 0,
       maximumAge: ages.length ? Math.max(...ages) : 0,
       ageGroups,
-      education: countValues(items.map(item => item.education)),
-      occupations: countValues(items.map(item => item.occupation)).slice(0, 10),
+      education: countValues(approvedItems.map(item => item.education)),
+      occupations: countValues(approvedItems.map(item => item.occupation)).slice(0, 10),
+      specialties: countValues(approvedItems.map(item => item.specialty?.trim() || "بدون تخصص ثبت‌شده")).slice(0, 10),
     };
-  }, [items]);
+  }, [approvedItems]);
 
   if (authorized === false) return <form className="admin-login" onSubmit={login}><h2>ورود مدیر</h2><p>رمز مدیریت را وارد کنید.</p><input name="password" type="password" required placeholder="رمز مدیریت" /><button className="gold-button">ورود به پنل</button>{loginError && <p className="form-message error">{loginError}</p>}</form>;
   return <>
     <div className="admin-stats course2-stats"><div><span>در انتظار بررسی</span><strong>{pending}</strong></div><div><span>تأییدشده از ۱۰۰ نفر</span><strong>{approved}</strong></div><div><span>ثبت‌شده خیریه</span><strong>{capacity?.charityUsed ?? "—"} / ۲۰</strong></div><div><span>مبلغ خیریه تأییدشده</span><strong>{capacity ? `${formatToman(capacity.charityApprovedTotal)} تومان` : "—"}</strong></div></div>
 
     <section className="demographic-section">
-      <div className="demographic-heading"><div><p className="eyebrow">آمار زنده شرکت‌کنندگان</p><h2>سن، تحصیلات و شغل</h2></div><span>بر اساس {formatNumber(items.length)} ثبت‌نام</span></div>
+      <div className="demographic-heading"><div><p className="eyebrow">آمار زنده افراد تأییدشده</p><h2>سن، تحصیلات، شغل و تخصص</h2></div><span>بر اساس {formatNumber(approvedItems.length)} نفر تأییدشده</span></div>
       <div className="age-summary">
         <div><span>میانگین سن</span><strong>{demographics.averageAge ? formatNumber(demographics.averageAge, 1) : "—"}</strong><small>سال</small></div>
         <div><span>کمترین سن</span><strong>{demographics.minimumAge ? formatNumber(demographics.minimumAge) : "—"}</strong><small>سال</small></div>
         <div><span>بیشترین سن</span><strong>{demographics.maximumAge ? formatNumber(demographics.maximumAge) : "—"}</strong><small>سال</small></div>
       </div>
       <div className="demographic-grid">
-        <article><h3>گروه‌های سنی</h3><StatBars rows={demographics.ageGroups} total={items.length} /></article>
-        <article><h3>میزان تحصیلات</h3><StatBars rows={demographics.education} total={items.length} /></article>
-        <article><h3>پرتکرارترین شغل‌ها</h3><StatBars rows={demographics.occupations} total={items.length} /></article>
+        <article><h3>گروه‌های سنی</h3><StatBars rows={demographics.ageGroups} total={approvedItems.length} /></article>
+        <article><h3>میزان تحصیلات</h3><StatBars rows={demographics.education} total={approvedItems.length} /></article>
+        <article><h3>پرتکرارترین شغل‌ها</h3><StatBars rows={demographics.occupations} total={approvedItems.length} /></article>
+        <article><h3>پرتکرارترین تخصص‌ها</h3><StatBars rows={demographics.specialties} total={approvedItems.length} /></article>
       </div>
     </section>
 
