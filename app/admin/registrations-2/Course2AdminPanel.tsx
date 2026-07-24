@@ -11,6 +11,24 @@ type Registration = {
 type Capacity = { charityUsed: number; charityApproved: number; charityApprovedTotal: number; cardUsed: number; remaining: number };
 const labels: Record<Status, string> = { pending: "در انتظار", approved: "تأیید شده", rejected: "رد شده", expired: "منقضی شده" };
 const formatToman = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
+const formatNumber = (value: number, maximumFractionDigits = 0) => new Intl.NumberFormat("fa-IR", { maximumFractionDigits }).format(value);
+
+function countValues(values: string[]) {
+  return Array.from(values.reduce((counts, value) => {
+    const cleanValue = value.trim().replace(/\s+/g, " ");
+    if (cleanValue) counts.set(cleanValue, (counts.get(cleanValue) ?? 0) + 1);
+    return counts;
+  }, new Map<string, number>())).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "fa"));
+}
+
+function StatBars({ rows, total }: { rows: [string, number][]; total: number }) {
+  if (!rows.length) return <p className="demographic-empty">هنوز داده‌ای ثبت نشده است.</p>;
+  const highest = Math.max(...rows.map(([, count]) => count), 1);
+  return <div className="demographic-bars">{rows.map(([label, count]) => <div className="demographic-row" key={label}>
+    <div className="demographic-label"><span>{label}</span><b>{formatNumber(count)} نفر <small>({formatNumber(total ? count * 100 / total : 0, 1)}٪)</small></b></div>
+    <div className="demographic-track"><span style={{ width: `${count * 100 / highest}%` }} /></div>
+  </div>)}</div>;
+}
 
 export default function Course2AdminPanel() {
   const [items, setItems] = useState<Registration[]>([]);
@@ -64,10 +82,42 @@ export default function Course2AdminPanel() {
   const pending = items.filter(item => item.status === "pending").length;
   const approved = items.filter(item => item.status === "approved").length;
   const visibleItems = useMemo(() => filter === "all" ? items : items.filter(item => item.paymentType === filter), [filter, items]);
+  const demographics = useMemo(() => {
+    const ages = items.map(item => Number(item.age)).filter(age => Number.isFinite(age));
+    const ageGroups = ([
+      ["کمتر از ۲۰ سال", ages.filter(age => age < 20).length],
+      ["۲۰ تا ۲۹ سال", ages.filter(age => age >= 20 && age < 30).length],
+      ["۳۰ تا ۳۹ سال", ages.filter(age => age >= 30 && age < 40).length],
+      ["۴۰ تا ۴۹ سال", ages.filter(age => age >= 40 && age < 50).length],
+      ["۵۰ سال و بیشتر", ages.filter(age => age >= 50).length],
+    ] as [string, number][]).filter(([, count]) => count > 0);
+    return {
+      averageAge: ages.length ? ages.reduce((sum, age) => sum + age, 0) / ages.length : 0,
+      minimumAge: ages.length ? Math.min(...ages) : 0,
+      maximumAge: ages.length ? Math.max(...ages) : 0,
+      ageGroups,
+      education: countValues(items.map(item => item.education)),
+      occupations: countValues(items.map(item => item.occupation)).slice(0, 10),
+    };
+  }, [items]);
 
   if (authorized === false) return <form className="admin-login" onSubmit={login}><h2>ورود مدیر</h2><p>رمز مدیریت را وارد کنید.</p><input name="password" type="password" required placeholder="رمز مدیریت" /><button className="gold-button">ورود به پنل</button>{loginError && <p className="form-message error">{loginError}</p>}</form>;
   return <>
     <div className="admin-stats course2-stats"><div><span>در انتظار بررسی</span><strong>{pending}</strong></div><div><span>تأییدشده از ۱۰۰ نفر</span><strong>{approved}</strong></div><div><span>ثبت‌شده خیریه</span><strong>{capacity?.charityUsed ?? "—"} / ۲۰</strong></div><div><span>مبلغ خیریه تأییدشده</span><strong>{capacity ? `${formatToman(capacity.charityApprovedTotal)} تومان` : "—"}</strong></div></div>
+
+    <section className="demographic-section">
+      <div className="demographic-heading"><div><p className="eyebrow">آمار زنده شرکت‌کنندگان</p><h2>سن، تحصیلات و شغل</h2></div><span>بر اساس {formatNumber(items.length)} ثبت‌نام</span></div>
+      <div className="age-summary">
+        <div><span>میانگین سن</span><strong>{demographics.averageAge ? formatNumber(demographics.averageAge, 1) : "—"}</strong><small>سال</small></div>
+        <div><span>کمترین سن</span><strong>{demographics.minimumAge ? formatNumber(demographics.minimumAge) : "—"}</strong><small>سال</small></div>
+        <div><span>بیشترین سن</span><strong>{demographics.maximumAge ? formatNumber(demographics.maximumAge) : "—"}</strong><small>سال</small></div>
+      </div>
+      <div className="demographic-grid">
+        <article><h3>گروه‌های سنی</h3><StatBars rows={demographics.ageGroups} total={items.length} /></article>
+        <article><h3>میزان تحصیلات</h3><StatBars rows={demographics.education} total={items.length} /></article>
+        <article><h3>پرتکرارترین شغل‌ها</h3><StatBars rows={demographics.occupations} total={items.length} /></article>
+      </div>
+    </section>
 
     <section className="email-tools"><h2>ارسال ایمیل تأیید دوره جدید</h2><p>تا قبل از تنظیم لینک کانال تلگرام جدید، ارسال ایمیل غیرفعال می‌ماند و پیام خطا نمایش داده می‌شود.</p><div className="email-tool-grid"><form onSubmit={testEmail}><h3>۱. ارسال آزمایشی</h3><input name="email" type="email" required placeholder="ایمیل خودت" /><button disabled={emailBusy}>ارسال آزمایشی</button></form><div><h3>۲. افراد تأییدشده سایت</h3><button className="bulk-email" disabled={emailBusy} onClick={bulkEmail}>ارسال به همه افراد ارسال‌نشده</button></div><form onSubmit={manualEmail}><h3>۳. ثبت‌نام خارج از سایت</h3><input name="fullName" required placeholder="نام و نام خانوادگی" /><input name="email" type="email" required placeholder="ایمیل" /><button disabled={emailBusy}>ارسال و ثبت</button></form></div>{emailMessage && <p className="email-result">{emailMessage}</p>}</section>
 
