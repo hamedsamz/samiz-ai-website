@@ -39,6 +39,8 @@ export default function Course2AdminPanel() {
   const [emailMessage, setEmailMessage] = useState("");
   const [emailBusy, setEmailBusy] = useState(false);
   const [filter, setFilter] = useState<"all" | "charity" | "card">("all");
+  const [contactScope, setContactScope] = useState<"all" | "approved">("approved");
+  const [contactMessage, setContactMessage] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -78,11 +80,38 @@ export default function Course2AdminPanel() {
   async function testEmail(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); await emailAction({ action: "test", email: String(form.get("email") ?? ""), fullName: "کاربر آزمایشی" }); }
   async function manualEmail(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); const ok = await emailAction({ action: "manual", email: String(form.get("email") ?? ""), fullName: String(form.get("fullName") ?? "") }); if (ok) event.currentTarget.reset(); }
   async function bulkEmail() { if (!confirm("ایمیل تأیید برای تمام افراد تأییدشده ارسال‌نشده فرستاده شود؟")) return; await emailAction({ action: "bulk" }); }
+  async function copyContacts() {
+    try {
+      await navigator.clipboard.writeText(contactItems.map(item => item.phone).join("\n"));
+      setContactMessage(`${formatNumber(contactItems.length)} شماره در کلیپ‌بورد کپی شد.`);
+    } catch {
+      setContactMessage("کپی خودکار انجام نشد؛ شماره‌ها را از کادر انتخاب و کپی کنید.");
+    }
+  }
+  function downloadContacts() {
+    const escapeCsv = (value: string) => `"${value.replaceAll('"', '""')}"`;
+    const rows = [["نام و نام خانوادگی", "شماره تماس", "وضعیت"], ...contactItems.map(item => [item.fullName, item.phone, labels[item.status]])];
+    const csv = `\uFEFF${rows.map(row => row.map(escapeCsv).join(",")).join("\n")}`;
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url; link.download = contactScope === "approved" ? "approved-contacts.csv" : "all-contacts.csv"; link.click();
+    URL.revokeObjectURL(url);
+  }
 
   const pending = items.filter(item => item.status === "pending").length;
   const approved = items.filter(item => item.status === "approved").length;
   const approvedItems = useMemo(() => items.filter(item => item.status === "approved"), [items]);
   const visibleItems = useMemo(() => filter === "all" ? items : items.filter(item => item.paymentType === filter), [filter, items]);
+  const contactItems = useMemo(() => {
+    const source = contactScope === "approved" ? approvedItems : items;
+    const seen = new Set<string>();
+    return source.filter(item => {
+      const normalizedPhone = item.phone.replace(/[^\d+]/g, "");
+      if (!normalizedPhone || seen.has(normalizedPhone)) return false;
+      seen.add(normalizedPhone);
+      return true;
+    });
+  }, [approvedItems, contactScope, items]);
   const demographics = useMemo(() => {
     const ages = approvedItems.map(item => Number(item.age)).filter(age => Number.isFinite(age));
     const ageGroups = ([
@@ -120,6 +149,17 @@ export default function Course2AdminPanel() {
         <article><h3>پرتکرارترین شغل‌ها</h3><StatBars rows={demographics.occupations} total={approvedItems.length} /></article>
         <article><h3>پرتکرارترین تخصص‌ها</h3><StatBars rows={demographics.specialties} total={approvedItems.length} /></article>
       </div>
+    </section>
+
+    <section className="contact-list-section">
+      <div className="contact-list-heading"><div><p className="eyebrow">شماره تماس شرکت‌کنندگان</p><h2>لیست شماره‌ها</h2></div><strong>{formatNumber(contactItems.length)} شماره غیرتکراری</strong></div>
+      <div className="contact-scope">
+        <button className={contactScope === "approved" ? "active" : ""} onClick={() => { setContactScope("approved"); setContactMessage(""); }}>فقط تأییدشده‌ها ({formatNumber(approvedItems.length)})</button>
+        <button className={contactScope === "all" ? "active" : ""} onClick={() => { setContactScope("all"); setContactMessage(""); }}>همه ثبت‌نام‌ها ({formatNumber(items.length)})</button>
+      </div>
+      <div className="contact-list-box">{contactItems.length ? contactItems.map(item => <div key={item.id}><span>{item.fullName}</span><a href={`tel:${item.phone}`}>{item.phone}</a></div>) : <p>شماره‌ای در این بخش وجود ندارد.</p>}</div>
+      <div className="contact-list-actions"><button onClick={copyContacts} disabled={!contactItems.length}>کپی همه شماره‌ها</button><button onClick={downloadContacts} disabled={!contactItems.length}>دانلود فایل CSV</button></div>
+      {contactMessage && <p className="contact-message">{contactMessage}</p>}
     </section>
 
     <section className="email-tools"><h2>ارسال ایمیل تأیید دوره جدید</h2><p>تا قبل از تنظیم لینک کانال تلگرام جدید، ارسال ایمیل غیرفعال می‌ماند و پیام خطا نمایش داده می‌شود.</p><div className="email-tool-grid"><form onSubmit={testEmail}><h3>۱. ارسال آزمایشی</h3><input name="email" type="email" required placeholder="ایمیل خودت" /><button disabled={emailBusy}>ارسال آزمایشی</button></form><div><h3>۲. افراد تأییدشده سایت</h3><button className="bulk-email" disabled={emailBusy} onClick={bulkEmail}>ارسال به همه افراد ارسال‌نشده</button></div><form onSubmit={manualEmail}><h3>۳. ثبت‌نام خارج از سایت</h3><input name="fullName" required placeholder="نام و نام خانوادگی" /><input name="email" type="email" required placeholder="ایمیل" /><button disabled={emailBusy}>ارسال و ثبت</button></form></div>{emailMessage && <p className="email-result">{emailMessage}</p>}</section>
