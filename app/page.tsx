@@ -35,9 +35,9 @@ const copy = {
     coursesLead: "دوره‌ها کوتاه، روشن و پروژه‌محور طراحی می‌شوند؛ یعنی فقط ابزار نمی‌شناسی، بلکه با آن چیزی می‌سازی.",
     all: "همه دوره‌ها",
     noResults: "دوره‌ای با این جست‌وجو پیدا نشد.",
-    current: "دوره فعال",
+    current: "ظرفیت تکمیل",
     soon: "به‌زودی",
-    details: "مشاهده جزئیات و ثبت‌نام",
+    details: "مشاهده جزئیات دوره",
     notify: "اطلاع از زمان انتشار",
     courses: [
       {
@@ -134,9 +134,9 @@ const copy = {
     coursesLead: "Courses are clear and project-based. You do not just discover tools — you use them to build something useful.",
     all: "All courses",
     noResults: "No courses matched your search.",
-    current: "Available course",
+    current: "Enrollment closed",
     soon: "Coming soon",
-    details: "View details & register",
+    details: "View course details",
     notify: "Get release updates",
     courses: [
       {
