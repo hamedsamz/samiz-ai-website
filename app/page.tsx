@@ -9,7 +9,10 @@ type CategoryId = "all" | "prompt" | "content" | "video" | "apps";
 const copy = {
   fa: {
     nav: ["دوره‌ها", "مسیر یادگیری", "نمونه‌کارها", "درباره سمیز"],
-    login: "ورود هنرجو",
+    login: "ورود",
+    signup: "ساخت حساب",
+    authSoon: "سیستم ورود و ساخت حساب به‌زودی فعال می‌شود.",
+    authHint: "فعلاً می‌توانی دوره‌ها و نمونه‌کارها را ببینی؛ در مرحله بعدی ثبت‌نام کاربران را باهم طراحی می‌کنیم.",
     heroBadge: "SAMIZ ACADEMY · آموزش کاربردی هوش مصنوعی",
     heroTitle: "هوش مصنوعی را یاد بگیر؛ ",
     heroAccent: "واقعی بساز و اثرگذار باش.",
@@ -19,8 +22,10 @@ const copy = {
     searchPlaceholder: "دوست داری چه چیزی یاد بگیری؟",
     searchButton: "جست‌وجو",
     principles: ["آموزش فارسی", "پروژه‌محور", "از شروع تا اجرا"],
-    heroCardTitle: "مسیر یادگیری تو",
-    heroCardSteps: ["یاد بگیر", "تمرین کن", "واقعی بساز"],
+    featuredLabel: "دوره‌های داغ آکادمی",
+    featuredSummary: "خلاصه دوره",
+    previousSlide: "دوره قبلی",
+    nextSlide: "دوره بعدی",
     categoriesKicker: "موضوعات آموزشی",
     categoriesTitle: "از کجا می‌خواهی شروع کنی؟",
     categoriesLead: "مسیر مناسب خودت را انتخاب کن؛ از مبانی پرامپت‌نویسی تا تولید محتوا، ویدیو و ساخت محصولات هوشمند.",
@@ -49,6 +54,7 @@ const copy = {
         meta: "ضبط‌شده · همراه با پشتیبانی",
         status: "active",
         href: "/register-2",
+        image: "/images/courses/prompt-engineering.webp",
       },
       {
         id: "content",
@@ -59,6 +65,7 @@ const copy = {
         meta: "پروژه‌محور · فارسی",
         status: "soon",
         href: "#contact",
+        image: "/images/courses/ai-content.webp",
       },
       {
         id: "video",
@@ -69,6 +76,7 @@ const copy = {
         meta: "کاربردی · پروژه نهایی",
         status: "soon",
         href: "#contact",
+        image: "/images/courses/ai-video.webp",
       },
       {
         id: "apps",
@@ -79,6 +87,7 @@ const copy = {
         meta: "مناسب شروع · بدون پیچیدگی",
         status: "soon",
         href: "#contact",
+        image: "/images/courses/ai-apps.webp",
       },
     ],
     pathKicker: "نقشه راه سمیز",
@@ -108,7 +117,10 @@ const copy = {
   },
   en: {
     nav: ["Courses", "Learning Path", "Portfolio", "About Samiz"],
-    login: "Student Access",
+    login: "Log in",
+    signup: "Sign up",
+    authSoon: "Login and account creation are coming soon.",
+    authHint: "For now, explore the courses and portfolio. We will design the full member experience next.",
     heroBadge: "SAMIZ ACADEMY · PRACTICAL AI EDUCATION",
     heroTitle: "Learn AI, ",
     heroAccent: "build for the real world.",
@@ -118,8 +130,10 @@ const copy = {
     searchPlaceholder: "What would you like to learn?",
     searchButton: "Search",
     principles: ["Clear education", "Project based", "From idea to launch"],
-    heroCardTitle: "Your learning path",
-    heroCardSteps: ["Learn", "Practice", "Build for real"],
+    featuredLabel: "HOT ACADEMY COURSES",
+    featuredSummary: "Course summary",
+    previousSlide: "Previous course",
+    nextSlide: "Next course",
     categoriesKicker: "LEARNING TOPICS",
     categoriesTitle: "Where do you want to begin?",
     categoriesLead: "Choose the path that fits you — from prompting foundations to content, video, and intelligent products.",
@@ -148,6 +162,7 @@ const copy = {
         meta: "Recorded · Support included",
         status: "active",
         href: "/register-2",
+        image: "/images/courses/prompt-engineering.webp",
       },
       {
         id: "content",
@@ -158,6 +173,7 @@ const copy = {
         meta: "Project based · Persian",
         status: "soon",
         href: "#contact",
+        image: "/images/courses/ai-content.webp",
       },
       {
         id: "video",
@@ -168,6 +184,7 @@ const copy = {
         meta: "Practical · Final project",
         status: "soon",
         href: "#contact",
+        image: "/images/courses/ai-video.webp",
       },
       {
         id: "apps",
@@ -178,6 +195,7 @@ const copy = {
         meta: "Beginner friendly · Practical",
         status: "soon",
         href: "#contact",
+        image: "/images/courses/ai-apps.webp",
       },
     ],
     pathKicker: "THE SAMIZ ROADMAP",
@@ -228,6 +246,8 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [category, setCategory] = useState<CategoryId>("all");
   const [query, setQuery] = useState("");
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [authNotice, setAuthNotice] = useState(false);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const t = copy[lang];
   const isRtl = lang === "fa";
@@ -239,12 +259,20 @@ export default function Home() {
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % 3);
+    }, 6500);
+    return () => window.clearInterval(interval);
+  }, []);
+
   const changeLang = (next: Lang) => {
     setLang(next);
     localStorage.setItem("samiz-lang", next);
   };
 
   const normalizedQuery = query.trim().toLocaleLowerCase(lang === "fa" ? "fa" : "en");
+  const featuredCourses = t.courses.slice(0, 3);
   const filteredCourses = t.courses.filter((course) => {
     const categoryMatch = category === "all" || course.id === category;
     const textMatch = !normalizedQuery || `${course.title} ${course.category} ${course.description}`.toLocaleLowerCase(lang === "fa" ? "fa" : "en").includes(normalizedQuery);
@@ -267,6 +295,10 @@ export default function Home() {
           {t.nav.map((item, index) => (
             <a key={item} href={["#courses", "#learning-path", "#portfolio", "#about"][index]} onClick={() => setMenuOpen(false)}>{item}</a>
           ))}
+          <div className="mobile-auth-actions">
+            <button type="button" onClick={() => { setAuthNotice(true); setMenuOpen(false); }}>{t.login}</button>
+            <button type="button" onClick={() => { setAuthNotice(true); setMenuOpen(false); }}>{t.signup}</button>
+          </div>
         </nav>
         <div className="header-tools">
           <div className="language-switch" aria-label="Language selector">
@@ -274,7 +306,10 @@ export default function Home() {
             <span>/</span>
             <button className={lang === "en" ? "active" : ""} onClick={() => changeLang("en")}>EN</button>
           </div>
-          <a className="header-cta" href="/register-2">{t.login}</a>
+          <div className="auth-actions">
+            <button className="login-button" type="button" onClick={() => setAuthNotice(true)}>{t.login}</button>
+            <button className="signup-button" type="button" onClick={() => setAuthNotice(true)}>{t.signup}</button>
+          </div>
           <button className="menu-toggle" type="button" aria-label="Toggle menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(value => !value)}><span></span><span></span></button>
         </div>
       </header>
@@ -293,14 +328,35 @@ export default function Home() {
           </ul>
         </div>
 
-        <div className="hero-visual" aria-label={t.heroCardTitle}>
-          <div className="portrait-glow"></div>
-          <div className="founder-portrait"><Image src="/images/hamed-sami-zadeh.jpg" alt={t.founder} fill priority sizes="(max-width: 820px) 85vw, 360px" /></div>
-          <div className="learning-card">
-            <small>{t.heroCardTitle}</small>
-            {t.heroCardSteps.map((step, index) => <div key={step}><b>0{index + 1}</b><span>{step}</span><i className={index === 0 ? "active" : ""}></i></div>)}
+        <div className="hero-visual">
+          <div className="featured-slider" aria-roledescription="carousel" aria-label={t.featuredLabel}>
+            <div className="featured-topline"><span>{t.featuredLabel}</span><b>0{activeSlide + 1} / 03</b></div>
+            <div className="featured-slides" aria-live="polite">
+              {featuredCourses.map((course, index) => (
+                <article className={index === activeSlide ? "featured-course active" : "featured-course"} key={course.id} aria-hidden={index !== activeSlide}>
+                  <div className="featured-image">
+                    <Image src={course.image} alt="" fill priority={index === 0} sizes="(max-width: 820px) 92vw, 560px" />
+                    <span className={course.status === "active" ? "featured-status active" : "featured-status"}>{course.status === "active" ? t.current : t.soon}</span>
+                  </div>
+                  <div className="featured-copy">
+                    <small>{course.category} · {t.featuredSummary}</small>
+                    <h2>{course.title}</h2>
+                    <p>{course.description}</p>
+                    <a href={course.href}>{course.status === "active" ? t.details : t.notify}<Arrow rtl={isRtl} /></a>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="slider-controls">
+              <div className="slider-dots">
+                {featuredCourses.map((course, index) => <button key={course.id} type="button" className={index === activeSlide ? "active" : ""} aria-label={`${t.featuredLabel} ${index + 1}`} aria-current={index === activeSlide ? "true" : undefined} onClick={() => setActiveSlide(index)} />)}
+              </div>
+              <div className="slider-arrows">
+                <button type="button" aria-label={t.previousSlide} onClick={() => setActiveSlide((activeSlide + 2) % 3)}>‹</button>
+                <button type="button" aria-label={t.nextSlide} onClick={() => setActiveSlide((activeSlide + 1) % 3)}>›</button>
+              </div>
+            </div>
           </div>
-          <div className="ai-token"><strong>AI</strong><span>SAMIZ</span></div>
         </div>
 
         <form className="course-search" onSubmit={submitSearch} role="search">
@@ -339,9 +395,9 @@ export default function Home() {
           {filteredCourses.map((course, index) => (
             <article className={`course-card course-${course.id}`} key={course.id}>
               <div className="course-cover">
+                <Image src={course.image} alt="" fill sizes="(max-width: 820px) 82vw, (max-width: 1180px) 50vw, 25vw" />
                 <span className={course.status === "active" ? "course-status active" : "course-status"}>{course.status === "active" ? t.current : t.soon}</span>
                 <span className="course-index">0{index + 1}</span>
-                <div className="course-symbol" aria-hidden="true"><i></i><b>{course.id === "prompt" ? ">_" : course.id === "content" ? "✦" : course.id === "video" ? "▶" : "AI"}</b></div>
                 <small>{course.category}</small>
               </div>
               <div className="course-body">
@@ -421,6 +477,18 @@ export default function Home() {
           <a href="https://wa.me/18259250075" target="_blank" rel="noreferrer" aria-label="WhatsApp"><WhatsAppIcon /></a>
         </div>
       </footer>
+
+      {authNotice ? (
+        <div className="auth-notice" role="dialog" aria-modal="true" aria-labelledby="auth-notice-title" onClick={() => setAuthNotice(false)}>
+          <div onClick={(event) => event.stopPropagation()}>
+            <button className="auth-close" type="button" aria-label="Close" onClick={() => setAuthNotice(false)}>×</button>
+            <Mark />
+            <h2 id="auth-notice-title">{t.authSoon}</h2>
+            <p>{t.authHint}</p>
+            <button className="gold-button" type="button" onClick={() => setAuthNotice(false)}>{isRtl ? "متوجه شدم" : "Got it"}</button>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
