@@ -7,8 +7,8 @@ import "@fontsource/estedad/800.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SAMIZ AI | AI Video Studio, Courses & AI News",
-  description: "Professional AI advertising videos, practical artificial intelligence courses, events, and curated AI news from SAMIZ AI.",
+  title: "SAMIZ Academy | آموزش کاربردی هوش مصنوعی",
+  description: "آموزش فارسی و پروژه‌محور هوش مصنوعی، مهندسی پرامپت، تولید محتوا، ویدیوهای تبلیغاتی و ساخت ابزارهای هوشمند در SAMIZ Academy.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
