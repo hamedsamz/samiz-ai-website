@@ -37,7 +37,7 @@ export default function CalorieChallengePage() {
   }
 
   return <main className="challenge-page" dir="rtl">
-    <header className="challenge-header"><Link href="/" className="challenge-logo"><span>S</span><b>SAMIZ AI</b></Link><Link href="/" className="challenge-back">بازگشت به سایت</Link></header>
+    <header className="challenge-header"><Link href="/" className="challenge-logo"><span>S</span><b>SAMIZ AI</b></Link></header>
     <section className="challenge-hero">
       <div><p className="eyebrow">چالش تغییر سبک زندگی</p><h1>چالش ۴۰ روزه<br/><em>کالری‌شماری اصولی</em></h1><p>اگر از رژیم‌های سخت و شروع‌کردن‌های دوباره خسته شده‌ای، این چالش کمک می‌کند با کسری کالری، عادت‌های قابل‌ادامه و توجه به ذهن، مسیر واقعی خودت را بسازی.</p></div>
       <div className="challenge-price"><span>هزینه ثبت‌نام</span><strong>۸۵ <small>دلار کانادا</small></strong><div><b>{capacity ? capacity.remaining : "—"}</b><span>ظرفیت باقی‌مانده از ۳۰ نفر</span></div></div>
