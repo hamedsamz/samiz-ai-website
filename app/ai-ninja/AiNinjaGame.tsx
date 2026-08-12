@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 type Phase = "idle" | "loading" | "countdown" | "playing" | "result" | "error";
 type TargetKind = "fruit" | "bomb" | "bonus";
+type Language = "fa" | "en";
 
 type Point = { x: number; y: number; at: number };
 type Target = {
@@ -40,6 +41,81 @@ const HAND_CONNECTIONS: Array<[number, number]> = [
 const FRUITS = ["🍉", "🍊", "🥝", "🍓", "🍍", "🍎"];
 const GAME_SECONDS = 30;
 
+const COPY = {
+  fa: {
+    videoLabel: "تصویر زنده دوربین بازی",
+    homeLabel: "بازگشت به سمیز",
+    exit: "خروج ×",
+    exitLabel: "خاموش کردن دوربین و خروج",
+    score: "امتیاز",
+    time: "زمان",
+    lives: "جان",
+    demo: "حالت آزمایشی",
+    handFound: "دست شناسایی شد",
+    showHand: "دستت را جلوی دوربین بگیر",
+    kicker: "بازی حرکتی با هوش مصنوعی",
+    tagline: "انگشتت شمشیره!",
+    intro: "با حرکت انگشت میوه‌ها رو بزن، ستاره‌ها رو بگیر و حواست به بمب‌ها باشه.",
+    start: "فعال‌کردن دوربین و شروع",
+    privacy: "تصویر دوربین فقط داخل مرورگر پردازش می‌شود و جایی ذخیره یا ارسال نمی‌شود.",
+    yourBest: "بهترین رکورد تو",
+    loadingTitle: "نینجا داره آماده می‌شه...",
+    loadingBody: "اجازه دوربین را تأیید کن؛ اولین بار ممکنه چند ثانیه طول بکشه.",
+    getReady: "دستت رو آماده کن",
+    slash: "با نوک انگشت اشاره بُرش بزن!",
+    missionComplete: "ماموریت تمام شد",
+    highestCombo: "بیشترین کمبو",
+    bestScore: "بهترین رکورد",
+    challenge: "به چالش کشیدن دوستام",
+    playAgain: "دوباره بازی می‌کنم",
+    cameraError: "دوربین آماده نشد",
+    retry: "تلاش دوباره",
+    back: "بازگشت",
+    cameraDenied: "دسترسی دوربین داده نشد. از تنظیمات مرورگر اجازه دوربین را فعال کن و دوباره بزن.",
+    cameraMissing: "دوربینی روی این دستگاه پیدا نشد.",
+    cameraGeneric: "راه‌اندازی دوربین یا تشخیص دست انجام نشد. صفحه را تازه کن و دوباره امتحان کن.",
+    shareDone: "نتیجه به اشتراک گذاشته شد",
+    shareCopied: "متن و لینک بازی کپی شد",
+    footer: "ساخته‌شده با هوش مصنوعی توسط",
+  },
+  en: {
+    videoLabel: "Live game camera",
+    homeLabel: "Back to Samiz",
+    exit: "Exit ×",
+    exitLabel: "Turn off camera and exit",
+    score: "Score",
+    time: "Time",
+    lives: "Lives",
+    demo: "Demo mode",
+    handFound: "Hand detected",
+    showHand: "Hold your hand in front of the camera",
+    kicker: "AI motion-controlled game",
+    tagline: "Your finger is the blade!",
+    intro: "Slice the fruit with your finger, catch bonus stars, and stay away from the bombs.",
+    start: "Enable camera & start",
+    privacy: "Your camera is processed only in this browser. Nothing is recorded, stored, or uploaded.",
+    yourBest: "Your best score",
+    loadingTitle: "Your ninja is getting ready...",
+    loadingBody: "Allow camera access. The first launch may take a few seconds.",
+    getReady: "Get your hand ready",
+    slash: "Slash with the tip of your index finger!",
+    missionComplete: "Mission complete",
+    highestCombo: "Highest combo",
+    bestScore: "Best score",
+    challenge: "Challenge my friends",
+    playAgain: "Play again",
+    cameraError: "Camera unavailable",
+    retry: "Try again",
+    back: "Go back",
+    cameraDenied: "Camera access was denied. Allow camera access in your browser settings and try again.",
+    cameraMissing: "No camera was found on this device.",
+    cameraGeneric: "The camera or hand tracking could not start. Refresh the page and try again.",
+    shareDone: "Result shared",
+    shareCopied: "Game text and link copied",
+    footer: "Built with AI by",
+  },
+} as const;
+
 function sleep(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
@@ -52,14 +128,21 @@ function distanceToSegment(point: Point, start: Point, end: Point) {
   return Math.hypot(point.x - (start.x + t * dx), point.y - (start.y + t * dy));
 }
 
-function resultTitle(score: number) {
+function resultTitle(score: number, language: Language) {
+  if (language === "en") {
+    if (score >= 55) return { title: "Legendary Ninja Master", icon: "⚡" };
+    if (score >= 38) return { title: "Cyber Ninja", icon: "🥷" };
+    if (score >= 24) return { title: "Lightning Swordsman", icon: "🗡️" };
+    return { title: "Ninja Apprentice", icon: "🔥" };
+  }
   if (score >= 55) return { title: "استاد افسانه‌ای نینجا", icon: "⚡" };
   if (score >= 38) return { title: "نینجای سایبری", icon: "🥷" };
   if (score >= 24) return { title: "شمشیرزن سریع", icon: "🗡️" };
   return { title: "شاگرد نینجا", icon: "🔥" };
 }
 
-export default function AiNinjaGame() {
+export default function AiNinjaGame({ language = "fa" }: { language?: Language }) {
+  const copy = COPY[language];
   const stageRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -107,13 +190,21 @@ export default function AiNinjaGame() {
   useEffect(() => {
     const saved = window.localStorage.getItem("samiz-ai-ninja-best");
     const isDemo = new URLSearchParams(window.location.search).get("demo") === "1";
+    const previousLanguage = document.documentElement.lang;
+    const previousDirection = document.documentElement.dir;
+    document.documentElement.lang = language;
+    document.documentElement.dir = language === "fa" ? "rtl" : "ltr";
     demoModeRef.current = isDemo;
     const updateId = window.setTimeout(() => {
       if (saved) setBestScore(Number(saved));
       setDemoMode(isDemo);
     }, 0);
-    return () => window.clearTimeout(updateId);
-  }, []);
+    return () => {
+      window.clearTimeout(updateId);
+      document.documentElement.lang = previousLanguage;
+      document.documentElement.dir = previousDirection;
+    };
+  }, [language]);
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -463,10 +554,10 @@ export default function AiNinjaGame() {
       stopCamera();
       const name = error instanceof DOMException ? error.name : "";
       setErrorMessage(name === "NotAllowedError"
-        ? "دسترسی دوربین داده نشد. از تنظیمات مرورگر اجازه دوربین را فعال کن و دوباره بزن."
+        ? copy.cameraDenied
         : name === "NotFoundError"
-          ? "دوربینی روی این دستگاه پیدا نشد."
-          : "راه‌اندازی دوربین یا تشخیص دست انجام نشد. صفحه را تازه کن و دوباره امتحان کن.");
+          ? copy.cameraMissing
+          : copy.cameraGeneric);
       changePhase("error");
     }
   };
@@ -481,50 +572,56 @@ export default function AiNinjaGame() {
   };
 
   const shareResult = async () => {
-    const title = resultTitle(score);
-    const text = `من توی AI Ninja امتیاز ${score} گرفتم و شدم «${title.title}»! 🥷\nتو می‌تونی رکوردمو بزنی؟`;
+    const title = resultTitle(score, language);
+    const text = language === "fa"
+      ? `من توی AI Ninja امتیاز ${score} گرفتم و شدم «${title.title}»! 🥷\nتو می‌تونی رکوردمو بزنی؟`
+      : `I scored ${score} in AI Ninja and became a ${title.title}! 🥷\nCan you beat my score?`;
     try {
       if (navigator.share) {
         await navigator.share({ title: "AI Ninja", text, url: window.location.href.split("?")[0] });
-        setShareStatus("نتیجه به اشتراک گذاشته شد");
+        setShareStatus(copy.shareDone);
       } else {
         await navigator.clipboard.writeText(`${text}\n${window.location.href.split("?")[0]}`);
-        setShareStatus("متن و لینک بازی کپی شد");
+        setShareStatus(copy.shareCopied);
       }
     } catch {
       setShareStatus("");
     }
   };
 
-  const finalRank = resultTitle(score);
+  const finalRank = resultTitle(score, language);
+  const languageHref = language === "fa" ? "/en/ai-ninja" : "/ai-ninja";
 
   return (
-    <main className="ninja-page" dir="rtl">
+    <main className="ninja-page" dir={language === "fa" ? "rtl" : "ltr"} lang={language}>
       <div className="ninja-stage" ref={stageRef}>
-        <video ref={videoRef} className={`ninja-video ${cameraVisible || demoMode ? "is-visible" : ""}`} muted playsInline aria-label="تصویر زنده دوربین بازی" />
+        <video ref={videoRef} className={`ninja-video ${cameraVisible || demoMode ? "is-visible" : ""}`} muted playsInline aria-label={copy.videoLabel} />
         <div className="ninja-shade" />
         <canvas ref={canvasRef} className="ninja-canvas" aria-hidden="true" />
 
         <header className="ninja-header">
-          <Link className="ninja-brand" href="/" aria-label="بازگشت به سمیز">
+          <Link className="ninja-brand" href="/" aria-label={copy.homeLabel}>
             <span className="ninja-brand-mark">S</span><span>SAMIZ <b>PLAY</b></span>
           </Link>
-          {(phase === "playing" || phase === "countdown" || phase === "result") && (
-            <button className="camera-off" onClick={exitGame} aria-label="خاموش کردن دوربین و خروج">خروج ×</button>
-          )}
+          <div className="ninja-header-actions">
+            <Link className="language-switch" href={languageHref} hrefLang={language === "fa" ? "en" : "fa"}>{language === "fa" ? "EN" : "FA"}</Link>
+            {(phase === "playing" || phase === "countdown" || phase === "result") && (
+              <button className="camera-off" onClick={exitGame} aria-label={copy.exitLabel}>{copy.exit}</button>
+            )}
+          </div>
         </header>
 
         {phase === "playing" && (
           <div className="ninja-hud">
-            <div className="hud-card score-card"><span>امتیاز</span><strong>{score}</strong></div>
-            <div className="timer-card"><span>زمان</span><strong>{Math.ceil(timeLeft)}</strong><i style={{ "--progress": `${Math.max(0, timeLeft / GAME_SECONDS) * 100}%` } as React.CSSProperties} /></div>
-            <div className="hud-card life-card"><span>جان</span><strong>{Array.from({ length: 3 }, (_, index) => <b key={index} className={index >= lives ? "lost" : ""}>♥</b>)}</strong></div>
+            <div className="hud-card score-card"><span>{copy.score}</span><strong>{score}</strong></div>
+            <div className="timer-card"><span>{copy.time}</span><strong>{Math.ceil(timeLeft)}</strong><i style={{ "--progress": `${Math.max(0, timeLeft / GAME_SECONDS) * 100}%` } as React.CSSProperties} /></div>
+            <div className="hud-card life-card"><span>{copy.lives}</span><strong>{Array.from({ length: 3 }, (_, index) => <b key={index} className={index >= lives ? "lost" : ""}>♥</b>)}</strong></div>
           </div>
         )}
 
         {phase === "playing" && (
           <div className={`hand-status ${handVisible ? "found" : ""}`}>
-            <span />{demoMode ? "حالت آزمایشی" : handVisible ? "دست شناسایی شد" : "دستت را جلوی دوربین بگیر"}
+            <span />{demoMode ? copy.demo : handVisible ? copy.handFound : copy.showHand}
           </div>
         )}
 
@@ -532,55 +629,55 @@ export default function AiNinjaGame() {
 
         {phase === "idle" && (
           <section className="ninja-panel intro-panel">
-            <div className="ninja-kicker"><span /> بازی حرکتی با هوش مصنوعی</div>
+            <div className="ninja-kicker"><span /> {copy.kicker}</div>
             <div className="ninja-emblem"><span className="blade blade-one" /><span className="blade blade-two" /><div>🥷</div></div>
-            <h1><small>انگشتت شمشیره!</small>AI <em>NINJA</em></h1>
-            <p>با حرکت انگشت میوه‌ها رو بزن، ستاره‌ها رو بگیر و حواست به بمب‌ها باشه.</p>
-            <button className="ninja-primary" onClick={startGame}>فعال‌کردن دوربین و شروع <span>←</span></button>
-            <div className="privacy-note"><span>●</span> تصویر دوربین فقط داخل مرورگر پردازش می‌شود و جایی ذخیره یا ارسال نمی‌شود.</div>
-            {bestScore > 0 && <div className="best-score">بهترین رکورد تو <strong>{bestScore}</strong></div>}
+            <h1><small>{copy.tagline}</small>AI <em>NINJA</em></h1>
+            <p>{copy.intro}</p>
+            <button className="ninja-primary" onClick={startGame}>{copy.start} <span>{language === "fa" ? "←" : "→"}</span></button>
+            <div className="privacy-note"><span>●</span> {copy.privacy}</div>
+            {bestScore > 0 && <div className="best-score">{copy.yourBest} <strong>{bestScore}</strong></div>}
           </section>
         )}
 
         {phase === "loading" && (
           <section className="ninja-panel loading-panel">
             <div className="loader-ring"><span /></div>
-            <h2>نینجا داره آماده می‌شه...</h2>
-            <p>اجازه دوربین را تأیید کن؛ اولین بار ممکنه چند ثانیه طول بکشه.</p>
+            <h2>{copy.loadingTitle}</h2>
+            <p>{copy.loadingBody}</p>
           </section>
         )}
 
         {phase === "countdown" && (
           <section className="ninja-panel countdown-panel">
-            <span>دستت رو آماده کن</span><strong key={countdown}>{countdown}</strong><p>با نوک انگشت اشاره بُرش بزن!</p>
+            <span>{copy.getReady}</span><strong key={countdown}>{countdown}</strong><p>{copy.slash}</p>
           </section>
         )}
 
         {phase === "result" && (
           <section className="ninja-panel result-panel">
             <div className="result-icon">{finalRank.icon}</div>
-            <span className="result-label">ماموریت تمام شد</span>
+            <span className="result-label">{copy.missionComplete}</span>
             <h2>{finalRank.title}</h2>
-            <div className="final-score"><strong>{score}</strong><span>امتیاز</span></div>
+            <div className="final-score"><strong>{score}</strong><span>{copy.score}</span></div>
             <div className="result-grid">
-              <div><span>بیشترین کمبو</span><strong>×{maxCombo}</strong></div>
-              <div><span>بهترین رکورد</span><strong>{Math.max(bestScore, score)}</strong></div>
+              <div><span>{copy.highestCombo}</span><strong>×{maxCombo}</strong></div>
+              <div><span>{copy.bestScore}</span><strong>{Math.max(bestScore, score)}</strong></div>
             </div>
-            <button className="ninja-primary" onClick={shareResult}>به چالش کشیدن دوستام <span>↗</span></button>
-            <button className="ninja-secondary" onClick={startGame}>دوباره بازی می‌کنم</button>
+            <button className="ninja-primary" onClick={shareResult}>{copy.challenge} <span>↗</span></button>
+            <button className="ninja-secondary" onClick={startGame}>{copy.playAgain}</button>
             {shareStatus && <div className="share-note" role="status">{shareStatus}</div>}
           </section>
         )}
 
         {phase === "error" && (
           <section className="ninja-panel error-panel">
-            <div className="error-icon">📷</div><h2>دوربین آماده نشد</h2><p>{errorMessage}</p>
-            <button className="ninja-primary" onClick={startGame}>تلاش دوباره</button>
-            <button className="ninja-secondary" onClick={exitGame}>بازگشت</button>
+            <div className="error-icon">📷</div><h2>{copy.cameraError}</h2><p>{errorMessage}</p>
+            <button className="ninja-primary" onClick={startGame}>{copy.retry}</button>
+            <button className="ninja-secondary" onClick={exitGame}>{copy.back}</button>
           </section>
         )}
 
-        <footer className="ninja-footer">ساخته‌شده با هوش مصنوعی توسط <a href="https://instagram.com/hamedsamizadeh" target="_blank" rel="noreferrer">@hamedsamizadeh</a></footer>
+        <footer className="ninja-footer">{copy.footer} <a href="https://instagram.com/hamedsamizadeh" target="_blank" rel="noreferrer">@hamedsamizadeh</a></footer>
       </div>
     </main>
   );
