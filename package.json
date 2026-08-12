@@ -12,9 +12,10 @@
     "lint": "eslint . --ignore-pattern .next"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.2",
     "@fontsource/estedad": "^5.2.1",
     "@fontsource/vazirmatn": "^5.2.8",
+    "@mediapipe/tasks-vision": "^1.0.1",
+    "@neondatabase/serverless": "^1.0.2",
     "next": "16.2.6",
     "react": "19.2.6",
     "react-dom": "19.2.6"
