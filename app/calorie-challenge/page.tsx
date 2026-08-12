@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import "./challenge.css";
+import "./font-fix.css";
 
 type Capacity = { remaining: number; capacity: number; full: boolean };
 const PAYMENT_EMAIL = "samizadehhamed24@gmail.com";

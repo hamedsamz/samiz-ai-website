@@ -30,6 +30,7 @@ export default function ChallengeAdminPanel() {
   const [password, setPassword] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [emailBusy, setEmailBusy] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
 
   const load = useCallback(async () => {
@@ -117,6 +118,27 @@ export default function ChallengeAdminPanel() {
     await load();
   }
 
+  async function emailTool(event: FormEvent<HTMLFormElement>, action: "test" | "manual") {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setEmailBusy(true);
+    setMessage(null);
+    const response = await fetch("/api/admin/calorie-challenge/emails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action,
+        email: String(data.get("email") ?? ""),
+        fullName: action === "manual" ? String(data.get("fullName") ?? "") : "کاربر آزمایشی",
+      }),
+    });
+    const result = await response.json() as { message?: string; error?: string };
+    setEmailBusy(false);
+    setMessage({ text: result.message ?? result.error ?? "عملیات انجام نشد.", error: !response.ok });
+    if (response.ok) form.reset();
+  }
+
   if (authenticated === false) return <main className="challenge-admin login-view" dir="rtl">
     <form className="admin-login-card" onSubmit={login}>
       <span className="admin-kicker">SAMIZ AI</span>
@@ -143,6 +165,14 @@ export default function ChallengeAdminPanel() {
     </section>
 
     {message && <p className={message.error ? "admin-message error" : "admin-message success"}>{message.text}</p>}
+
+    <section className="challenge-email-tools">
+      <div className="email-tools-heading"><div><span className="admin-kicker">ایمیل عضویت</span><h2>ارسال تأیید و لینک کانال تلگرام</h2><p>ایمیل شامل تأیید ثبت‌نام و دکمه مستقیم ورود به کانال چالش است.</p></div><a href="https://t.me/+TeP6f6GhlFIyY2Nk" target="_blank" rel="noreferrer">مشاهده کانال</a></div>
+      <div className="email-tool-grid">
+        <form onSubmit={event => void emailTool(event, "test")}><span>۱</span><h3>ارسال آزمایشی</h3><p>قبل از ارسال برای اعضا، ظاهر و لینک ایمیل را روی ایمیل خودت بررسی کن.</p><input name="email" type="email" required placeholder="ایمیل تست" dir="ltr"/><button disabled={emailBusy}>{emailBusy ? "در حال ارسال…" : "ارسال ایمیل تستی"}</button></form>
+        <form onSubmit={event => void emailTool(event, "manual")}><span>۲</span><h3>ارسال دستی</h3><p>برای فردی که خارج از فرم سایت ثبت‌نام کرده، ایمیل عضویت را دستی بفرست.</p><input name="fullName" required minLength={2} placeholder="نام و نام خانوادگی"/><input name="email" type="email" required placeholder="ایمیل فرد" dir="ltr"/><button disabled={emailBusy}>{emailBusy ? "در حال ارسال…" : "ارسال و ثبت ایمیل"}</button></form>
+      </div>
+    </section>
 
     <section className="admin-list">
       {loading ? <div className="admin-empty">در حال دریافت اطلاعات…</div> : registrations.length === 0 ? <div className="admin-empty">هنوز ثبت‌نامی دریافت نشده است.</div> : registrations.map(item => <article className="registration-card" key={item.id}>
