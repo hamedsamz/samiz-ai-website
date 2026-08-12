@@ -18,6 +18,9 @@ export async function ensureChallengeSchema() {
     created_at BIGINT NOT NULL, updated_at BIGINT NOT NULL
   )`;
   await sql`CREATE TABLE IF NOT EXISTS calorie_challenge_slots (id INTEGER PRIMARY KEY, registration_id TEXT UNIQUE, reserved_at BIGINT)`;
+  await sql`CREATE TABLE IF NOT EXISTS calorie_challenge_external_emails (
+    email TEXT PRIMARY KEY, full_name TEXT NOT NULL, sent_at BIGINT NOT NULL
+  )`;
   await sql`CREATE INDEX IF NOT EXISTS calorie_challenge_email_idx ON calorie_challenge_registrations(email)`;
   await sql`CREATE INDEX IF NOT EXISTS calorie_challenge_phone_idx ON calorie_challenge_registrations(phone)`;
   await sql`INSERT INTO calorie_challenge_slots (id) SELECT generate_series(1, ${CHALLENGE_CAPACITY}) ON CONFLICT (id) DO NOTHING`;

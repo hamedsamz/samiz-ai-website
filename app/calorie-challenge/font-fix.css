@@ -1,0 +1,16 @@
+.challenge-page,
+.challenge-page h1,
+.challenge-page h2,
+.challenge-page h3,
+.challenge-page button,
+.challenge-page input,
+.challenge-page label,
+.challenge-page a {
+  font-family: "Estedad", Tahoma, Arial, sans-serif;
+  font-feature-settings: "ss01";
+}
+
+.challenge-page h1,
+.challenge-page h2 {
+  letter-spacing: -.035em;
+}
