@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 type Lang = "en" | "fa";
-const SLIDE_COUNT = 4;
+const SLIDE_COUNT = 3;
 
 const copy = {
   en: {
@@ -286,20 +286,6 @@ export default function Home() {
             </article>
             <article className="peek-card video-card cylinder-card" data-active={activeSlide === 1} style={slideStyle(1)}><div className="teaser-copy"><small>{t.videoKicker}</small><h3>{t.videoTitle}</h3><a className="outline-button" href="#portfolio">{t.primary}</a></div><div className="card-art slide-image-art"><img src="/images/slide-video-ad.png" alt={lang === "fa" ? "تولید ویدیوی تبلیغاتی با هوش مصنوعی" : "AI advertising video production"} draggable={false} /><span className="slide-art-badge play-badge">▶</span></div></article>
             <article className="peek-card news-card cylinder-card" data-active={activeSlide === 2} style={slideStyle(2)}><div className="teaser-copy"><small>{t.newsKicker}</small><h3>{t.newsTitle}</h3><a className="outline-button" href="#news">{t.updates}</a></div><div className="card-art slide-image-art"><img src="/images/slide-ai-news.png" alt={lang === "fa" ? "اخبار و تازه‌های هوش مصنوعی" : "Latest AI news"} draggable={false} /><span className="slide-art-badge ai-badge">AI</span></div></article>
-            <article className="peek-card app-card cylinder-card" data-active={activeSlide === 3} style={slideStyle(3)}>
-              <div className="teaser-copy">
-                <small>{t.appKicker}</small>
-                <h3>{t.appTitle}</h3>
-                <p>{t.appDesc}</p>
-                <a className="outline-button" href="#contact">{t.appCta}</a>
-              </div>
-              <div className="card-art app-builder-art" aria-hidden="true">
-                <div className="app-orbit-ring"></div>
-                <div className="app-window app-window-main"><i></i><i></i><i></i><b></b><span></span><span></span></div>
-                <div className="app-window app-window-agent"><strong>AI</strong><span>AGENT</span></div>
-                <div className="app-connector"><i></i><i></i><i></i></div>
-              </div>
-            </article>
           </div>
         </div>
         <div className="slider-controls">
