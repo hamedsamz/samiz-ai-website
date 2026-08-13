@@ -52,6 +52,7 @@ export default function RockPaperScissors() {
   const lastInferenceRef = useRef(0);
   const lastGestureSeenRef = useRef(0);
   const stableMoveRef = useRef<Move | null>(null);
+  const capturedMoveRef = useRef<Move | null>(null);
   const gestureHistoryRef = useRef<Move[]>([]);
   const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mountedRef = useRef(true);
@@ -65,6 +66,7 @@ export default function RockPaperScissors() {
   const [playerMove, setPlayerMove] = useState<Move | null>(null);
   const [computerMove, setComputerMove] = useState<Move | null>(null);
   const [roundResult, setRoundResult] = useState<RoundResult>(null);
+  const [missedMove, setMissedMove] = useState(false);
   const [score, setScore] = useState({ player: 0, computer: 0, draws: 0 });
 
   const clearCanvas = useCallback(() => {
@@ -132,6 +134,7 @@ export default function RockPaperScissors() {
           const recent = history.slice(-3);
           if (recent.length === 3 && recent.every((item) => item === move)) {
             stableMoveRef.current = move;
+            capturedMoveRef.current = move;
             lastGestureSeenRef.current = now;
             setDetectedMove(move);
             setConfidence(Math.round(category.score * 100));
@@ -160,6 +163,7 @@ export default function RockPaperScissors() {
     recognizerRef.current?.close();
     recognizerRef.current = null;
     stableMoveRef.current = null;
+    capturedMoveRef.current = null;
     gestureHistoryRef.current = [];
     if (videoRef.current) videoRef.current.srcObject = null;
     clearCanvas();
@@ -246,13 +250,14 @@ export default function RockPaperScissors() {
   }, [cameraStatus, recognizeFrame, stopCamera]);
 
   const finishRound = useCallback(() => {
-    const selected = stableMoveRef.current;
+    const selected = capturedMoveRef.current;
     setIsCounting(false);
     setCountdown(null);
     if (!selected) {
       setPlayerMove(null);
       setComputerMove(null);
       setRoundResult(null);
+      setMissedMove(true);
       return;
     }
 
@@ -261,6 +266,7 @@ export default function RockPaperScissors() {
     setPlayerMove(selected);
     setComputerMove(computer);
     setRoundResult(result);
+    setMissedMove(false);
     setScore((current) => ({
       player: current.player + (result === "win" ? 1 : 0),
       computer: current.computer + (result === "lose" ? 1 : 0),
@@ -273,6 +279,8 @@ export default function RockPaperScissors() {
     setPlayerMove(null);
     setComputerMove(null);
     setRoundResult(null);
+    setMissedMove(false);
+    capturedMoveRef.current = stableMoveRef.current;
     setCountdown(3);
     setIsCounting(true);
 
@@ -293,6 +301,8 @@ export default function RockPaperScissors() {
     setPlayerMove(null);
     setComputerMove(null);
     setRoundResult(null);
+    setMissedMove(false);
+    capturedMoveRef.current = stableMoveRef.current;
   };
 
   useEffect(() => {
@@ -388,8 +398,14 @@ export default function RockPaperScissors() {
           </div>
           <div className={styles.draws}>تعداد مساوی‌ها <b>{score.draws}</b></div>
 
-          <div className={styles.roundCard} data-result={roundResult ?? "idle"}>
-            {resultCopy && playerMove && computerMove ? (
+          <div className={styles.roundCard} data-result={missedMove ? "missed" : roundResult ?? "idle"}>
+            {missedMove ? (
+              <>
+                <div className={styles.waitingOrb}><span>!</span></div>
+                <h2>حرکت ثبت نشد</h2>
+                <p>دستت را داخل کادر نگه دار تا اسم حرکت نمایش داده شود، سپس دوباره راند را شروع کن.</p>
+              </>
+            ) : resultCopy && playerMove && computerMove ? (
               <>
                 <div className={styles.versusMoves}>
                   <div><span>{MOVES[playerMove].emoji}</span><small>حرکت تو</small></div>
@@ -409,7 +425,7 @@ export default function RockPaperScissors() {
           </div>
 
           <button className={styles.playButton} type="button" onClick={startRound} disabled={cameraStatus !== "ready" || isCounting}>
-            <span>{isCounting ? "در حال شمارش..." : roundResult ? "راند بعدی" : "شروع راند"}</span><i>←</i>
+            <span>{isCounting ? "در حال شمارش..." : missedMove ? "تلاش دوباره" : roundResult ? "راند بعدی" : "شروع راند"}</span><i>←</i>
           </button>
           {cameraStatus === "ready" && !detectedMove && !isCounting && <p className={styles.hint}>قبل از شروع، صبر کن تا حرکتت پایین تصویر شناسایی شود.</p>}
         </aside>
