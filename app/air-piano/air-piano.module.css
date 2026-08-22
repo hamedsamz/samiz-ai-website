@@ -35,18 +35,20 @@
 .cameraShade { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(circle at center, transparent 25%, rgba(5,6,10,.35) 100%), linear-gradient(180deg, rgba(8,9,13,.2), rgba(8,9,13,.05) 46%, rgba(8,9,13,.46)); }
 .canvas { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 
-.noteGrid { position: absolute; inset: 46% 0 0; z-index: 3; display: grid; grid-template-columns: repeat(7, 1fr); direction: ltr; }
-.noteGrid::before { content: "STRIKE LINE"; position: absolute; z-index: 1; left: 14px; top: -22px; color: rgba(255,255,255,.42); font: 8px/1 sans-serif; letter-spacing: .2em; }
-.notePad { --note-color: #fff; min-width: 0; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 6px 23px; overflow: hidden; border: 0; border-inline-end: 1px solid color-mix(in srgb, var(--note-color) 40%, transparent); border-top: 1px solid color-mix(in srgb, var(--note-color) 60%, transparent); color: white; background: linear-gradient(180deg, color-mix(in srgb, var(--note-color) 7%, transparent), color-mix(in srgb, var(--note-color) 20%, transparent)); cursor: pointer; transition: filter .12s ease, background .12s ease; -webkit-tap-highlight-color: transparent; }
+.noteGrid { position: absolute; inset: 64% 0 0; z-index: 3; display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(2, 1fr); direction: ltr; }
+.noteGrid::before, .noteGrid::after { position: absolute; z-index: 5; right: 10px; padding: 3px 7px; border-radius: 999px; color: rgba(255,255,255,.66); background: rgba(5,6,10,.62); font: 8px/1.4 "Estedad", sans-serif; letter-spacing: 0; pointer-events: none; }
+.noteGrid::before { content: "دُنگ دوم"; top: 7px; }
+.noteGrid::after { content: "دُنگ اول"; top: calc(50% + 7px); }
+.notePad { --note-color: #fff; min-width: 0; position: relative; display: grid; grid-template-columns: 1fr auto; grid-template-rows: 1fr auto; align-items: center; padding: 10px 12px 9px; overflow: hidden; border: 0; border-inline-end: 1px solid color-mix(in srgb, var(--note-color) 40%, transparent); border-top: 1px solid color-mix(in srgb, var(--note-color) 60%, transparent); color: white; background: linear-gradient(180deg, color-mix(in srgb, var(--note-color) 7%, transparent), color-mix(in srgb, var(--note-color) 20%, transparent)); cursor: pointer; transition: filter .12s ease, background .12s ease; -webkit-tap-highlight-color: transparent; }
 .notePad::before { content: ""; position: absolute; width: 58%; aspect-ratio: 1; border-radius: 50%; bottom: -16%; background: var(--note-color); opacity: .12; filter: blur(25px); transition: opacity .12s, transform .12s; }
 .notePad::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--note-color) 22%, transparent)); opacity: 0; transition: opacity .12s; }
 .notePad:hover, .notePad[data-active="true"] { background: linear-gradient(180deg, color-mix(in srgb, var(--note-color) 16%, transparent), color-mix(in srgb, var(--note-color) 46%, transparent)); filter: brightness(1.22); }
 .notePad[data-active="true"]::before { opacity: .75; transform: scale(1.45); }
 .notePad[data-active="true"]::after { opacity: 1; animation: keyFlash .22s ease-out; }
 .notePad span, .notePad b, .notePad kbd { position: relative; z-index: 2; }
-.notePad span { font-size: clamp(20px, 3vw, 40px); font-weight: 800; text-shadow: 0 3px 20px rgba(0,0,0,.5); }
-.notePad b { margin-top: 1px; color: var(--note-color); font-size: 12px; letter-spacing: .16em; }
-.notePad kbd { margin-top: 11px; width: 27px; height: 27px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.25); border-radius: 6px; background: rgba(5,6,9,.48); color: rgba(255,255,255,.64); font: 10px/1 sans-serif; }
+.notePad span { grid-row: 1 / 3; align-self: center; justify-self: center; font-size: clamp(18px, 2.2vw, 31px); font-weight: 800; text-shadow: 0 3px 20px rgba(0,0,0,.5); }
+.notePad b { align-self: end; color: var(--note-color); font-size: 10px; letter-spacing: .08em; }
+.notePad kbd { align-self: start; width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.25); border-radius: 5px; background: rgba(5,6,9,.48); color: rgba(255,255,255,.64); font: 9px/1 sans-serif; }
 @keyframes keyFlash { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
 
 .intro, .loadingPanel, .errorPanel { position: absolute; z-index: 8; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; background: radial-gradient(circle at 50% 43%, rgba(35,38,60,.82), rgba(8,9,14,.88) 64%); }
@@ -92,9 +94,10 @@
   .intro { padding: 25px 18px; justify-content: flex-start; padding-top: 16vh; }
   .intro h1 { font-size: 48px; }
   .intro p { font-size: 13px; }
-  .notePad { padding-inline: 2px; padding-bottom: 16px; }
-  .notePad span { font-size: 17px; }
-  .notePad b { font-size: 9px; }
+  .noteGrid { inset-block-start: 62%; }
+  .notePad { padding: 7px 4px 6px; grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  .notePad span { grid-row: 1; font-size: 16px; }
+  .notePad b { justify-self: center; font-size: 8px; }
   .notePad kbd { display: none; }
   .hud { inset: 12px 12px auto; grid-template-columns: 1fr auto; }
   .hud p { display: none; }
