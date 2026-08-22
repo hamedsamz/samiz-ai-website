@@ -35,6 +35,16 @@
 .cameraShade { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(circle at center, transparent 25%, rgba(5,6,10,.35) 100%), linear-gradient(180deg, rgba(8,9,13,.2), rgba(8,9,13,.05) 46%, rgba(8,9,13,.46)); }
 .canvas { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 
+.drumGrid { position: absolute; left: 20%; right: 20%; top: 5%; height: 16%; z-index: 5; display: grid; grid-template-columns: repeat(4,1fr); align-items: center; direction: ltr; pointer-events: none; }
+.drumPad { --drum-color: #fff; width: min(64%,92px); max-height: 94%; aspect-ratio: 1; justify-self: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 2px solid color-mix(in srgb,var(--drum-color) 75%,white 10%); border-radius: 50%; color: #fff; background: radial-gradient(circle at 40% 34%,color-mix(in srgb,var(--drum-color) 35%,white 6%),color-mix(in srgb,var(--drum-color) 12%,#090a0f 88%) 68%); box-shadow: inset 0 -10px 24px rgba(0,0,0,.38),0 9px 28px rgba(0,0,0,.42); cursor: pointer; pointer-events: auto; transition: transform .1s ease,filter .1s ease,box-shadow .1s ease; -webkit-tap-highlight-color: transparent; }
+.drumPad::before { content: ""; position: absolute; inset: 8%; border: 1px dashed color-mix(in srgb,var(--drum-color) 66%,transparent); border-radius: 50%; }
+.drumPad:hover { transform: translateY(-3px); filter: brightness(1.18); }
+.drumPad[data-active="true"] { transform: scale(.9); filter: brightness(1.45); box-shadow: 0 0 38px color-mix(in srgb,var(--drum-color) 58%,transparent),inset 0 0 24px color-mix(in srgb,var(--drum-color) 28%,transparent); }
+.drumPad span,.drumPad b,.drumPad kbd { position: relative; z-index: 2; }
+.drumPad span { font-size: clamp(12px,1.35vw,18px); font-weight: 800; }
+.drumPad b { color: var(--drum-color); font: 7px/1 sans-serif; letter-spacing: .08em; }
+.drumPad kbd { position: absolute; bottom: 7%; width: 18px; height: 18px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; background: rgba(5,6,9,.42); color: rgba(255,255,255,.62); font: 8px/1 sans-serif; }
+
 .noteGrid { position: absolute; left: 4%; right: 4%; bottom: 3%; height: 20%; z-index: 5; display: grid; grid-template-columns: repeat(7, 1fr); align-items: center; direction: ltr; pointer-events: none; }
 .notePad { --note-color: #fff; width: min(82%,112px); max-height: 92%; aspect-ratio: 1; justify-self: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 5px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--note-color) 72%, white 8%); border-radius: 50%; color: white; background: radial-gradient(circle at 36% 28%, color-mix(in srgb, var(--note-color) 43%, white 8%), color-mix(in srgb, var(--note-color) 15%, #090a0f 85%) 72%); box-shadow: inset 0 0 26px color-mix(in srgb, var(--note-color) 18%, transparent), 0 8px 30px rgba(0,0,0,.4); cursor: pointer; pointer-events: auto; transition: transform .12s ease, filter .12s ease, box-shadow .12s ease; -webkit-tap-highlight-color: transparent; }
 .notePad::before { content: ""; position: absolute; inset: 10%; border: 1px solid color-mix(in srgb, var(--note-color) 52%, transparent); border-radius: 50%; opacity: .55; transition: opacity .12s, transform .12s; }
@@ -64,7 +74,7 @@
 .errorPanel .primaryButton { margin-top: 16px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.hud { position: absolute; z-index: 6; inset: 18px 20px auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 16px; pointer-events: none; direction: rtl; }
+.hud { position: absolute; z-index: 6; inset: 23% 20px auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 16px; pointer-events: none; direction: rtl; }
 .hud > div:first-child { justify-self: start; display: flex; align-items: center; gap: 8px; padding: 9px 13px; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: rgba(7,8,12,.6); backdrop-filter: blur(14px); color: #d8d7de; font-size: 11px; }
 .liveDot, .waitDot { width: 7px; height: 7px; border-radius: 50%; background: #68efad; box-shadow: 0 0 10px #68efad; }
 .waitDot { background: #f7b95d; box-shadow: 0 0 10px #f7b95d; animation: pulse 1.2s infinite; }
@@ -91,12 +101,16 @@
   .intro { padding: 25px 18px; justify-content: flex-start; padding-top: 16vh; }
   .intro h1 { font-size: 48px; }
   .intro p { font-size: 13px; }
+  .drumGrid { left: 9%; right: 9%; top: 5%; height: 14%; }
+  .drumPad { width: 66%; }
+  .drumPad span { font-size: 10px; }
+  .drumPad b,.drumPad kbd { display: none; }
   .noteGrid { left: 2%; right: 2%; bottom: 4%; height: 14%; }
   .notePad { width: 88%; }
   .notePad span { font-size: 14px; }
   .notePad b { font-size: 7px; }
   .notePad kbd { display: none; }
-  .hud { inset: 12px 12px auto; grid-template-columns: 1fr auto; }
+  .hud { inset: 21% 12px auto; grid-template-columns: 1fr auto; }
   .hud p { display: none; }
   .nowPlaying { min-width: 95px; padding-inline: 8px; }
   .instructions { grid-template-columns: 1fr; }
