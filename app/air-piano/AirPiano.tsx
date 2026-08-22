@@ -9,20 +9,13 @@ type Phase = "idle" | "loading" | "ready" | "error";
 type TipState = { y: number; time: number; armed: boolean; note: number; anchorY: number; triggerY: number };
 
 const NOTES = [
-  { fa: "دو", latin: "C", octave: 4, degree: 0, key: "A", frequency: 261.63, color: "#ff6b7a" },
-  { fa: "رِ", latin: "D", octave: 4, degree: 1, key: "S", frequency: 293.66, color: "#ffad5a" },
-  { fa: "می", latin: "E", octave: 4, degree: 2, key: "D", frequency: 329.63, color: "#ffe36a" },
-  { fa: "فا", latin: "F", octave: 4, degree: 3, key: "F", frequency: 349.23, color: "#69e39c" },
-  { fa: "سُل", latin: "G", octave: 4, degree: 4, key: "J", frequency: 392, color: "#54d9f5" },
-  { fa: "لا", latin: "A", octave: 4, degree: 5, key: "K", frequency: 440, color: "#8f8bff" },
-  { fa: "سی", latin: "B", octave: 4, degree: 6, key: "L", frequency: 493.88, color: "#e782ff" },
-  { fa: "دو", latin: "C", octave: 5, degree: 0, key: "Q", frequency: 523.25, color: "#ff6b7a" },
-  { fa: "رِ", latin: "D", octave: 5, degree: 1, key: "W", frequency: 587.33, color: "#ffad5a" },
-  { fa: "می", latin: "E", octave: 5, degree: 2, key: "E", frequency: 659.25, color: "#ffe36a" },
-  { fa: "فا", latin: "F", octave: 5, degree: 3, key: "R", frequency: 698.46, color: "#69e39c" },
-  { fa: "سُل", latin: "G", octave: 5, degree: 4, key: "U", frequency: 783.99, color: "#54d9f5" },
-  { fa: "لا", latin: "A", octave: 5, degree: 5, key: "I", frequency: 880, color: "#8f8bff" },
-  { fa: "سی", latin: "B", octave: 5, degree: 6, key: "O", frequency: 987.77, color: "#e782ff" },
+  { fa: "دو", latin: "C", key: "A", frequency: 261.63, color: "#ff6b7a" },
+  { fa: "رِ", latin: "D", key: "S", frequency: 293.66, color: "#ffad5a" },
+  { fa: "می", latin: "E", key: "D", frequency: 329.63, color: "#ffe36a" },
+  { fa: "فا", latin: "F", key: "F", frequency: 349.23, color: "#69e39c" },
+  { fa: "سُل", latin: "G", key: "J", frequency: 392, color: "#54d9f5" },
+  { fa: "لا", latin: "A", key: "K", frequency: 440, color: "#8f8bff" },
+  { fa: "سی", latin: "B", key: "L", frequency: 493.88, color: "#e782ff" },
 ] as const;
 
 const FINGER_TIPS = [4, 8, 12, 16, 20] as const;
@@ -90,32 +83,60 @@ export default function AirPiano() {
       const now = audio.currentTime;
       const master = audio.createGain();
       const filter = audio.createBiquadFilter();
+      const vibrato = audio.createOscillator();
+      const vibratoDepth = audio.createGain();
       master.gain.setValueAtTime(0.0001, now);
-      master.gain.exponentialRampToValueAtTime(0.32, now + 0.012);
-      master.gain.exponentialRampToValueAtTime(0.11, now + 0.2);
-      master.gain.exponentialRampToValueAtTime(0.0001, now + 1.05);
+      master.gain.exponentialRampToValueAtTime(0.18, now + 0.065);
+      master.gain.exponentialRampToValueAtTime(0.13, now + 0.72);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 1.32);
       filter.type = "lowpass";
-      filter.frequency.setValueAtTime(3100, now);
-      filter.frequency.exponentialRampToValueAtTime(900, now + 0.9);
-      filter.Q.value = 0.7;
+      filter.frequency.setValueAtTime(3600, now);
+      filter.frequency.exponentialRampToValueAtTime(1750, now + 1.15);
+      filter.Q.value = 1.25;
       filter.connect(master);
       master.connect(audio.destination);
 
-      [
-        { multiple: 1, gain: 0.72, type: "triangle" as OscillatorType },
-        { multiple: 2, gain: 0.2, type: "sine" as OscillatorType },
-        { multiple: 3, gain: 0.08, type: "sine" as OscillatorType },
-      ].forEach(({ multiple, gain, type }) => {
+      const real = new Float32Array(9);
+      const imaginary = new Float32Array([0, 1, 0.72, 0.5, 0.36, 0.25, 0.18, 0.12, 0.08]);
+      const violinWave = audio.createPeriodicWave(real, imaginary);
+      vibrato.frequency.value = 5.4;
+      vibratoDepth.gain.setValueAtTime(2, now);
+      vibratoDepth.gain.linearRampToValueAtTime(7, now + 0.32);
+      vibrato.connect(vibratoDepth);
+
+      [-5, 5].forEach((detune, layerIndex) => {
         const oscillator = audio.createOscillator();
-        const partial = audio.createGain();
-        oscillator.type = type;
-        oscillator.frequency.value = note.frequency * multiple;
-        partial.gain.value = gain;
-        oscillator.connect(partial);
-        partial.connect(filter);
+        const layer = audio.createGain();
+        oscillator.setPeriodicWave(violinWave);
+        oscillator.frequency.value = note.frequency;
+        oscillator.detune.value = detune;
+        layer.gain.value = layerIndex === 0 ? 0.58 : 0.42;
+        vibratoDepth.connect(oscillator.detune);
+        oscillator.connect(layer);
+        layer.connect(filter);
         oscillator.start(now);
-        oscillator.stop(now + 1.08);
+        oscillator.stop(now + 1.35);
       });
+      vibrato.start(now);
+      vibrato.stop(now + 1.35);
+
+      const bowBuffer = audio.createBuffer(1, Math.floor(audio.sampleRate * 0.16), audio.sampleRate);
+      const bowData = bowBuffer.getChannelData(0);
+      for (let sample = 0; sample < bowData.length; sample += 1) {
+        bowData[sample] = (Math.random() * 2 - 1) * (1 - sample / bowData.length);
+      }
+      const bow = audio.createBufferSource();
+      const bowFilter = audio.createBiquadFilter();
+      const bowGain = audio.createGain();
+      bow.buffer = bowBuffer;
+      bowFilter.type = "bandpass";
+      bowFilter.frequency.value = 1800;
+      bowFilter.Q.value = 0.8;
+      bowGain.gain.value = 0.035;
+      bow.connect(bowFilter);
+      bowFilter.connect(bowGain);
+      bowGain.connect(master);
+      bow.start(now);
     }).catch(() => undefined);
     setLastNote(index);
     flashNote(index);
@@ -192,8 +213,11 @@ export default function AirPiano() {
           setHandsCount(landmarks.length);
         }
         const map = getCoverMapper(video, width, height);
-        const keyTop = height * 0.64;
-        const rowBoundary = keyTop + (height - keyTop) / 2;
+        const dockLeft = width * 0.04;
+        const dockWidth = width * 0.92;
+        const cellWidth = dockWidth / NOTES.length;
+        const circleCenterY = height * 0.87;
+        const circleRadius = Math.min(cellWidth * 0.41, height * 0.09);
 
         landmarks.forEach((hand, handIndex) => {
           const handColor = handIndex === 0 ? "#65f4ff" : "#ff8ee8";
@@ -221,22 +245,26 @@ export default function AirPiano() {
           FINGER_TIPS.forEach((tipIndex) => {
             const mapped = map(hand[tipIndex]);
             if (mapped.x < 0 || mapped.x > width || mapped.y < 0 || mapped.y > height) return;
-            const degree = Math.max(0, Math.min(6, Math.floor(mapped.x / width * 7)));
-            const noteIndex = mapped.y < rowBoundary ? degree + 7 : degree;
+            const degree = Math.max(0, Math.min(6, Math.floor((mapped.x - dockLeft) / cellWidth)));
+            const circleCenterX = dockLeft + cellWidth * (degree + 0.5);
+            const insideCircle = mapped.x >= dockLeft && mapped.x <= dockLeft + dockWidth
+              && Math.hypot(mapped.x - circleCenterX, mapped.y - circleCenterY) <= circleRadius * 1.16;
+            const noteIndex = insideCircle ? degree : -1;
             const id = `${handIndex}-${tipIndex}`;
             const previous = tipStatesRef.current.get(id);
             const lastStrike = lastStrikeRef.current.get(id) || 0;
-            let armed = previous?.armed ?? mapped.y < keyTop;
+            let armed = previous?.armed ?? !insideCircle;
             let anchorY = previous?.anchorY ?? mapped.y;
             let triggerY = previous?.triggerY ?? mapped.y;
             if (mapped.y < anchorY) anchorY = mapped.y;
-            if (mapped.y < keyTop || (!armed && triggerY - mapped.y > height * 0.014)) {
+            if (!insideCircle || (!armed && triggerY - mapped.y > height * 0.014)) {
               armed = true;
               anchorY = mapped.y;
             }
-            const crossedLine = previous ? previous.y <= keyTop && mapped.y > keyTop : false;
-            const deliberateTap = mapped.y > keyTop && mapped.y - anchorY > height * 0.014;
-            if (armed && now - lastStrike > 145 && (crossedLine || deliberateTap)) {
+            const circleTop = circleCenterY - circleRadius;
+            const crossedCircleTop = insideCircle && previous ? previous.y <= circleTop && mapped.y > circleTop : false;
+            const deliberateTap = insideCircle && mapped.y - anchorY > height * 0.013;
+            if (noteIndex >= 0 && armed && now - lastStrike > 160 && (crossedCircleTop || deliberateTap)) {
               playNoteRef.current(noteIndex);
               lastStrikeRef.current.set(id, now);
               armed = false;
@@ -318,7 +346,7 @@ export default function AirPiano() {
         <Link href="/" className={styles.brand} aria-label="بازگشت به سمیز">
           <b>S</b><span>SAMIZ <em>PLAY</em></span>
         </Link>
-        <div className={styles.titleLockup}><small>AI CAMERA INSTRUMENT</small><strong>پیانوی هوایی</strong></div>
+        <div className={styles.titleLockup}><small>AI CAMERA INSTRUMENT</small><strong>ویلن هوایی</strong></div>
         {phase === "ready" && <button type="button" onClick={exit} className={styles.exitButton}>خروج ×</button>}
       </header>
 
@@ -328,33 +356,29 @@ export default function AirPiano() {
           <div className={styles.cameraShade} />
           <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
 
-          <div className={styles.noteGrid} aria-label="دو دنگ و چهارده نت اصلی موسیقی">
+          <div className={styles.noteGrid} aria-label="هفت نت اصلی موسیقی با صدای ویلن">
             {NOTES.map((note, index) => (
               <button
                 type="button"
                 key={note.latin}
                 className={styles.notePad}
                 data-active={activeNotes.includes(index)}
-                style={{
-                  "--note-color": note.color,
-                  gridColumn: note.degree + 1,
-                  gridRow: note.octave === 5 ? 1 : 2,
-                } as React.CSSProperties}
+                style={{ "--note-color": note.color } as React.CSSProperties}
                 onPointerDown={() => playNote(index)}
-                aria-label={`نت ${note.fa} دنگ ${note.octave === 5 ? "دوم" : "اول"}`}
+                aria-label={`نت ${note.fa} با صدای ویلن`}
               >
-                <span>{note.fa}</span><b>{note.latin}{note.octave}</b><kbd>{note.key}</kbd>
+                <span>{note.fa}</span><b>{note.latin}</b><kbd>{note.key}</kbd>
               </button>
             ))}
           </div>
 
           {phase === "idle" && (
             <div className={styles.intro}>
-              <span className={styles.eyebrow}>دو دست • ده انگشت • دو دُنگ کامل</span>
-              <h1>موسیقی را<br /><em>در هوا لمس کن.</em></h1>
-              <p>دست‌هایت را جلوی دوربین بگیر و هر انگشت را روی یکی از نت‌ها رو به پایین حرکت بده.</p>
+              <span className={styles.eyebrow}>دو دست • هفت نت • صدای ویلن</span>
+              <h1>ویلن را<br /><em>در هوا بنواز.</em></h1>
+              <p>هفت دایره رنگی، هفت نت اصلی‌اند. انگشتت را روی هر دایره کوتاه به سمت پایین حرکت بده.</p>
               <button type="button" className={styles.primaryButton} onClick={start}>فعال‌کردن دوربین و شروع <span>←</span></button>
-              <small>دُنگ پایین: A S D F J K L · دُنگ بالا: Q W E R U I O</small>
+              <small>برای تست با کیبورد: A S D F J K L</small>
             </div>
           )}
 
@@ -369,15 +393,15 @@ export default function AirPiano() {
           {phase === "ready" && (
             <div className={styles.hud}>
               <div><span className={handsCount > 0 ? styles.liveDot : styles.waitDot} />{handsCount === 0 ? "دست‌ها را جلوی دوربین بگیر" : `${handsCount} دست شناسایی شد`}</div>
-              <div className={styles.nowPlaying}><small>آخرین نت</small><strong>{lastNote === null ? "—" : `${NOTES[lastNote].fa} · ${NOTES[lastNote].latin}${NOTES[lastNote].octave}`}</strong></div>
-              <p>ردیف بالا دُنگ دوم است؛ ردیف پایین دُنگ اول</p>
+              <div className={styles.nowPlaying}><small>آخرین نت</small><strong>{lastNote === null ? "—" : `${NOTES[lastNote].fa} · ${NOTES[lastNote].latin}`}</strong></div>
+              <p>نوک انگشت را روی یکی از دایره‌ها رو به پایین حرکت بده</p>
             </div>
           )}
         </div>
 
         <div className={styles.instructions}>
           <div><b>۱</b><span><strong>هر دو دست را نشان بده</strong><small>کف دست‌ها رو به دوربین و در محدوده تصویر باشد.</small></span></div>
-          <div><b>۲</b><span><strong>دُنگ را انتخاب کن</strong><small>ردیف بالا صدای زیرتر و ردیف پایین صدای بم‌تر دارد.</small></span></div>
+          <div><b>۲</b><span><strong>دایره نت را هدف بگیر</strong><small>هر دایره رنگی یکی از هفت نت اصلی موسیقی است.</small></span></div>
           <div><b>۳</b><span><strong>یک ضربه رو به پایین بزن</strong><small>برای اجرای دوباره، انگشت را کمی بالا ببر و دوباره ضربه بزن.</small></span></div>
         </div>
       </section>
