@@ -6,23 +6,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./air-piano.module.css";
 
 type Phase = "idle" | "loading" | "ready" | "error";
-type TipState = { y: number; time: number; armed: boolean; note: number; anchorY: number; triggerY: number };
+type TipState = { y: number; armed: boolean; anchorY: number; triggerY: number };
 
 const NOTES = [
-  { fa: "دو", latin: "C", key: "A", frequency: 261.63, color: "#ff6b7a" },
-  { fa: "رِ", latin: "D", key: "S", frequency: 293.66, color: "#ffad5a" },
-  { fa: "می", latin: "E", key: "D", frequency: 329.63, color: "#ffe36a" },
-  { fa: "فا", latin: "F", key: "F", frequency: 349.23, color: "#69e39c" },
-  { fa: "سُل", latin: "G", key: "J", frequency: 392, color: "#54d9f5" },
-  { fa: "لا", latin: "A", key: "K", frequency: 440, color: "#8f8bff" },
-  { fa: "سی", latin: "B", key: "L", frequency: 493.88, color: "#e782ff" },
-] as const;
-
-const DRUMS = [
-  { fa: "کیک", latin: "KICK", key: "1", kind: "kick", color: "#ff7657" },
-  { fa: "اسنیر", latin: "SNARE", key: "2", kind: "snare", color: "#ffc857" },
-  { fa: "های‌هت", latin: "HI-HAT", key: "3", kind: "hihat", color: "#5fe1dd" },
-  { fa: "تام", latin: "TOM", key: "4", kind: "tom", color: "#b68cff" },
+  { name: "C", key: "A", frequency: 130.81, color: "#ff8c73" },
+  { name: "D", key: "S", frequency: 146.83, color: "#ffb86b" },
+  { name: "E", key: "D", frequency: 164.81, color: "#f8d98a" },
+  { name: "F", key: "F", frequency: 174.61, color: "#a8d5ba" },
+  { name: "G", key: "J", frequency: 196, color: "#79b9bd" },
+  { name: "A", key: "K", frequency: 220, color: "#a991c6" },
+  { name: "B", key: "L", frequency: 246.94, color: "#d98fba" },
 ] as const;
 
 const FINGER_TIPS = [4, 8, 12, 16, 20] as const;
@@ -44,39 +37,12 @@ function getCoverMapper(video: HTMLVideoElement, width: number, height: number) 
   });
 }
 
-function DrumIcon({ kind }: { kind: typeof DRUMS[number]["kind"] }) {
-  if (kind === "kick") {
-    return (
-      <svg className={styles.drumArt} viewBox="0 0 100 100" aria-hidden="true">
-        <circle cx="50" cy="45" r="31" /><circle cx="50" cy="45" r="24" />
-        <path d="M27 69 18 87M73 69l9 18M43 76h14M50 76v11M44 88h12" />
-        <circle cx="50" cy="45" r="4" className={styles.drumAccent} />
-      </svg>
-    );
-  }
-  if (kind === "snare") {
-    return (
-      <svg className={styles.drumArt} viewBox="0 0 100 100" aria-hidden="true">
-        <ellipse cx="50" cy="35" rx="30" ry="11" />
-        <path d="M20 35v29c0 7 13 12 30 12s30-5 30-12V35M20 60c0 7 13 12 30 12s30-5 30-12M29 44v24M42 46v28M58 46v28M71 44v24" />
-        <path d="m28 20 49 32M72 18 25 52" className={styles.drumSticks} />
-      </svg>
-    );
-  }
-  if (kind === "hihat") {
-    return (
-      <svg className={styles.drumArt} viewBox="0 0 100 100" aria-hidden="true">
-        <path d="M18 35c9-8 55-8 64 0-12 7-52 7-64 0ZM23 47c9-6 45-6 54 0-12 6-42 6-54 0Z" />
-        <path d="M50 21v62M35 84h30M50 83 37 93M50 83l13 10M43 64h14" />
-        <ellipse cx="50" cy="35" rx="4" ry="2" className={styles.drumAccent} />
-      </svg>
-    );
-  }
+function CelloGlyph() {
   return (
-    <svg className={styles.drumArt} viewBox="0 0 100 100" aria-hidden="true">
-      <ellipse cx="50" cy="31" rx="29" ry="11" />
-      <path d="M21 31v34c0 7 13 12 29 12s29-5 29-12V31M21 62c0 7 13 12 29 12s29-5 29-12M31 41v27M50 43v33M69 41v27M32 74l-7 16M68 74l7 16" />
-      <path d="m30 18 43 26M70 17 28 44" className={styles.drumSticks} />
+    <svg className={styles.celloGlyph} viewBox="0 0 120 220" aria-hidden="true">
+      <path d="M57 12h6v44c0 8 5 14 12 18 21 11 29 28 23 48-3 10-10 17-20 22 17 11 23 29 15 47-6 13-18 19-33 19s-27-6-33-19c-8-18-2-36 15-47-10-5-17-12-20-22-6-20 2-37 23-48 7-4 12-10 12-18V12Z" />
+      <path d="M60 5v202M45 89c-10 5-13 14-8 23M75 89c10 5 13 14 8 23M60 207v10M48 217h24" />
+      <circle cx="60" cy="122" r="4" />
     </svg>
   );
 }
@@ -90,26 +56,48 @@ export default function AirPiano() {
   const animationRef = useRef<number | null>(null);
   const lastVideoTimeRef = useRef(-1);
   const audioRef = useRef<AudioContext | null>(null);
+  const dryRef = useRef<GainNode | null>(null);
+  const reverbRef = useRef<ConvolverNode | null>(null);
   const tipStatesRef = useRef<Map<string, TipState>>(new Map());
   const lastStrikeRef = useRef<Map<string, number>>(new Map());
   const activeTimersRef = useRef<Map<number, number>>(new Map());
-  const drumTimersRef = useRef<Map<number, number>>(new Map());
   const handsCountRef = useRef(0);
   const playNoteRef = useRef<(index: number) => void>(() => undefined);
-  const playDrumRef = useRef<(index: number) => void>(() => undefined);
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [cameraVisible, setCameraVisible] = useState(false);
   const [handsCount, setHandsCount] = useState(0);
   const [lastSound, setLastSound] = useState("—");
   const [activeNotes, setActiveNotes] = useState<number[]>([]);
-  const [activeDrums, setActiveDrums] = useState<number[]>([]);
+  const [flareColor, setFlareColor] = useState("#d8b477");
+  const [burst, setBurst] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
 
   const ensureAudio = useCallback(async () => {
     if (!audioRef.current) audioRef.current = new AudioContext();
-    if (audioRef.current.state === "suspended") await audioRef.current.resume();
-    return audioRef.current;
+    const audio = audioRef.current;
+    if (audio.state === "suspended") await audio.resume();
+    if (!dryRef.current || !reverbRef.current) {
+      const dry = audio.createGain();
+      const convolver = audio.createConvolver();
+      const wet = audio.createGain();
+      const impulse = audio.createBuffer(2, Math.floor(audio.sampleRate * 2.8), audio.sampleRate);
+      for (let channel = 0; channel < impulse.numberOfChannels; channel += 1) {
+        const data = impulse.getChannelData(channel);
+        for (let sample = 0; sample < data.length; sample += 1) {
+          data[sample] = (Math.random() * 2 - 1) * Math.pow(1 - sample / data.length, 2.7);
+        }
+      }
+      convolver.buffer = impulse;
+      dry.gain.value = 0.82;
+      wet.gain.value = 0.24;
+      dry.connect(audio.destination);
+      convolver.connect(wet);
+      wet.connect(audio.destination);
+      dryRef.current = dry;
+      reverbRef.current = convolver;
+    }
+    return { audio, dry: dryRef.current!, reverb: reverbRef.current! };
   }, []);
 
   const flashNote = useCallback((index: number) => {
@@ -119,157 +107,92 @@ export default function AirPiano() {
     const timer = window.setTimeout(() => {
       setActiveNotes((current) => current.filter((item) => item !== index));
       activeTimersRef.current.delete(index);
-    }, 220);
+    }, 520);
     activeTimersRef.current.set(index, timer);
   }, []);
 
   const playNote = useCallback((index: number) => {
     const note = NOTES[index];
     if (!note) return;
-    void ensureAudio().then((audio) => {
+    void ensureAudio().then(({ audio, dry, reverb }) => {
       const now = audio.currentTime;
       const master = audio.createGain();
-      const filter = audio.createBiquadFilter();
+      const warmth = audio.createBiquadFilter();
       const vibrato = audio.createOscillator();
       const vibratoDepth = audio.createGain();
+      const real = new Float32Array(10);
+      const imaginary = new Float32Array([0, 1, 0.78, 0.58, 0.39, 0.27, 0.19, 0.13, 0.09, 0.06]);
+      const celloWave = audio.createPeriodicWave(real, imaginary);
+
       master.gain.setValueAtTime(0.0001, now);
-      master.gain.exponentialRampToValueAtTime(0.18, now + 0.065);
-      master.gain.exponentialRampToValueAtTime(0.13, now + 0.72);
-      master.gain.exponentialRampToValueAtTime(0.0001, now + 1.32);
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(3600, now);
-      filter.frequency.exponentialRampToValueAtTime(1750, now + 1.15);
-      filter.Q.value = 1.25;
-      filter.connect(master);
-      master.connect(audio.destination);
+      master.gain.exponentialRampToValueAtTime(0.2, now + 0.09);
+      master.gain.exponentialRampToValueAtTime(0.145, now + 0.85);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 2.45);
+      warmth.type = "lowpass";
+      warmth.frequency.setValueAtTime(2850, now);
+      warmth.frequency.exponentialRampToValueAtTime(1450, now + 2.2);
+      warmth.Q.value = 1.4;
+      warmth.connect(master);
+      master.connect(dry);
+      master.connect(reverb);
 
-      const real = new Float32Array(9);
-      const imaginary = new Float32Array([0, 1, 0.72, 0.5, 0.36, 0.25, 0.18, 0.12, 0.08]);
-      const violinWave = audio.createPeriodicWave(real, imaginary);
-      vibrato.frequency.value = 5.4;
-      vibratoDepth.gain.setValueAtTime(2, now);
-      vibratoDepth.gain.linearRampToValueAtTime(7, now + 0.32);
+      vibrato.frequency.value = 5.1;
+      vibratoDepth.gain.setValueAtTime(0.4, now);
+      vibratoDepth.gain.linearRampToValueAtTime(7.2, now + 0.5);
       vibrato.connect(vibratoDepth);
-
-      [-5, 5].forEach((detune, layerIndex) => {
+      [-4, 4].forEach((detune, layerIndex) => {
         const oscillator = audio.createOscillator();
         const layer = audio.createGain();
-        oscillator.setPeriodicWave(violinWave);
+        oscillator.setPeriodicWave(celloWave);
         oscillator.frequency.value = note.frequency;
         oscillator.detune.value = detune;
-        layer.gain.value = layerIndex === 0 ? 0.58 : 0.42;
+        layer.gain.value = layerIndex === 0 ? 0.6 : 0.4;
         vibratoDepth.connect(oscillator.detune);
         oscillator.connect(layer);
-        layer.connect(filter);
+        layer.connect(warmth);
         oscillator.start(now);
-        oscillator.stop(now + 1.35);
+        oscillator.stop(now + 2.5);
       });
-      vibrato.start(now);
-      vibrato.stop(now + 1.35);
 
-      const bowBuffer = audio.createBuffer(1, Math.floor(audio.sampleRate * 0.16), audio.sampleRate);
+      const body = audio.createOscillator();
+      const bodyGain = audio.createGain();
+      body.type = "sine";
+      body.frequency.value = note.frequency / 2;
+      bodyGain.gain.setValueAtTime(0.045, now);
+      bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.9);
+      body.connect(bodyGain);
+      bodyGain.connect(master);
+      body.start(now);
+      body.stop(now + 2);
+
+      const bowBuffer = audio.createBuffer(1, Math.floor(audio.sampleRate * 0.3), audio.sampleRate);
       const bowData = bowBuffer.getChannelData(0);
       for (let sample = 0; sample < bowData.length; sample += 1) {
-        bowData[sample] = (Math.random() * 2 - 1) * (1 - sample / bowData.length);
+        bowData[sample] = (Math.random() * 2 - 1) * Math.pow(1 - sample / bowData.length, 1.8);
       }
       const bow = audio.createBufferSource();
       const bowFilter = audio.createBiquadFilter();
       const bowGain = audio.createGain();
       bow.buffer = bowBuffer;
       bowFilter.type = "bandpass";
-      bowFilter.frequency.value = 1800;
-      bowFilter.Q.value = 0.8;
-      bowGain.gain.value = 0.035;
+      bowFilter.frequency.value = 1250;
+      bowFilter.Q.value = 0.7;
+      bowGain.gain.value = 0.03;
       bow.connect(bowFilter);
       bowFilter.connect(bowGain);
       bowGain.connect(master);
       bow.start(now);
+      vibrato.start(now);
+      vibrato.stop(now + 2.5);
     }).catch(() => undefined);
-    setLastSound(`${note.fa} · ${note.latin}`);
+    setLastSound(note.name);
+    setFlareColor(note.color);
+    setBurst((value) => value + 1);
     flashNote(index);
     if (navigator.vibrate) navigator.vibrate(12);
   }, [ensureAudio, flashNote]);
 
-  const flashDrum = useCallback((index: number) => {
-    setActiveDrums((current) => current.includes(index) ? current : [...current, index]);
-    const existing = drumTimersRef.current.get(index);
-    if (existing) window.clearTimeout(existing);
-    const timer = window.setTimeout(() => {
-      setActiveDrums((current) => current.filter((item) => item !== index));
-      drumTimersRef.current.delete(index);
-    }, 150);
-    drumTimersRef.current.set(index, timer);
-  }, []);
-
-  const playDrum = useCallback((index: number) => {
-    const drum = DRUMS[index];
-    if (!drum) return;
-    void ensureAudio().then((audio) => {
-      const now = audio.currentTime;
-      if (drum.kind === "kick") {
-        const oscillator = audio.createOscillator();
-        const gain = audio.createGain();
-        oscillator.type = "sine";
-        oscillator.frequency.setValueAtTime(155, now);
-        oscillator.frequency.exponentialRampToValueAtTime(46, now + 0.3);
-        gain.gain.setValueAtTime(0.9, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.34);
-        oscillator.connect(gain);
-        gain.connect(audio.destination);
-        oscillator.start(now);
-        oscillator.stop(now + 0.36);
-      } else if (drum.kind === "tom") {
-        const oscillator = audio.createOscillator();
-        const gain = audio.createGain();
-        oscillator.type = "sine";
-        oscillator.frequency.setValueAtTime(210, now);
-        oscillator.frequency.exponentialRampToValueAtTime(92, now + 0.42);
-        gain.gain.setValueAtTime(0.56, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.46);
-        oscillator.connect(gain);
-        gain.connect(audio.destination);
-        oscillator.start(now);
-        oscillator.stop(now + 0.48);
-      } else {
-        const duration = drum.kind === "snare" ? 0.2 : 0.075;
-        const buffer = audio.createBuffer(1, Math.floor(audio.sampleRate * duration), audio.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let sample = 0; sample < data.length; sample += 1) data[sample] = Math.random() * 2 - 1;
-        const noise = audio.createBufferSource();
-        const filter = audio.createBiquadFilter();
-        const gain = audio.createGain();
-        noise.buffer = buffer;
-        filter.type = "highpass";
-        filter.frequency.value = drum.kind === "snare" ? 1050 : 5900;
-        gain.gain.setValueAtTime(drum.kind === "snare" ? 0.42 : 0.24, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(audio.destination);
-        noise.start(now);
-        if (drum.kind === "snare") {
-          const body = audio.createOscillator();
-          const bodyGain = audio.createGain();
-          body.type = "triangle";
-          body.frequency.value = 185;
-          bodyGain.gain.setValueAtTime(0.2, now);
-          bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.13);
-          body.connect(bodyGain);
-          bodyGain.connect(audio.destination);
-          body.start(now);
-          body.stop(now + 0.14);
-        }
-      }
-    }).catch(() => undefined);
-    setLastSound(drum.fa);
-    flashDrum(index);
-    if (navigator.vibrate) navigator.vibrate(16);
-  }, [ensureAudio, flashDrum]);
-
-  useEffect(() => {
-    playNoteRef.current = playNote;
-    playDrumRef.current = playDrum;
-  }, [playDrum, playNote]);
+  useEffect(() => { playNoteRef.current = playNote; }, [playNote]);
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -287,7 +210,6 @@ export default function AirPiano() {
     landmarkerRef.current?.close();
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
     activeTimersRef.current.forEach((timer) => window.clearTimeout(timer));
-    drumTimersRef.current.forEach((timer) => window.clearTimeout(timer));
     void audioRef.current?.close();
   }, [stopCamera]);
 
@@ -295,9 +217,7 @@ export default function AirPiano() {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
       const index = NOTES.findIndex((note) => note.key.toLowerCase() === event.key.toLowerCase());
-      const drumIndex = DRUMS.findIndex((drum) => drum.key === event.key);
       if (index >= 0) playNoteRef.current(index);
-      else if (drumIndex >= 0) playDrumRef.current(drumIndex);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -307,7 +227,6 @@ export default function AirPiano() {
     const canvas = canvasRef.current;
     const stage = stageRef.current;
     if (!canvas || !stage) return;
-
     const resize = () => {
       const rect = stage.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -328,7 +247,6 @@ export default function AirPiano() {
       const height = canvas.height / dpr;
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       context.clearRect(0, 0, width, height);
-
       const video = videoRef.current;
       const landmarker = landmarkerRef.current;
       if (landmarker && video && video.readyState >= 2 && video.currentTime !== lastVideoTimeRef.current) {
@@ -340,25 +258,19 @@ export default function AirPiano() {
           setHandsCount(landmarks.length);
         }
         const map = getCoverMapper(video, width, height);
-        const compactLayout = width < 780;
-        const dockLeft = width * (compactLayout ? 0.02 : 0.04);
-        const dockWidth = width * (compactLayout ? 0.96 : 0.92);
-        const cellWidth = dockWidth / NOTES.length;
-        const circleCenterY = height * (compactLayout ? 0.89 : 0.87);
-        const circleRadius = Math.min(cellWidth * (compactLayout ? 0.44 : 0.41), height * (compactLayout ? 0.065 : 0.09));
-        const drumLeft = width * (compactLayout ? 0.04 : 0.1);
-        const drumWidth = width * (compactLayout ? 0.92 : 0.8);
-        const drumCellWidth = drumWidth / DRUMS.length;
-        const drumCenterY = height * (compactLayout ? 0.14 : 0.15);
-        const drumRadius = Math.min(drumCellWidth * (compactLayout ? 0.43 : 0.41), height * (compactLayout ? 0.1 : 0.115));
+        const compact = width < 780;
+        const ringDiameter = compact ? Math.min(width * 0.82, height * 0.62) : Math.min(width * 0.62, height * 0.7, 600);
+        const ringRadius = ringDiameter / 2;
+        const ringCenter = { x: width / 2, y: height * 0.53 };
+        const noteRadius = compact ? Math.max(32, Math.min(width * 0.09, 42)) : Math.max(42, Math.min(width * 0.042, 56));
 
         landmarks.forEach((hand, handIndex) => {
-          const handColor = handIndex === 0 ? "#65f4ff" : "#ff8ee8";
+          const handColor = handIndex === 0 ? "#f5c98b" : "#e6a4b9";
           context.strokeStyle = handColor;
           context.fillStyle = handColor;
-          context.lineWidth = 2.2;
+          context.lineWidth = 2;
           context.shadowColor = handColor;
-          context.shadowBlur = 10;
+          context.shadowBlur = 12;
           HAND_CONNECTIONS.forEach(([from, to]) => {
             const a = map(hand[from]);
             const b = map(hand[to]);
@@ -367,31 +279,37 @@ export default function AirPiano() {
             context.lineTo(b.x, b.y);
             context.stroke();
           });
-
           hand.forEach((point, pointIndex) => {
             const mapped = map(point);
+            const isTip = FINGER_TIPS.includes(pointIndex as typeof FINGER_TIPS[number]);
             context.beginPath();
-            context.arc(mapped.x, mapped.y, FINGER_TIPS.includes(pointIndex as typeof FINGER_TIPS[number]) ? 5.5 : 2.5, 0, Math.PI * 2);
+            context.arc(mapped.x, mapped.y, isTip ? 5.5 : 2.4, 0, Math.PI * 2);
             context.fill();
+            if (isTip) {
+              context.beginPath();
+              context.arc(mapped.x, mapped.y, 10, 0, Math.PI * 2);
+              context.globalAlpha = 0.24;
+              context.stroke();
+              context.globalAlpha = 1;
+            }
           });
 
           FINGER_TIPS.forEach((tipIndex) => {
             const mapped = map(hand[tipIndex]);
             if (mapped.x < 0 || mapped.x > width || mapped.y < 0 || mapped.y > height) return;
-            const degree = Math.max(0, Math.min(6, Math.floor((mapped.x - dockLeft) / cellWidth)));
-            const circleCenterX = dockLeft + cellWidth * (degree + 0.5);
-            const insideCircle = mapped.x >= dockLeft && mapped.x <= dockLeft + dockWidth
-              && Math.hypot(mapped.x - circleCenterX, mapped.y - circleCenterY) <= circleRadius * 1.16;
-            const noteIndex = insideCircle ? degree : -1;
-            const drumDegree = Math.max(0, Math.min(DRUMS.length - 1, Math.floor((mapped.x - drumLeft) / drumCellWidth)));
-            const drumCenterX = drumLeft + drumCellWidth * (drumDegree + 0.5);
-            const insideDrum = mapped.x >= drumLeft && mapped.x <= drumLeft + drumWidth
-              && Math.hypot(mapped.x - drumCenterX, mapped.y - drumCenterY) <= drumRadius * 1.2;
-            const drumIndex = insideDrum ? drumDegree : -1;
-            const targetId = noteIndex >= 0 ? noteIndex : drumIndex >= 0 ? drumIndex + 100 : -1;
-            const insideTarget = targetId >= 0;
+            let noteIndex = -1;
+            for (let index = 0; index < NOTES.length; index += 1) {
+              const angle = -Math.PI / 2 + index * Math.PI * 2 / NOTES.length;
+              const noteX = ringCenter.x + Math.cos(angle) * ringRadius;
+              const noteY = ringCenter.y + Math.sin(angle) * ringRadius;
+              if (Math.hypot(mapped.x - noteX, mapped.y - noteY) <= noteRadius * 1.24) {
+                noteIndex = index;
+                break;
+              }
+            }
             const id = `${handIndex}-${tipIndex}`;
             const previous = tipStatesRef.current.get(id);
+            const insideTarget = noteIndex >= 0;
             const lastStrike = lastStrikeRef.current.get(id) || 0;
             let armed = previous?.armed ?? !insideTarget;
             let anchorY = previous?.anchorY ?? mapped.y;
@@ -401,18 +319,15 @@ export default function AirPiano() {
               armed = true;
               anchorY = mapped.y;
             }
-            const targetTop = noteIndex >= 0 ? circleCenterY - circleRadius : drumCenterY - drumRadius;
-            const crossedTargetTop = insideTarget && previous ? previous.y <= targetTop && mapped.y > targetTop : false;
-            const deliberateTap = insideTarget && mapped.y - anchorY > height * 0.013;
-            if (targetId >= 0 && armed && now - lastStrike > 150 && (crossedTargetTop || deliberateTap)) {
-              if (noteIndex >= 0) playNoteRef.current(noteIndex);
-              else playDrumRef.current(drumIndex);
+            const deliberateTap = insideTarget && mapped.y - anchorY > height * 0.012;
+            if (insideTarget && armed && now - lastStrike > 170 && deliberateTap) {
+              playNoteRef.current(noteIndex);
               lastStrikeRef.current.set(id, now);
               armed = false;
               triggerY = mapped.y;
               anchorY = mapped.y;
             }
-            tipStatesRef.current.set(id, { y: mapped.y, time: now, armed, note: targetId, anchorY, triggerY });
+            tipStatesRef.current.set(id, { y: mapped.y, armed, anchorY, triggerY });
           });
           context.shadowBlur = 0;
         });
@@ -438,14 +353,14 @@ export default function AirPiano() {
             const files = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm");
             const landmarker = await HandLandmarker.createFromOptions(files, {
               baseOptions: {
-                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task",
-                delegate: "CPU",
+                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+                delegate: "GPU",
               },
               runningMode: "VIDEO",
               numHands: 2,
-              minHandDetectionConfidence: 0.52,
+              minHandDetectionConfidence: 0.56,
               minHandPresenceConfidence: 0.52,
-              minTrackingConfidence: 0.48,
+              minTrackingConfidence: 0.5,
             });
             landmarkerRef.current = landmarker;
             return landmarker;
@@ -465,10 +380,10 @@ export default function AirPiano() {
       stopCamera();
       const name = error instanceof DOMException ? error.name : "";
       setErrorMessage(name === "NotAllowedError"
-        ? "اجازه دوربین داده نشد. دسترسی دوربین را در تنظیمات مرورگر فعال کن."
+        ? "Camera access was blocked. Allow camera access in your browser and try again."
         : name === "NotFoundError"
-          ? "دوربینی روی این دستگاه پیدا نشد."
-          : "دوربین یا سیستم تشخیص دست آماده نشد. صفحه را تازه کن و دوباره امتحان کن.");
+          ? "No camera was found on this device."
+          : "The camera or hand tracking could not start. Refresh the page and try again.");
       setPhase("error");
     }
   };
@@ -478,94 +393,74 @@ export default function AirPiano() {
     setLastSound("—");
     setPhase("idle");
   };
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else void stageRef.current?.requestFullscreen();
+  };
 
   return (
-    <main className={styles.page} dir="rtl">
+    <main className={styles.page} dir="ltr">
       <div className={styles.ambientOne} />
       <div className={styles.ambientTwo} />
       <header className={styles.header}>
-        <Link href="/" className={styles.brand} aria-label="بازگشت به سمیز">
-          <b>S</b><span>SAMIZ <em>PLAY</em></span>
-        </Link>
-        <div className={styles.titleLockup}><small>AI CAMERA INSTRUMENT</small><strong>ویلن و درام هوایی</strong></div>
-        {phase === "ready" && <button type="button" onClick={exit} className={styles.exitButton}>خروج ×</button>}
+        <Link href="/" className={styles.brand} aria-label="Back to Samiz"><b>S</b><span>SAMIZ <em>PLAY</em></span></Link>
+        <div className={styles.titleLockup}><small>AI CAMERA INSTRUMENT</small><strong>THE AIR CELLO</strong></div>
+        <span className={styles.headerMood}>Play what you feel.</span>
       </header>
 
       <section className={styles.shell}>
-        <div className={styles.stage} ref={stageRef}>
-          <video ref={videoRef} className={`${styles.video} ${cameraVisible ? styles.visible : ""}`} muted playsInline aria-label="تصویر زنده دوربین" />
+        <div className={styles.stage} ref={stageRef} style={{ "--flare-color": flareColor } as React.CSSProperties}>
+          <video ref={videoRef} className={`${styles.video} ${cameraVisible ? styles.visible : ""}`} muted playsInline aria-label="Live camera" />
           <div className={styles.cameraShade} />
+          <div className={styles.filmGrain} />
+          <div key={burst} className={burst > 0 ? styles.soundBurst : ""} />
           <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
-
-          <div className={styles.drumGrid} aria-label="درام‌های هوایی">
-            {DRUMS.map((drum, index) => (
-              <button
-                type="button"
-                key={drum.kind}
-                className={styles.drumPad}
-                data-active={activeDrums.includes(index)}
-                style={{ "--drum-color": drum.color } as React.CSSProperties}
-                onPointerDown={() => playDrum(index)}
-                aria-label={`درام ${drum.fa}`}
-              >
-                <DrumIcon kind={drum.kind} />
-                <span>{drum.fa}</span><b>{drum.latin}</b><kbd>{drum.key}</kbd>
-              </button>
-            ))}
+          <div className={styles.liveBar}>
+            <span><i className={handsCount > 0 ? styles.liveDot : styles.waitDot} />{phase === "ready" ? (handsCount > 0 ? `${handsCount} HAND${handsCount > 1 ? "S" : ""} IN FRAME` : "SHOW YOUR HANDS") : "CELLO · C3—B3"}</span>
+            {phase === "ready" && <div><button type="button" onClick={toggleFullscreen}>FULLSCREEN</button><button type="button" onClick={exit}>EXIT</button></div>}
           </div>
 
-          <div className={styles.noteGrid} aria-label="هفت نت اصلی موسیقی با صدای ویلن">
-            {NOTES.map((note, index) => (
-              <button
-                type="button"
-                key={note.latin}
-                className={styles.notePad}
-                data-active={activeNotes.includes(index)}
-                style={{ "--note-color": note.color } as React.CSSProperties}
-                onPointerDown={() => playNote(index)}
-                aria-label={`نت ${note.fa} با صدای ویلن`}
-              >
-                <span>{note.fa}</span><b>{note.latin}</b><kbd>{note.key}</kbd>
-              </button>
-            ))}
+          <div className={styles.noteRing} aria-label="Seven cello notes arranged in a circle">
+            <div className={styles.orbit} />
+            {NOTES.map((note, index) => {
+              const angle = -90 + index * 360 / NOTES.length;
+              return (
+                <button
+                  type="button"
+                  key={note.name}
+                  className={styles.notePad}
+                  data-active={activeNotes.includes(index)}
+                  style={{ "--note-color": note.color, "--note-angle": `${angle}deg`, "--note-counter-angle": `${-angle}deg` } as React.CSSProperties}
+                  onPointerDown={() => playNote(index)}
+                  aria-label={`${note.name} cello note`}
+                ><span>{note.name}</span><small>CELLO</small><kbd>{note.key}</kbd></button>
+              );
+            })}
+            <div className={styles.ringCore}><CelloGlyph /><small>PLAY WHAT</small><strong>YOU FEEL</strong><span>{lastSound === "—" ? "CELLO" : `NOTE ${lastSound}`}</span></div>
           </div>
 
           {phase === "idle" && (
             <div className={styles.intro}>
-              <span className={styles.eyebrow}>چهار درام • هفت نت ویلن • دو دست</span>
-              <h1>ریتم و ملودی را<br /><em>در هوا بنواز.</em></h1>
-              <p>درام‌ها بالا و نت‌های ویلن پایین‌اند؛ هرکدام را با یک ضربه کوتاه انگشت اجرا کن.</p>
-              <button type="button" className={styles.primaryButton} onClick={start}>فعال‌کردن دوربین و شروع <span>←</span></button>
-              <small>درام: کلیدهای ۱ تا ۴ · ویلن: A S D F J K L</small>
+              <span className={styles.eyebrow}>YOUR HANDS · ONE CELLO · SEVEN NOTES</span>
+              <h1>Turn movement<br />into <em>emotion.</em></h1>
+              <p>A cinematic cello you play in the air. Move your fingertips into the circle and let every gesture become music.</p>
+              <button type="button" className={styles.primaryButton} onClick={start}>ENTER THE EXPERIENCE <span>↗</span></button>
+              <small>No downloads. Your camera never leaves this device.</small>
             </div>
           )}
-
-          {phase === "loading" && (
-            <div className={styles.loadingPanel}><i /><h2>در حال کوک‌کردن ساز...</h2><p>اجازه دوربین را تأیید کن؛ بار اول ممکن است چند ثانیه طول بکشد.</p></div>
-          )}
-
-          {phase === "error" && (
-            <div className={styles.errorPanel}><span>📷</span><h2>دوربین آماده نشد</h2><p>{errorMessage}</p><button type="button" className={styles.primaryButton} onClick={start}>تلاش دوباره</button></div>
-          )}
-
-          {phase === "ready" && (
-            <div className={styles.hud}>
-              <div><span className={handsCount > 0 ? styles.liveDot : styles.waitDot} />{handsCount === 0 ? "دست‌ها را جلوی دوربین بگیر" : `${handsCount} دست شناسایی شد`}</div>
-              <div className={styles.nowPlaying}><small>آخرین صدا</small><strong>{lastSound}</strong></div>
-              <p>بالا درام بزن؛ پایین نت‌های ویلن را اجرا کن</p>
-            </div>
-          )}
+          {phase === "loading" && <div className={styles.loadingPanel}><i /><h2>Tuning your cello…</h2><p>Allow camera access. The first load can take a few seconds.</p></div>}
+          {phase === "error" && <div className={styles.errorPanel}><span>◌</span><h2>The camera stayed quiet.</h2><p>{errorMessage}</p><button type="button" className={styles.primaryButton} onClick={start}>TRY AGAIN</button></div>}
         </div>
 
         <div className={styles.instructions}>
-          <div><b>۱</b><span><strong>هر دو دست را نشان بده</strong><small>کف دست‌ها رو به دوربین و در محدوده تصویر باشد.</small></span></div>
-          <div><b>۲</b><span><strong>بالا یا پایین را انتخاب کن</strong><small>درام‌ها بالا و هفت نت دایره‌ای ویلن پایین تصویر هستند.</small></span></div>
-          <div><b>۳</b><span><strong>یک ضربه رو به پایین بزن</strong><small>برای اجرای دوباره، انگشت را کمی بالا ببر و دوباره ضربه بزن.</small></span></div>
+          <div><b>01</b><span><strong>SHOW BOTH HANDS</strong><small>Keep your palms visible inside the frame.</small></span></div>
+          <div><b>02</b><span><strong>REACH FOR A NOTE</strong><small>C, D, E, F, G, A and B orbit the center.</small></span></div>
+          <div><b>03</b><span><strong>TAP DOWN TO PLAY</strong><small>Lift your finger, then strike again for the next bow.</small></span></div>
         </div>
       </section>
 
       <footer className={styles.footer}>
-        <span>🔒 تصویر فقط روی دستگاه شما پردازش می‌شود و جایی ذخیره یا ارسال نمی‌شود.</span>
+        <span>PRIVATE BY DESIGN · ALL HAND TRACKING HAPPENS ON YOUR DEVICE</span>
         <a href="https://instagram.com/hamedsamizadeh" target="_blank" rel="noreferrer">@hamedsamizadeh</a>
       </footer>
     </main>
