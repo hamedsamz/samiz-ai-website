@@ -44,6 +44,43 @@ function getCoverMapper(video: HTMLVideoElement, width: number, height: number) 
   });
 }
 
+function DrumIcon({ kind }: { kind: typeof DRUMS[number]["kind"] }) {
+  if (kind === "kick") {
+    return (
+      <svg className={styles.drumArt} viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="45" r="31" /><circle cx="50" cy="45" r="24" />
+        <path d="M27 69 18 87M73 69l9 18M43 76h14M50 76v11M44 88h12" />
+        <circle cx="50" cy="45" r="4" className={styles.drumAccent} />
+      </svg>
+    );
+  }
+  if (kind === "snare") {
+    return (
+      <svg className={styles.drumArt} viewBox="0 0 100 100" aria-hidden="true">
+        <ellipse cx="50" cy="35" rx="30" ry="11" />
+        <path d="M20 35v29c0 7 13 12 30 12s30-5 30-12V35M20 60c0 7 13 12 30 12s30-5 30-12M29 44v24M42 46v28M58 46v28M71 44v24" />
+        <path d="m28 20 49 32M72 18 25 52" className={styles.drumSticks} />
+      </svg>
+    );
+  }
+  if (kind === "hihat") {
+    return (
+      <svg className={styles.drumArt} viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M18 35c9-8 55-8 64 0-12 7-52 7-64 0ZM23 47c9-6 45-6 54 0-12 6-42 6-54 0Z" />
+        <path d="M50 21v62M35 84h30M50 83 37 93M50 83l13 10M43 64h14" />
+        <ellipse cx="50" cy="35" rx="4" ry="2" className={styles.drumAccent} />
+      </svg>
+    );
+  }
+  return (
+    <svg className={styles.drumArt} viewBox="0 0 100 100" aria-hidden="true">
+      <ellipse cx="50" cy="31" rx="29" ry="11" />
+      <path d="M21 31v34c0 7 13 12 29 12s29-5 29-12V31M21 62c0 7 13 12 29 12s29-5 29-12M31 41v27M50 43v33M69 41v27M32 74l-7 16M68 74l7 16" />
+      <path d="m30 18 43 26M70 17 28 44" className={styles.drumSticks} />
+    </svg>
+  );
+}
+
 export default function AirPiano() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -309,11 +346,11 @@ export default function AirPiano() {
         const cellWidth = dockWidth / NOTES.length;
         const circleCenterY = height * (compactLayout ? 0.89 : 0.87);
         const circleRadius = Math.min(cellWidth * (compactLayout ? 0.44 : 0.41), height * (compactLayout ? 0.065 : 0.09));
-        const drumLeft = width * (compactLayout ? 0.09 : 0.2);
-        const drumWidth = width * (compactLayout ? 0.82 : 0.6);
+        const drumLeft = width * (compactLayout ? 0.04 : 0.1);
+        const drumWidth = width * (compactLayout ? 0.92 : 0.8);
         const drumCellWidth = drumWidth / DRUMS.length;
-        const drumCenterY = height * (compactLayout ? 0.12 : 0.13);
-        const drumRadius = Math.min(drumCellWidth * 0.32, height * 0.065);
+        const drumCenterY = height * (compactLayout ? 0.14 : 0.15);
+        const drumRadius = Math.min(drumCellWidth * (compactLayout ? 0.43 : 0.41), height * (compactLayout ? 0.1 : 0.115));
 
         landmarks.forEach((hand, handIndex) => {
           const handColor = handIndex === 0 ? "#65f4ff" : "#ff8ee8";
@@ -471,6 +508,7 @@ export default function AirPiano() {
                 onPointerDown={() => playDrum(index)}
                 aria-label={`درام ${drum.fa}`}
               >
+                <DrumIcon kind={drum.kind} />
                 <span>{drum.fa}</span><b>{drum.latin}</b><kbd>{drum.key}</kbd>
               </button>
             ))}
