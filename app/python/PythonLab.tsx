@@ -41,7 +41,7 @@ export default function PythonLab() {
   const createWorker = useCallback(() => {
     workerRef.current?.terminate();
 
-    const worker = new Worker("/python-worker.js");
+    const worker = new Worker("/python-worker.js", { type: "module" });
     workerRef.current = worker;
 
     worker.onmessage = (event: MessageEvent) => {
@@ -61,6 +61,9 @@ export default function PythonLab() {
         setRuntimeState("ready");
       } else if (message.type === "fatal") {
         appendOutput("stderr", "محیط پایتون بارگذاری نشد. اتصال اینترنت را بررسی و دوباره تلاش کنید.");
+        if (message.message) {
+          appendOutput("stderr", `جزئیات فنی: ${String(message.message)}`);
+        }
         setRuntimeState("error");
       }
     };
