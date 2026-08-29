@@ -8,6 +8,7 @@ import base64 as _samiz_base64
 import io as _samiz_io
 import json as _samiz_json
 import sys as _samiz_sys
+import warnings as _samiz_warnings
 
 _samiz_outputs = []
 _samiz_value = globals().get("__samiz_last_result", None)
@@ -47,7 +48,9 @@ if "matplotlib.pyplot" in _samiz_sys.modules:
     for _samiz_figure_number in _samiz_plt.get_fignums():
         _samiz_figure = _samiz_plt.figure(_samiz_figure_number)
         _samiz_buffer = _samiz_io.BytesIO()
-        _samiz_figure.savefig(_samiz_buffer, format="png", dpi=130, bbox_inches="tight")
+        with _samiz_warnings.catch_warnings():
+            _samiz_warnings.simplefilter("ignore")
+            _samiz_figure.savefig(_samiz_buffer, format="png", dpi=130, bbox_inches="tight")
         _samiz_width, _samiz_height = _samiz_figure.get_size_inches() * 130
         _samiz_outputs.append({
             "type": "image",
