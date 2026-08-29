@@ -7,7 +7,7 @@ const SLIDE_COUNT = 3;
 
 const copy = {
   en: {
-    nav: ["Home", "AI Videos", "Courses", "AI News"],
+    nav: ["Home", "AI Videos", "Courses", "Python Lab", "AI News"],
     contact: "Contact",
     eyebrow: "AI CREATIVE STUDIO + ACADEMY",
     titleA: "SAMIZ AI. ",
@@ -64,7 +64,7 @@ const copy = {
     footer: "AI creative studio and academy based in Alberta, Canada.",
   },
   fa: {
-    nav: ["خانه", "ویدیوهای تبلیغاتی", "دوره‌ها", "اخبار هوش مصنوعی"],
+    nav: ["خانه", "ویدیوهای تبلیغاتی", "دوره‌ها", "اجرای پایتون", "اخبار هوش مصنوعی"],
     contact: "تماس با ما",
     eyebrow: "استودیوی خلاقیت + آکادمی هوش مصنوعی",
     titleA: "SAMIZ AI؛ ",
@@ -233,7 +233,7 @@ export default function Home() {
       <header className="header">
         <a className="logo" href="#top" aria-label="Samiz AI home"><Mark /><span>SAMIZ AI</span></a>
         <nav className={menu ? "nav open" : "nav"} aria-label="Main navigation">
-          {t.nav.map((item, i) => <a key={item} href={["#top", "#portfolio", "#academy", "#news"][i]} onClick={() => setMenu(false)}>{item}</a>)}
+          {t.nav.map((item, i) => <a key={item} href={["#top", "#portfolio", "#academy", "/python", "#news"][i]} onClick={() => setMenu(false)}>{item}</a>)}
         </nav>
         <div className="header-actions">
           <div className="lang" aria-label="Language selector"><button className={lang === "en" ? "active" : ""} onClick={() => changeLang("en")}>EN</button><span>/</span><button className={lang === "fa" ? "active" : ""} onClick={() => changeLang("fa")}>فا</button></div>
