@@ -1,5 +1,6 @@
-const PYODIDE_VERSION = "v314.0.6";
-const PYODIDE_BASE_URL = `https://cdn.jsdelivr.net/pyodide/${PYODIDE_VERSION}/full/`;
+import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v314.0.6/full/pyodide.mjs";
+
+const PYODIDE_BASE_URL = "https://cdn.jsdelivr.net/pyodide/v314.0.6/full/";
 
 let pyodide = null;
 let pyodidePromise = null;
@@ -15,8 +16,6 @@ async function initializePyodide() {
 
   pyodidePromise = (async () => {
     send("status", { status: "loading" });
-    importScripts(`${PYODIDE_BASE_URL}pyodide.js`);
-
     const runtime = await loadPyodide({
       indexURL: PYODIDE_BASE_URL,
       stdout: (message) => send("output", { stream: "stdout", message }),
@@ -88,4 +87,3 @@ self.onmessage = async (event) => {
     });
   }
 };
-
