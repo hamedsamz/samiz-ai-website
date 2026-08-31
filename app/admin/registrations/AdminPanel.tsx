@@ -13,7 +13,10 @@ export default function AdminPanel() {
   const [emailMessage, setEmailMessage] = useState("");
   const [emailBusy, setEmailBusy] = useState(false);
   const load = useCallback(async () => { setLoading(true); const response = await fetch("/api/admin/registrations", { cache: "no-store" }); const data = await response.json(); setAuthorized(response.ok); setItems(data.registrations ?? []); setLoading(false); }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => void load());
+    return () => window.cancelAnimationFrame(frame);
+  }, [load]);
   async function login(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setLoginError(""); const form = new FormData(event.currentTarget); const response = await fetch("/api/admin/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: form.get("password") }) }); if (!response.ok) { const data = await response.json(); setLoginError(data.error ?? "ورود انجام نشد."); return; } await load(); }
   async function decide(id: string, status: "approved" | "rejected") { await fetch(`/api/admin/registrations/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }); await load(); }
   async function emailAction(payload: Record<string, string>) { setEmailBusy(true); setEmailMessage(""); const response = await fetch("/api/admin/confirmation-emails", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const data = await response.json(); setEmailMessage(data.message ?? data.error ?? "عملیات انجام نشد."); setEmailBusy(false); if (response.ok) await load(); return response.ok; }

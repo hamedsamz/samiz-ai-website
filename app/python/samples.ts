@@ -61,6 +61,48 @@ for price in prices:
     print(toman(price))`,
   },
   {
+    id: "calculator",
+    title: "ماشین حساب ساده",
+    category: "مقدماتی",
+    description: "تمرین input، عددها و چهار عمل اصلی",
+    stdin: "12\n4",
+    code: `number_1 = float(input("Adad aval: "))
+number_2 = float(input("Adad dovom: "))
+
+print("Jam:", number_1 + number_2)
+print("Tafriq:", number_1 - number_2)
+print("Zarb:", number_1 * number_2)
+
+if number_2 != 0:
+    print("Taghsim:", number_1 / number_2)
+else:
+    print("Taghsim bar sefr emkan-pazir nist.")`,
+  },
+  {
+    id: "temperature",
+    title: "تبدیل دما",
+    category: "مقدماتی",
+    description: "تبدیل سانتی‌گراد به فارنهایت",
+    stdin: "25",
+    code: `celsius = float(input("Dama be Celsius: "))
+fahrenheit = (celsius * 9 / 5) + 32
+
+print(f"{celsius:g} C = {fahrenheit:g} F")`,
+  },
+  {
+    id: "word-counter",
+    title: "شمارش کلمات",
+    category: "مقدماتی",
+    description: "کار با رشته، لیست و مجموعه",
+    stdin: "python is simple and python is powerful",
+    code: `text = input("Yek jomle benevis: ").lower()
+words = text.split()
+
+print("Tedade kalameha:", len(words))
+print("Kalamehaye gheyr tekrari:", len(set(words)))
+print("Toolani-tarin kalame:", max(words, key=len))`,
+  },
+  {
     id: "guess",
     title: "بازی حدس عدد",
     category: "پروژه کوچک",
@@ -75,6 +117,61 @@ elif guess < secret:
     print("عدد بزرگ‌تری امتحان کن")
 else:
     print("عدد کوچک‌تری امتحان کن")`,
+  },
+  {
+    id: "expense-tracker",
+    title: "تحلیل مخارج هفتگی",
+    category: "پروژه کوچک",
+    description: "جمع، میانگین و پیدا کردن بیشترین هزینه",
+    code: `expenses = {
+    "Shanbe": 180000,
+    "Yekshanbe": 95000,
+    "Doshanbe": 240000,
+    "Seshanbe": 120000,
+    "Chaharshanbe": 310000,
+}
+
+total = sum(expenses.values())
+average = total / len(expenses)
+most_expensive_day = max(expenses, key=expenses.get)
+
+print(f"Majmoo: {total:,} toman")
+print(f"Miangin: {average:,.0f} toman")
+print("Porhazine-tarin rooz:", most_expensive_day)`,
+  },
+  {
+    id: "password-generator",
+    title: "رمزساز تصادفی",
+    category: "پروژه کوچک",
+    description: "ساخت رمز با random و string",
+    code: `import random
+import string
+
+length = 12
+characters = string.ascii_letters + string.digits + "!@#$%"
+password = "".join(random.choice(characters) for _ in range(length))
+
+print("Ramze pishnahadi:", password)`,
+  },
+  {
+    id: "quiz",
+    title: "آزمون سه‌سؤالی",
+    category: "پروژه کوچک",
+    description: "تمرین ورودی، شرط و امتیازدهی",
+    stdin: "Tehran\n8\nPython",
+    code: `questions = [
+    ("Paytakhte Iran? ", "tehran"),
+    ("4 zarbdar 2? ", "8"),
+    ("Name in zaban barname-nevisi? ", "python"),
+]
+
+score = 0
+for question, correct_answer in questions:
+    answer = input(question).strip().lower()
+    if answer == correct_answer:
+        score += 1
+
+print(f"Emtiaz: {score} az {len(questions)}")`,
   },
   {
     id: "numpy",
@@ -104,6 +201,24 @@ students = pd.DataFrame({
 
 students["وضعیت"] = students["نمره"].apply(lambda score: "عالی" if score >= 18 else "خوب")
 students`,
+  },
+  {
+    id: "scikit-learn",
+    title: "پیش‌بینی با Scikit-learn",
+    category: "کتابخانه‌ها",
+    description: "یک نمونه ساده یادگیری ماشین",
+    code: `import numpy as np
+from sklearn.linear_model import LinearRegression
+
+# Saat haye tamrin va nomre haye sabt shode
+hours = np.array([[1], [2], [3], [4], [5]])
+scores = np.array([52, 61, 69, 78, 88])
+
+model = LinearRegression()
+model.fit(hours, scores)
+
+prediction = model.predict([[6]])[0]
+print(f"Nomre pishbini shode baraye 6 saat: {prediction:.1f}")`,
   },
   {
     id: "matplotlib",

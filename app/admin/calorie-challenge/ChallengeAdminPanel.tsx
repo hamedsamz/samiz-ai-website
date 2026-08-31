@@ -53,7 +53,10 @@ export default function ChallengeAdminPanel() {
     }
   }, []);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => void load());
+    return () => window.cancelAnimationFrame(frame);
+  }, [load]);
 
   const counts = useMemo(() => ({
     pending: registrations.filter(item => item.status === "pending").length,

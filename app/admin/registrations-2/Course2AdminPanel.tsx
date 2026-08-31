@@ -102,8 +102,8 @@ export default function Course2AdminPanel() {
   const approved = items.filter(item => item.status === "approved").length;
   const approvedItems = useMemo(() => items.filter(item => item.status === "approved"), [items]);
   const visibleItems = useMemo(() => filter === "all" ? items : items.filter(item => item.paymentType === filter), [filter, items]);
-  const contactItems = useMemo(() => {
-    const source = contactScope === "approved" ? approvedItems : items;
+  const contactItems = (() => {
+    const source = contactScope === "approved" ? items.filter(item => item.status === "approved") : items;
     const seen = new Set<string>();
     return source.filter(item => {
       const normalizedPhone = item.phone.replace(/[^\d+]/g, "");
@@ -111,7 +111,7 @@ export default function Course2AdminPanel() {
       seen.add(normalizedPhone);
       return true;
     });
-  }, [approvedItems, contactScope, items]);
+  })();
   const demographics = useMemo(() => {
     const ages = approvedItems.map(item => Number(item.age)).filter(age => Number.isFinite(age));
     const ageGroups = ([

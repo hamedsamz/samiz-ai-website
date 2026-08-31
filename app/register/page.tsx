@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import "./register-details.css";
 
@@ -26,7 +27,7 @@ export default function RegisterPage() {
   }
 
   return <main className="registration-page fa" dir="rtl">
-    <header className="registration-header"><a href="/" className="registration-logo"><span className="mini-mark">S</span><b>SAMIZ AI</b></a><a href="/" className="back-link">بازگشت به سایت</a></header>
+    <header className="registration-header"><Link href="/" className="registration-logo"><span className="mini-mark">S</span><b>SAMIZ AI</b></Link><Link href="/" className="back-link">بازگشت به سایت</Link></header>
     <section className="registration-shell">
       <div className="registration-intro">
         <p className="eyebrow">SAMIZ AI ACADEMY</p>
