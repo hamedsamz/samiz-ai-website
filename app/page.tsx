@@ -1,354 +1,258 @@
 "use client";
 
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type Lang = "en" | "fa";
-const SLIDE_COUNT = 4;
+type Lang = "fa" | "en";
 
-const copy = {
-  en: {
-    nav: ["Home", "AI Videos", "Courses", "Python Lab", "AI News"],
-    contact: "Contact",
-    eyebrow: "AI CREATIVE STUDIO + ACADEMY",
-    titleA: "SAMIZ AI. ",
-    titleB: "Create, Learn, Lead with AI.",
-    lead: "High-converting AI videos, practical courses, events, and the latest AI intelligence — all in one place.",
-    founderQuote: "AI is not going to replace you. But someone who knows how to use it probably will.",
-    founderLead: "Here, we learn how to create more boldly, work more intelligently, and become more visible with AI.",
-    founderIntro: "I’m Hamed Sami Zadeh. I help turn AI from a complex tool into a practical, real-world skill.",
-    flipHint: "Click to learn more",
-    flipBack: "Click to return",
-    primary: "View Portfolio",
-    secondary: "Explore Courses",
-    featured: "FEATURED COURSE",
-    course: "Prompt Engineering",
-    courseSub: "From Better Prompts to Real Results",
-    meta: ["Live cohort", "6 weeks", "Persian + English"],
-    view: "View Course",
-    videoKicker: "AI VIDEO SERVICES",
-    videoTitle: "Ads that stop the scroll",
-    newsKicker: "AI NEWS",
-    newsTitle: "What changed this week in AI",
-    appKicker: "AI APP STUDIO",
-    appTitle: "Turn your idea into an intelligent app",
-    appDesc: "From the first concept to a practical AI-powered product, built for your real workflow.",
-    appCta: "Start a Project",
-    strip: ["AI VIDEO", "CREATIVE STRATEGY", "PRACTICAL EDUCATION", "AI INTELLIGENCE"],
-    servicesKicker: "WHAT WE CREATE",
-    servicesTitle: "Advertising videos built for attention.",
-    servicesLead: "From the first idea to the final cut, we combine creative direction, AI production and human taste.",
-    portfolioTitle: "AI-Generated Advertising Video Samples",
-    services: [
-      ["Product Ads", "Cinematic product stories made for social campaigns."],
-      ["Short-form Video", "Fast, memorable videos built for Reels, Shorts and TikTok."],
-      ["AI Spokesperson", "Natural presenter-led content without a traditional shoot."],
-    ],
-    academy: "SAMIZ ACADEMY",
-    academyTitle: "Introductory Prompt Engineering Course",
-    parts: ["Prompt Engineering Principles & Content Creation", "Advertising Video Production & Monetization"],
-    instructors: ["Hamed Sami Zadeh & Dr. Abutaleb Moradi", "Mage Bahrami"],
-    soon: "Register for the new course",
-    event: "UPCOMING EVENT",
-    eventTitle: "Practical AI for Content Creators",
-    eventDesc: "A focused live session on turning AI tools into a repeatable creative workflow.",
-    updates: "LATEST INTELLIGENCE",
-    updatesTitle: "AI news, made useful.",
-    articles: [
-      ["MODELS", "A clearer way to understand the new generation of AI models"],
-      ["VIDEO AI", "What creators should watch in the next wave of AI video"],
-      ["PROMPTING", "Why context matters more than clever prompt tricks"],
-    ],
-    cta: "Let’s create something meaningful together.",
-    ctaSub: "For advertising campaigns, educational collaborations, and creative AI projects, connect with Samiz.",
-    start: "Start a Project",
-    footer: "AI creative studio and academy based in Alberta, Canada.",
-  },
+const content = {
   fa: {
-    nav: ["خانه", "ویدیوهای تبلیغاتی", "دوره‌ها", "اجرای پایتون", "اخبار هوش مصنوعی"],
-    contact: "تماس با ما",
-    eyebrow: "استودیوی خلاقیت + آکادمی هوش مصنوعی",
-    titleA: "SAMIZ AI؛ ",
-    titleB: "بساز، یاد بگیر و با هوش مصنوعی پیشتاز باش.",
-    lead: "ویدیوهای تبلیغاتی تأثیرگذار، دوره‌های کاربردی، رویدادها و تازه‌ترین اخبار هوش مصنوعی؛ همه در یک‌جا.",
-    founderQuote: "هوش مصنوعی قرار نیست جای شما را بگیرد؛ اما کسی که بلد است از آن استفاده کند، احتمالاً این کار را می‌کند.",
-    founderLead: "اینجا یاد می‌گیریم چطور با هوش مصنوعی خلاق‌تر بسازیم، هوشمندانه‌تر کار کنیم و اثرگذارتر دیده شویم.",
-    founderIntro: "من حامد سمیع‌زاده‌ام؛ اینجا کمک می‌کنم هوش مصنوعی را از یک ابزار پیچیده، به یک مهارت واقعی و کاربردی تبدیل کنید.",
-    flipHint: "برای آشنایی بیشتر کلیک کنید",
-    flipBack: "برای بازگشت کلیک کنید",
-    primary: "مشاهده نمونه‌کارها",
-    secondary: "مشاهده دوره‌ها",
-    featured: "دوره ویژه",
-    course: "ورود به دنیای هوش مصنوعی با یادگیری مهندسی پرامپت",
-    courseSub: "از یادگیری پرامپت تا تولید محتوای حرفه‌ای با AI",
-    meta: ["کلاس زنده", "۶ هفته", "فارسی + انگلیسی"],
-    view: "مشاهده دوره",
-    videoKicker: "خدمات ویدیویی AI",
-    videoTitle: "تبلیغاتی که مخاطب را متوقف می‌کنند",
-    newsKicker: "اخبار هوش مصنوعی",
-    newsTitle: "این هفته در هوش مصنوعی چه تغییراتی رخ داد؟",
-    appKicker: "استودیوی اپلیکیشن AI",
-    appTitle: "از ایده تا یک اپ هوشمند و کاربردی",
-    appDesc: "ایده‌تان را به یک محصول واقعی و مجهز به هوش مصنوعی تبدیل می‌کنیم؛ متناسب با نیاز و مسیر کاری شما.",
-    appCta: "شروع همکاری",
-    strip: ["ویدیوی AI", "استراتژی خلاق", "آموزش کاربردی", "هوش و تحلیل AI"],
-    servicesKicker: "چه چیزی می‌سازیم",
-    servicesTitle: "ویدیوهای تبلیغاتی ساخته‌شده برای جلب توجه.",
-    servicesLead: "از ایده اولیه تا تدوین نهایی، مسیر خلاقیت، تولید با AI و سلیقه انسانی را کنار هم قرار می‌دهیم.",
-    portfolioTitle: "نمونه ویدیوهای تبلیغاتی ساخته‌شده توسط هوش مصنوعی",
-    services: [
-      ["تبلیغات محصول", "روایت‌های سینمایی از محصول برای کمپین‌های شبکه‌های اجتماعی."],
-      ["ویدیوهای کوتاه", "ویدیوهای سریع و ماندگار برای ریلز، شورتس و تیک‌تاک."],
-      ["سخنگوی هوش مصنوعی", "محتوای طبیعی با مجری، بدون نیاز به فیلم‌برداری سنتی."],
-    ],
-    academy: "آکادمی سمیز",
-    academyTitle: "ورود به دنیای هوش مصنوعی با یادگیری مهندسی پرامپت",
-    parts: ["مهندسی پرامپت و تولید محتوا با کمک AI", "تأثیر پرامپت در ساخت ویدیوهای تبلیغاتی با AI"],
-    instructors: ["حامد سمیع زاده و دکتر ابوطالب مرادی", "میج بهرامی"],
-    soon: "ثبت‌نام دوره جدید",
-    event: "رویداد آینده",
-    eventTitle: "هوش مصنوعی کاربردی برای تولیدکنندگان محتوا",
-    eventDesc: "یک جلسه زنده و متمرکز برای تبدیل ابزارهای AI به یک فرایند خلاقانه تکرارپذیر.",
-    updates: "تازه‌ترین تحلیل‌ها",
-    updatesTitle: "اخبار AI، ساده و کاربردی.",
-    articles: [
-      ["مدل‌ها", "نسل جدید مدل‌های هوش مصنوعی را چطور بهتر بشناسیم؟"],
-      ["ویدیوی AI", "موج بعدی ویدیوهای هوش مصنوعی چه چیزی برای تولیدکنندگان دارد؟"],
-      ["پرامپت‌نویسی", "چرا کانتکست از ترفندهای پرامپت‌نویسی مهم‌تر است؟"],
-    ],
-    cta: "بیایید باهم چیزی اثرگذار خلق کنیم",
-    ctaSub: "برای کمپین‌های تبلیغاتی، همکاری‌های آموزشی و پروژه‌های خلاقانه هوش مصنوعی، با سمیز در ارتباط باشید.",
-    start: "شروع پروژه",
-    footer: "استودیوی خلاقیت و آکادمی هوش مصنوعی در آلبرتا، کانادا.",
+    nav: ["خانه", "دوره‌ها", "ویدیوهای تبلیغاتی", "اخبار AI", "آزمایشگاه پایتون"],
+    contact: "شروع همکاری",
+    heroKicker: "آکادمی و استودیوی خلاق هوش مصنوعی",
+    heroTitle: "هوش مصنوعی، از ابزار به مزیت واقعی.",
+    heroText: "آموزش کاربردی هوش مصنوعی، تولید ویدیوهای تبلیغاتی با AI و مهم‌ترین اخبار این حوزه؛ برای کسانی که می‌خواهند جلوتر حرکت کنند.",
+    explore: "ببینید سمیز چه کاری انجام می‌دهد",
+    pillars: [["آموزش", "دوره‌های پروژه‌محور"], ["تولید", "ویدیو و اپلیکیشن AI"], ["تحلیل", "اخبار مهم و کاربردی"]],
+    courseKicker: "SAMIZ ACADEMY / دوره ویژه",
+    courseTitle: "مهندسی پرامپت را برای نتیجه واقعی یاد بگیرید.",
+    courseText: "از اصول گفت‌وگو با مدل‌های هوش مصنوعی تا تولید محتوای حرفه‌ای و ساخت ویدیوهای تبلیغاتی؛ یک مسیر عملی برای ورود جدی به دنیای AI.",
+    courseMeta: ["کلاس زنده", "آموزش پروژه‌محور", "مناسب شروع حرفه‌ای"],
+    courseCta: "مشاهده و ثبت‌نام دوره",
+    videoKicker: "SAMIZ CREATIVE / خدمات تولید",
+    videoTitle: "تبلیغاتی که در میان اسکرول متوقف‌تان می‌کند.",
+    videoText: "ایده، کارگردانی خلاق و تولید با هوش مصنوعی را ترکیب می‌کنیم تا برندها بدون فرایند سنگین تولید سنتی، حرفه‌ای دیده شوند.",
+    videoCta: "مشاهده نمونه ویدیوها",
+    appKicker: "AI APP STUDIO / طراحی محصول",
+    appTitle: "ایده شما، به یک ابزار هوشمند واقعی تبدیل می‌شود.",
+    appText: "از تعریف مسئله تا طراحی و ساخت؛ اپلیکیشن‌های مجهز به هوش مصنوعی برای نیاز واقعی شما و کسب‌وکارتان.",
+    appCta: "درباره ساخت اپ گفتگو کنیم",
+    portfolioKicker: "نمونه‌کارهای منتخب",
+    portfolioTitle: "ویدیوهای تبلیغاتی ساخته‌شده با هوش مصنوعی",
+    portfolioText: "برای پخش هر نمونه کلیک کنید. هر پروژه با هدف، ریتم و هویت بصری مخصوص همان برند ساخته می‌شود.",
+    newsKicker: "SAMIZ INTELLIGENCE / تازه‌های AI",
+    newsTitle: "خبر کمتر. درک بیشتر.",
+    newsText: "مهم‌ترین تغییرات هوش مصنوعی را انتخاب و ساده می‌کنیم تا بدانید چه اتفاقی افتاده و چرا برای شما مهم است.",
+    newsCta: "مشاهده تازه‌ترین خبرها",
+    newsLabels: ["سرمایه‌گذاری AI", "محصول", "مدل‌ها"],
+    newsTitles: ["مدیریت سرمایه‌گذاری در عصر عامل‌های هوش مصنوعی", "GPT-5.6 مدل منتخب Microsoft 365 Copilot شد", "معرفی GPT-5.6؛ هوش مرزی با بهره‌وری بیشتر"],
+    founderKicker: "درباره بنیان‌گذار",
+    founderTitle: "فناوری پیچیده، با زبان روشن و کاربرد واقعی.",
+    founderText: "من حامد سمیع‌زاده‌ام. در سمیز کمک می‌کنم هوش مصنوعی را نه به‌عنوان یک موج زودگذر، بلکه به‌عنوان یک مهارت عملی برای ساختن، یادگرفتن و رشد کسب‌وکار به کار بگیرید.",
+    founderQuote: "هوش مصنوعی جای شما را نمی‌گیرد؛ کسی که استفاده از آن را بلد است، احتمالاً این کار را می‌کند.",
+    pythonKicker: "ابزار رایگان",
+    pythonTitle: "کد پایتون را همین‌جا بنویسید و اجرا کنید.",
+    pythonText: "یک محیط ساده و فارسی برای تمرین برنامه‌نویسی، اجرای نمونه‌ها و یادگیری قدم‌به‌قدم.",
+    pythonCta: "ورود به آزمایشگاه پایتون",
+    finalTitle: "برای یادگیری، ساختن یا همکاری آماده‌اید؟",
+    finalText: "دوره مناسب خود را پیدا کنید یا درباره پروژه تبلیغاتی و اپلیکیشن هوشمندتان با ما صحبت کنید.",
+    finalPrimary: "مشاهده دوره‌ها",
+    finalSecondary: "تماس با سمیز",
+    footer: "آکادمی و استودیوی خلاق هوش مصنوعی — آلبرتا، کانادا",
+    backTop: "بازگشت به بالا",
+  },
+  en: {
+    nav: ["Home", "Courses", "AI Video", "AI News", "Python Lab"],
+    contact: "Start a project",
+    heroKicker: "AI ACADEMY & CREATIVE STUDIO",
+    heroTitle: "Turn artificial intelligence into a real advantage.",
+    heroText: "Practical AI education, high-impact AI video production, and the news that matters — for people ready to move ahead.",
+    explore: "Discover what Samiz does",
+    pillars: [["LEARN", "Project-based courses"], ["CREATE", "AI video and applications"], ["UNDERSTAND", "Useful AI intelligence"]],
+    courseKicker: "SAMIZ ACADEMY / FEATURED COURSE",
+    courseTitle: "Learn prompt engineering for real-world results.",
+    courseText: "From communicating clearly with AI models to professional content and advertising video production — a practical path into the world of AI.",
+    courseMeta: ["Live cohort", "Project-based", "Built for serious beginners"],
+    courseCta: "View course and register",
+    videoKicker: "SAMIZ CREATIVE / PRODUCTION",
+    videoTitle: "Advertising made to stop the scroll.",
+    videoText: "We combine concept, creative direction, and AI production so brands can look exceptional without the weight of a traditional shoot.",
+    videoCta: "Watch selected work",
+    appKicker: "AI APP STUDIO / PRODUCT DESIGN",
+    appTitle: "Your idea, transformed into a useful intelligent product.",
+    appText: "From problem definition to design and delivery, we build AI-powered applications around real business needs.",
+    appCta: "Discuss your app idea",
+    portfolioKicker: "SELECTED WORK",
+    portfolioTitle: "Advertising videos created with AI",
+    portfolioText: "Select a film to play. Every project is shaped around the brand's own objective, rhythm, and visual language.",
+    newsKicker: "SAMIZ INTELLIGENCE / AI UPDATES",
+    newsTitle: "Less noise. More understanding.",
+    newsText: "We select and simplify the most important AI developments, so you know what changed and why it matters.",
+    newsCta: "Read the latest updates",
+    newsLabels: ["AI INVESTMENT", "PRODUCT", "MODELS"],
+    newsTitles: ["Managing AI investments in the agentic era", "GPT-5.6 becomes the preferred model in Microsoft 365 Copilot", "Introducing GPT-5.6: frontier intelligence at scale"],
+    founderKicker: "MEET THE FOUNDER",
+    founderTitle: "Complex technology, explained clearly and used practically.",
+    founderText: "I'm Hamed Sami Zadeh. At Samiz, I help people use AI not as a passing trend, but as a practical skill for creating, learning, and growing a business.",
+    founderQuote: "AI will not replace you. Someone who knows how to use it probably will.",
+    pythonKicker: "FREE TOOL",
+    pythonTitle: "Write and run Python code right here.",
+    pythonText: "A simple learning environment for practicing code, running examples, and improving one step at a time.",
+    pythonCta: "Open Python Lab",
+    finalTitle: "Ready to learn, create, or collaborate?",
+    finalText: "Find the right course or tell us about your next advertising or intelligent application project.",
+    finalPrimary: "Explore courses",
+    finalSecondary: "Contact Samiz",
+    footer: "AI academy and creative studio — Alberta, Canada",
+    backTop: "Back to top",
   },
 };
 
-const newsItems = {
-  en: [
-    { tag: "AI ADOPTION", title: "How to manage AI investments in the agentic era", url: "https://openai.com/index/managing-ai-investments-in-agentic-era/", image: "https://images.ctfassets.net/kftzwdyauwt9/1qXMreHMXalbFSVXr2CJXW/acbd7f4e05bd38b80a99523967ef69b7/Frame.png?fm=webp&q=75&w=1200" },
-    { tag: "PRODUCT", title: "GPT-5.6 is now the preferred model in Microsoft 365 Copilot", url: "https://openai.com/index/gpt-5-6-preferred-model-microsoft-365-copilot/", image: "https://images.ctfassets.net/kftzwdyauwt9/3MPipvFMxS8m3kTyCtwFgj/015747dcd34cb667a221688cfca64e0f/Frame.png?fm=webp&q=75&w=1200" },
-    { tag: "MODELS", title: "GPT-5.6: Frontier intelligence that scales with your ambition", url: "https://openai.com/index/gpt-5-6/", image: "https://images.ctfassets.net/kftzwdyauwt9/1a9IPPV5nXWydTBosgmgYI/8e03f28ca04f26edc8bc81cdba387df1/5-6.jpg?fm=webp&q=75&w=1200" },
-  ],
-  fa: [
-    { tag: "کاربرد هوش مصنوعی", title: "پنج گام عملی برای مدیریت سرمایه‌گذاری در عصر عامل‌های هوش مصنوعی", url: "https://openai.com/index/managing-ai-investments-in-agentic-era/", image: "https://images.ctfassets.net/kftzwdyauwt9/1qXMreHMXalbFSVXr2CJXW/acbd7f4e05bd38b80a99523967ef69b7/Frame.png?fm=webp&q=75&w=1200" },
-    { tag: "محصول", title: "GPT-5.6 به مدل منتخب Microsoft 365 Copilot تبدیل شد", url: "https://openai.com/index/gpt-5-6-preferred-model-microsoft-365-copilot/", image: "https://images.ctfassets.net/kftzwdyauwt9/3MPipvFMxS8m3kTyCtwFgj/015747dcd34cb667a221688cfca64e0f/Frame.png?fm=webp&q=75&w=1200" },
-    { tag: "مدل‌ها", title: "معرفی GPT-5.6؛ هوش مرزی با بهره‌وری بیشتر", url: "https://openai.com/index/gpt-5-6/", image: "https://images.ctfassets.net/kftzwdyauwt9/1a9IPPV5nXWydTBosgmgYI/8e03f28ca04f26edc8bc81cdba387df1/5-6.jpg?fm=webp&q=75&w=1200" },
-  ],
-};
+const newsLinks = [
+  "https://openai.com/index/managing-ai-investments-in-agentic-era/",
+  "https://openai.com/index/gpt-5-6-preferred-model-microsoft-365-copilot/",
+  "https://openai.com/index/gpt-5-6/",
+];
+const newsImages = [
+  "https://images.ctfassets.net/kftzwdyauwt9/1qXMreHMXalbFSVXr2CJXW/acbd7f4e05bd38b80a99523967ef69b7/Frame.png?fm=webp&q=75&w=1200",
+  "https://images.ctfassets.net/kftzwdyauwt9/3MPipvFMxS8m3kTyCtwFgj/015747dcd34cb667a221688cfca64e0f/Frame.png?fm=webp&q=75&w=1200",
+  "https://images.ctfassets.net/kftzwdyauwt9/1a9IPPV5nXWydTBosgmgYI/8e03f28ca04f26edc8bc81cdba387df1/5-6.jpg?fm=webp&q=75&w=1200",
+];
 
-function Mark() {
-  return <span className="mark" aria-hidden="true"><i>S</i><b>AI</b></span>;
+function BrandMark() {
+  return <span className="home-mark" aria-hidden="true"><span>S</span><b>AI</b></span>;
 }
 
-function InstagramIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle className="icon-dot" cx="17.4" cy="6.7" r="1" /></svg>;
-}
-
-function WhatsAppIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.7a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.4-4.2a8.5 8.5 0 1 1 15.6-4.6Z" /><path d="M8.2 7.6c.2-.4.4-.4.7-.4h.5c.2 0 .4.1.5.4l.8 2c.1.3.1.5-.1.7l-.6.8c-.2.2-.2.4-.1.7.5 1 1.3 1.8 2.3 2.3.3.2.5.1.7-.1l.8-1c.2-.2.4-.3.7-.2l2 .9c.3.1.4.3.4.5 0 .3-.2 1.4-1 2-.7.6-1.6.8-2.6.5-1.4-.4-2.8-1.1-4.1-2.3-1.1-1-2.1-2.4-2.5-3.8-.4-1.2 0-2.4.6-3Z" /></svg>;
+function Arrow() {
+  return <span className="home-arrow" aria-hidden="true">↗</span>;
 }
 
 export default function Home() {
   const [lang, setLang] = useState<Lang>("fa");
-  const [menu, setMenu] = useState(false);
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [isFounderCardFlipped, setIsFounderCardFlipped] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartX = useRef<number | null>(null);
-  const dragOffsetRef = useRef(0);
-  const didDrag = useRef(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
-  const t = copy[lang];
+  const t = content[lang];
 
   useEffect(() => {
-    const saved = localStorage.getItem("samiz-lang") as Lang | null;
-    const preferred = saved === "fa" || saved === "en" ? saved : "fa";
-    const frame = requestAnimationFrame(() => setLang(preferred));
-    return () => cancelAnimationFrame(frame);
+    const saved = localStorage.getItem("samiz-lang");
+    if (saved === "fa" || saved === "en") setLang(saved);
   }, []);
 
-  const changeLang = (next: Lang) => {
+  const changeLanguage = (next: Lang) => {
     setLang(next);
     localStorage.setItem("samiz-lang", next);
+    setMenuOpen(false);
   };
 
-  const goToSlide = (index: number) => {
-    setActiveSlide(index);
-  };
-
-  const moveSlider = (direction: -1 | 1) => {
-    setActiveSlide(slide => (slide + direction + SLIDE_COUNT) % SLIDE_COUNT);
-  };
-
-  const startDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
-    dragStartX.current = event.clientX;
-    dragOffsetRef.current = 0;
-    didDrag.current = false;
-    setIsDragging(false);
-  };
-
-  const updateDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (dragStartX.current === null) return;
-    const nextOffset = event.clientX - dragStartX.current;
-    dragOffsetRef.current = nextOffset;
-    if (Math.abs(nextOffset) > 6 && !didDrag.current) {
-      didDrag.current = true;
-      setIsDragging(true);
-      event.currentTarget.setPointerCapture(event.pointerId);
-    }
-    setDragOffset(nextOffset);
-  };
-
-  const finishDrag = () => {
-    if (dragStartX.current === null) return;
-    const offset = dragOffsetRef.current;
-    dragStartX.current = null;
-    dragOffsetRef.current = 0;
-    setDragOffset(0);
-    setIsDragging(false);
-    if (Math.abs(offset) >= 70) moveSlider(offset < 0 ? 1 : -1);
-    window.setTimeout(() => { didDrag.current = false; }, 0);
-  };
-
-  const slideStyle = (index: number) => {
-    const wrapped = (index - activeSlide + SLIDE_COUNT) % SLIDE_COUNT;
-    const position = wrapped > SLIDE_COUNT / 2 ? wrapped - SLIDE_COUNT : wrapped;
-    const distance = Math.abs(position);
-    const side = position < 0 ? -1 : 1;
-    const x = distance === 0
-      ? "0px"
-      : `${side < 0 ? "calc(-1 * " : ""}var(--wing-${distance === 1 ? "near" : "far"})${side < 0 ? ")" : ""}`;
-    const z = distance === 0 ? "0px" : `calc(-1 * var(--wing-depth-${distance === 1 ? "near" : "far"}))`;
-    const angle = distance === 0 ? 0 : side * (distance === 1 ? -42 : -65);
-    const scale = distance === 0 ? 1 : distance === 1 ? .88 : .72;
-    return {
-      transform: `translateX(-50%) translateX(${x}) translateX(${dragOffset}px) translateZ(${z}) rotateY(${angle}deg) scale(${scale})`,
-      opacity: distance === 0 ? 1 : distance === 1 ? .78 : .28,
-      zIndex: 10 - distance,
-    };
-  };
+  const links = ["#top", "#courses", "#video", "#news", "/python"];
 
   return (
-    <main dir={lang === "fa" ? "rtl" : "ltr"} lang={lang} className={lang === "fa" ? "fa" : "en"}>
-      <header className="header">
-        <a className="logo" href="#top" aria-label="Samiz AI home"><Mark /><span>SAMIZ AI</span></a>
-        <nav className={menu ? "nav open" : "nav"} aria-label="Main navigation">
-          {t.nav.map((item, i) => <a key={item} href={["#top", "#portfolio", "#academy", "/python", "#news"][i]} onClick={() => setMenu(false)}>{item}</a>)}
+    <main id="top" className={`home ${lang === "fa" ? "home-fa" : "home-en"}`} lang={lang} dir={lang === "fa" ? "rtl" : "ltr"}>
+      <header className="home-header">
+        <a className="home-logo" href="#top" aria-label="Samiz AI home"><BrandMark /><span>SAMIZ AI</span></a>
+        <nav className={`home-nav ${menuOpen ? "is-open" : ""}`} aria-label={lang === "fa" ? "منوی اصلی" : "Main navigation"}>
+          {t.nav.map((item, index) => <a key={item} href={links[index]} onClick={() => setMenuOpen(false)}>{item}</a>)}
         </nav>
-        <div className="header-actions">
-          <div className="lang" aria-label="Language selector"><button className={lang === "en" ? "active" : ""} onClick={() => changeLang("en")}>EN</button><span>/</span><button className={lang === "fa" ? "active" : ""} onClick={() => changeLang("fa")}>فا</button></div>
-          <a className="outline-button desktop-contact" href="#contact">{t.contact}</a>
-          <button className="menu-button" aria-label="Toggle menu" onClick={() => setMenu(!menu)}><span></span><span></span></button>
+        <div className="home-header-actions">
+          <div className="home-language" aria-label={lang === "fa" ? "انتخاب زبان" : "Language selector"}>
+            <button className={lang === "fa" ? "active" : ""} onClick={() => changeLanguage("fa")}>فا</button><span>/</span>
+            <button className={lang === "en" ? "active" : ""} onClick={() => changeLanguage("en")}>EN</button>
+          </div>
+          <a className="home-header-cta" href="#contact">{t.contact}</a>
+          <button className={`home-menu ${menuOpen ? "is-open" : ""}`} type="button" aria-label={lang === "fa" ? "باز کردن منو" : "Open menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
         </div>
       </header>
 
-      <section className="hero" id="top">
-        <div className="hero-copy">
-          <p className="eyebrow">{t.eyebrow}</p>
-          <h1>{t.titleA}<em>{t.titleB}</em></h1>
-          <div className="actions"><a className="text-button" href="#academy">{t.secondary} <span>→</span></a></div>
+      <section className="home-hero">
+        <div className="home-hero-media" aria-hidden="true"><img src="/images/slide-ai-app-studio.webp" alt="" /></div>
+        <div className="home-shade" />
+        <div className="home-hero-content home-shell">
+          <p className="home-kicker">{t.heroKicker}</p><h1>{t.heroTitle}</h1><p className="home-lead">{t.heroText}</p>
+          <a className="home-button home-button-light" href="#overview"><span>{t.explore}</span><Arrow /></a>
         </div>
-        <button type="button" className={`hero-portrait${isFounderCardFlipped ? " is-flipped" : ""}`} onClick={() => setIsFounderCardFlipped(value => !value)} aria-pressed={isFounderCardFlipped} aria-label={isFounderCardFlipped ? t.flipBack : t.flipHint}>
-          <span className="founder-card-inner">
-            <span className="founder-card-face founder-card-front"><img src="/images/hamed-sami-zadeh.jpg" alt={lang === "fa" ? "حامد سمیع‌زاده" : "Hamed Sami Zadeh"} /><span className="founder-card-caption"><strong>{lang === "fa" ? "حامد سمیع‌زاده" : "Hamed Sami Zadeh"}</strong><small>Founder · SAMIZ AI</small></span><span className="flip-hint">↻ {t.flipHint}</span></span>
-            <span className="founder-card-face founder-card-back"><small className="founder-card-kicker">SAMIZ AI · FOUNDER</small><strong>{t.founderQuote}</strong><p>{t.founderLead}</p><p className="founder-personal">{t.founderIntro}</p><span className="flip-back">↻ {t.flipBack}</span></span>
-          </span>
-        </button>
+        <div className="home-scroll" aria-hidden="true"><span />SCROLL</div>
+      </section>
 
-        <div
-          className={`feature-stage${isDragging ? " dragging" : ""}`}
-          aria-label={lang === "fa" ? "اسلایدر خدمات و دوره‌ها" : "Services and courses slider"}
-          onPointerDown={startDrag}
-          onPointerMove={updateDrag}
-          onPointerUp={finishDrag}
-          onPointerCancel={finishDrag}
-          onClickCapture={(event) => {
-            if (!didDrag.current) return;
-            event.preventDefault();
-            event.stopPropagation();
-          }}
-        >
-          <div className="coverflow-track">
-            <article className="course-designed-card cylinder-card" data-active={activeSlide === 0} style={slideStyle(0)}>
-              <div className="course-slide-content">
-                <div className="course-slide-copy">
-                  <span className="course-slide-kicker">SAMIZ AI ACADEMY</span>
-                  <h2>{lang === "fa" ? "ورود به دنیای هوش مصنوعی با یادگیری مهندسی پرامپت" : "Introductory Prompt Engineering Course"}</h2>
-                  <p>{lang === "fa" ? "مهندسی پرامپت، تولید محتوا با کمک AI و تأثیر پرامپت در ساخت ویدیوهای تبلیغاتی" : "Prompt writing fundamentals, content creation, and advertising video production"}</p>
-                  <a className="course-details-button" href="#academy">{lang === "fa" ? "جزئیات بیشتر" : "More details"}<span>↓</span></a>
-                </div>
-                <div className="course-slide-art" aria-hidden="true">
-                  <div className="course-orbit"></div>
-                  <div className="prompt-panel"><span>&gt;_</span><i></i><i></i><i></i></div>
-                  <div className="video-stack"><b></b><b></b><b></b><span>▶</span></div>
-                </div>
-              </div>
-            </article>
-            <article className="peek-card video-card cylinder-card" data-active={activeSlide === 1} style={slideStyle(1)}><div className="teaser-copy"><small>{t.videoKicker}</small><h3>{t.videoTitle}</h3><a className="outline-button" href="#portfolio">{t.primary}</a></div><div className="card-art slide-image-art"><img src="/images/slide-video-ad.png" alt={lang === "fa" ? "تولید ویدیوی تبلیغاتی با هوش مصنوعی" : "AI advertising video production"} draggable={false} /><span className="slide-art-badge play-badge">▶</span></div></article>
-            <article className="peek-card news-card cylinder-card" data-active={activeSlide === 2} style={slideStyle(2)}><div className="teaser-copy"><small>{t.newsKicker}</small><h3>{t.newsTitle}</h3><a className="outline-button" href="#news">{t.updates}</a></div><div className="card-art slide-image-art"><img src="/images/slide-ai-news.png" alt={lang === "fa" ? "اخبار و تازه‌های هوش مصنوعی" : "Latest AI news"} draggable={false} /><span className="slide-art-badge ai-badge">AI</span></div></article>
-            <article className="peek-card app-card cylinder-card" data-active={activeSlide === 3} style={slideStyle(3)}><div className="teaser-copy"><small>{t.appKicker}</small><h3>{t.appTitle}</h3><p>{t.appDesc}</p><a className="outline-button" href="#contact">{t.appCta}</a></div><div className="card-art slide-image-art"><img src="/images/slide-ai-app-studio.webp" alt={lang === "fa" ? "طراحی اپلیکیشن هوشمند با هوش مصنوعی" : "AI-powered app design and development"} draggable={false} /><span className="slide-art-badge ai-badge">APP</span></div></article>
-          </div>
+      <section className="home-overview" id="overview">
+        <div className="home-shell home-pillars">
+          {t.pillars.map(([label, value], index) => <article key={label}><span>0{index + 1}</span><small>{label}</small><strong>{value}</strong></article>)}
         </div>
-        <div className="slider-controls">
-          <button type="button" onClick={() => moveSlider(-1)} aria-label={lang === "fa" ? "حرکت به چپ" : "Previous card"}>←</button>
-          <div className="pagination" aria-label={lang === "fa" ? "انتخاب کارت" : "Choose a card"}>
-            {Array.from({ length: SLIDE_COUNT }, (_, index) => (
-              <button key={index} type="button" className={activeSlide === index ? "active" : ""} onClick={() => goToSlide(index)} aria-label={`${index + 1} ${lang === "fa" ? `از ${SLIDE_COUNT}` : `of ${SLIDE_COUNT}`}`}>0{index + 1}</button>
+      </section>
+
+      <section className="home-panel home-course" id="courses">
+        <div className="home-course-art" aria-hidden="true"><div className="home-orbit orbit-one" /><div className="home-orbit orbit-two" /><div className="home-prompt-window"><span>PROMPT / 01</span><i /><i /><i /><b>AI</b></div></div>
+        <div className="home-panel-shade" />
+        <div className="home-panel-content home-shell">
+          <p className="home-kicker">{t.courseKicker}</p><h2>{t.courseTitle}</h2><p>{t.courseText}</p>
+          <div className="home-meta">{t.courseMeta.map(item => <span key={item}>{item}</span>)}</div>
+          <a className="home-button" href="/register-2"><span>{t.courseCta}</span><Arrow /></a>
+        </div>
+      </section>
+
+      <section className="home-panel home-media-panel" id="video">
+        <img className="home-panel-image" src="/images/slide-video-ad.png" alt={lang === "fa" ? "تولید ویدیوی تبلیغاتی با هوش مصنوعی" : "AI advertising video production"} />
+        <div className="home-panel-shade" />
+        <div className="home-panel-content home-shell">
+          <p className="home-kicker">{t.videoKicker}</p><h2>{t.videoTitle}</h2><p>{t.videoText}</p>
+          <a className="home-button" href="#portfolio"><span>{t.videoCta}</span><Arrow /></a>
+        </div>
+      </section>
+
+      <section className="home-panel home-app-panel">
+        <img className="home-panel-image" src="/images/slide-ai-app-studio.webp" alt={lang === "fa" ? "طراحی و ساخت اپلیکیشن هوش مصنوعی" : "AI application design and development"} />
+        <div className="home-panel-shade" />
+        <div className="home-panel-content home-shell">
+          <p className="home-kicker">{t.appKicker}</p><h2>{t.appTitle}</h2><p>{t.appText}</p>
+          <a className="home-button" href="#contact"><span>{t.appCta}</span><Arrow /></a>
+        </div>
+      </section>
+
+      <section className="home-portfolio" id="portfolio">
+        <div className="home-shell">
+          <div className="home-section-heading"><div><p className="home-kicker">{t.portfolioKicker}</p><h2>{t.portfolioTitle}</h2></div><p>{t.portfolioText}</p></div>
+          <div className="home-video-grid">
+            {["01", "02", "03"].map((id, index) => (
+              <article className="home-video-card" key={id}><span className="home-video-number">0{index + 1}</span>
+                <video ref={(video) => { videoRefs.current[index] = video; }} controls loop playsInline preload="metadata" poster={`/videos/video-${id}.jpg`} aria-label={`${t.portfolioTitle} ${index + 1}`} onPlay={(event) => videoRefs.current.forEach(video => { if (video && video !== event.currentTarget) video.pause(); })}>
+                  <source src={`/videos/video-${id}.mp4`} type="video/mp4" />
+                </video>
+              </article>
             ))}
           </div>
-          <button type="button" onClick={() => moveSlider(1)} aria-label={lang === "fa" ? "حرکت به راست" : "Next card"}>→</button>
         </div>
       </section>
 
-      <section className="strip">{t.strip.map(x => <span key={x}>✦ {x}</span>)}</section>
-
-      <section className="section academy" id="academy">
-        <div className="academy-art"><div className="academy-ring"><Mark /></div><span className="float f1">ROLE</span><span className="float f2">GOAL</span><span className="float f3">CONTEXT</span></div>
-        <div className="academy-copy"><p className="eyebrow">{t.academy}</p><h2 className="academy-course-title">{t.academyTitle}</h2><div className="curriculum">{t.parts.map((part, i) => <div key={part}><p><b>{part}</b><small>{t.instructors[i]}</small></p></div>)}</div><a className="gold-button" href="/register-2">{t.soon}</a></div>
+      <section className="home-panel home-news-panel" id="news">
+        <img className="home-panel-image" src="/images/slide-ai-news.png" alt={lang === "fa" ? "اخبار و تحلیل هوش مصنوعی" : "Artificial intelligence news and analysis"} />
+        <div className="home-panel-shade" />
+        <div className="home-panel-content home-shell">
+          <p className="home-kicker">{t.newsKicker}</p><h2>{t.newsTitle}</h2><p>{t.newsText}</p>
+          <a className="home-button" href="#latest-news"><span>{t.newsCta}</span><Arrow /></a>
+        </div>
       </section>
 
-      <section className="section video-showcase" id="portfolio">
-        <div className="video-showcase-heading"><h2>{t.portfolioTitle}</h2></div>
-        <div className="video-showcase-grid">
-          {["01", "02", "03"].map((id, index) => (
-            <div className="video-frame" key={id}>
-              <video
-                ref={(video) => { videoRefs.current[index] = video; }}
-                controls
-                controlsList="nofullscreen"
-                loop
-                playsInline
-                preload="metadata"
-                poster={`/videos/video-${id}.jpg`}
-                aria-label={`${t.portfolioTitle} ${index + 1}`}
-                onPlay={(event) => {
-                  videoRefs.current.forEach((video) => {
-                    if (video && video !== event.currentTarget) video.pause();
-                  });
-                }}
-                onClick={(event) => {
-                  const video = event.currentTarget;
-                  const bounds = video.getBoundingClientRect();
-                  if (event.clientY >= bounds.bottom - 55) return;
-                  if (video.paused) void video.play();
-                  else video.pause();
-                }}
-              >
-                <source src={`/videos/video-${id}.mp4`} type="video/mp4" />
-              </video>
-            </div>
+      <section className="home-latest" id="latest-news">
+        <div className="home-shell home-news-grid">
+          {newsLinks.map((link, index) => (
+            <a href={link} target="_blank" rel="noreferrer" className="home-news-card" key={link}>
+              <div className="home-news-image"><img src={newsImages[index]} alt="" /></div>
+              <div className="home-news-copy"><span>{t.newsLabels[index]}</span><h3>{t.newsTitles[index]}</h3><Arrow /></div>
+            </a>
           ))}
         </div>
       </section>
 
-      <section className="section news" id="news">
-        <div className="section-heading"><div><p className="eyebrow">{t.updates}</p><h2>{t.updatesTitle}</h2></div></div>
-        <div className="news-grid">{newsItems[lang].map((article) => <a className="news-card-link" href={article.url} target="_blank" rel="noreferrer" key={article.url}><article><div className="news-art news-photo" style={{ backgroundImage: `url(${article.image})` }}></div><small>{article.tag}</small><h3>{article.title}</h3><span className="news-card-arrow">↗</span></article></a>)}</div>
+      <section className="home-founder">
+        <div className="home-founder-image"><img src="/images/hamed-sami-zadeh.jpg" alt={lang === "fa" ? "حامد سمیع‌زاده، بنیان‌گذار سمیز" : "Hamed Sami Zadeh, founder of Samiz"} /></div>
+        <div className="home-founder-copy">
+          <p className="home-kicker">{t.founderKicker}</p><h2>{t.founderTitle}</h2><p>{t.founderText}</p><blockquote>{t.founderQuote}</blockquote>
+          <strong>{lang === "fa" ? "حامد سمیع‌زاده" : "Hamed Sami Zadeh"}</strong><small>FOUNDER / SAMIZ AI</small>
+        </div>
       </section>
 
-      <section className="final-cta" id="contact"><div><p className="eyebrow">SAMIZ AI</p><h2>{t.cta}</h2><p>{t.ctaSub}</p></div><div className="contact-socials"><a className="social-icon instagram-icon" href="https://www.instagram.com/hamedsamizadeh/" target="_blank" rel="noreferrer" aria-label="Instagram"><InstagramIcon /></a><a className="social-icon whatsapp-icon" href="https://wa.me/18259250075" target="_blank" rel="noreferrer" aria-label="WhatsApp"><WhatsAppIcon /></a></div></section>
+      <section className="home-python">
+        <div className="home-shell home-python-inner">
+          <div><p className="home-kicker">{t.pythonKicker}</p><h2>{t.pythonTitle}</h2><p>{t.pythonText}</p><a className="home-button" href="/python"><span>{t.pythonCta}</span><Arrow /></a></div>
+          <div className="home-code" aria-hidden="true"><div><i /><i /><i /><span>python-lab.py</span></div><pre><b>idea</b> = <em>"build with AI"</em>{"\n"}<b>for</b> step <b>in</b> journey:{"\n"}    learn(step){"\n"}    create(step){"\n\n"}<strong>print</strong>(<em>"You are ready."</em>)</pre></div>
+        </div>
+      </section>
 
-      <footer><a className="logo" href="#top"><Mark /><span>SAMIZ AI</span></a><p>{t.footer}</p><a href="https://www.instagram.com/hamedsamizadeh/" target="_blank" rel="noreferrer">@hamedsamizadeh</a></footer>
+      <section className="home-final" id="contact">
+        <div className="home-shell"><p className="home-kicker">SAMIZ AI</p><h2>{t.finalTitle}</h2><p>{t.finalText}</p><div className="home-final-actions"><a className="home-button home-button-light" href="/register-2"><span>{t.finalPrimary}</span><Arrow /></a><a className="home-text-link" href="https://wa.me/18259250075" target="_blank" rel="noreferrer">{t.finalSecondary}<Arrow /></a></div></div>
+      </section>
+
+      <footer className="home-footer">
+        <div className="home-shell"><a className="home-logo" href="#top"><BrandMark /><span>SAMIZ AI</span></a><p>{t.footer}</p><div><a href="https://www.instagram.com/hamedsamizadeh/" target="_blank" rel="noreferrer">INSTAGRAM</a><a href="#top">{t.backTop} ↑</a></div></div>
+      </footer>
     </main>
   );
 }
