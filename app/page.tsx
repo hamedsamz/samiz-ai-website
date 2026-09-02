@@ -148,6 +148,10 @@ export default function Home() {
             <button className={lang === "en" ? "active" : ""} onClick={() => changeLanguage("en")}>EN</button>
           </div>
           <a className="home-header-cta" href="#contact">{t.contact}</a>
+          <span className="home-ai-brain" aria-hidden="true">
+            <span className="home-ai-brain-glow" />
+            <img src="/images/ai-brain-header.webp" alt="" />
+          </span>
           <button className={`home-menu ${menuOpen ? "is-open" : ""}`} type="button" aria-label={lang === "fa" ? "باز کردن منو" : "Open menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
         </div>
       </header>
