@@ -4,96 +4,102 @@ import { useEffect, useRef, useState } from "react";
 
 type Lang = "fa" | "en";
 
-const content = {
+const copy = {
   fa: {
-    nav: ["خانه", "دوره‌ها", "ویدیوهای تبلیغاتی", "اخبار AI", "آزمایشگاه پایتون"],
+    nav: ["خانه", "دوره‌ها", "نمونه‌کارها", "خدمات", "اخبار AI"],
     contact: "شروع همکاری",
-    heroKicker: "آکادمی و استودیوی خلاق هوش مصنوعی",
-    heroTitle: "هوش مصنوعی، از ابزار به مزیت واقعی.",
-    heroText: "آموزش کاربردی هوش مصنوعی، تولید ویدیوهای تبلیغاتی با AI و مهم‌ترین اخبار این حوزه؛ برای کسانی که می‌خواهند جلوتر حرکت کنند.",
-    explore: "ببینید سمیز چه کاری انجام می‌دهد",
-    pillars: [["آموزش", "دوره‌های پروژه‌محور"], ["تولید", "ویدیو و اپلیکیشن AI"], ["تحلیل", "اخبار مهم و کاربردی"]],
-    courseKicker: "SAMIZ ACADEMY / دوره ویژه",
-    courseTitle: "مهندسی پرامپت را برای نتیجه واقعی یاد بگیرید.",
-    courseText: "از اصول گفت‌وگو با مدل‌های هوش مصنوعی تا تولید محتوای حرفه‌ای و ساخت ویدیوهای تبلیغاتی؛ یک مسیر عملی برای ورود جدی به دنیای AI.",
-    courseMeta: ["کلاس زنده", "آموزش پروژه‌محور", "مناسب شروع حرفه‌ای"],
-    courseCta: "مشاهده و ثبت‌نام دوره",
-    videoKicker: "SAMIZ CREATIVE / خدمات تولید",
-    videoTitle: "تبلیغاتی که در میان اسکرول متوقف‌تان می‌کند.",
-    videoText: "ایده، کارگردانی خلاق و تولید با هوش مصنوعی را ترکیب می‌کنیم تا برندها بدون فرایند سنگین تولید سنتی، حرفه‌ای دیده شوند.",
-    videoCta: "مشاهده نمونه ویدیوها",
-    appKicker: "AI APP STUDIO / طراحی محصول",
-    appTitle: "ایده شما، به یک ابزار هوشمند واقعی تبدیل می‌شود.",
-    appText: "از تعریف مسئله تا طراحی و ساخت؛ اپلیکیشن‌های مجهز به هوش مصنوعی برای نیاز واقعی شما و کسب‌وکارتان.",
-    appCta: "درباره ساخت اپ گفتگو کنیم",
-    portfolioKicker: "نمونه‌کارهای منتخب",
-    portfolioTitle: "ویدیوهای تبلیغاتی ساخته‌شده با هوش مصنوعی",
-    portfolioText: "برای پخش هر نمونه کلیک کنید. هر پروژه با هدف، ریتم و هویت بصری مخصوص همان برند ساخته می‌شود.",
-    newsKicker: "SAMIZ INTELLIGENCE / تازه‌های AI",
-    newsTitle: "خبر کمتر. درک بیشتر.",
-    newsText: "مهم‌ترین تغییرات هوش مصنوعی را انتخاب و ساده می‌کنیم تا بدانید چه اتفاقی افتاده و چرا برای شما مهم است.",
-    newsCta: "مشاهده تازه‌ترین خبرها",
-    newsLabels: ["سرمایه‌گذاری AI", "محصول", "مدل‌ها"],
-    newsTitles: ["مدیریت سرمایه‌گذاری در عصر عامل‌های هوش مصنوعی", "GPT-5.6 مدل منتخب Microsoft 365 Copilot شد", "معرفی GPT-5.6؛ هوش مرزی با بهره‌وری بیشتر"],
-    founderKicker: "درباره بنیان‌گذار",
-    founderTitle: "فناوری پیچیده، با زبان روشن و کاربرد واقعی.",
-    founderText: "من حامد سمیع‌زاده‌ام. در سمیز کمک می‌کنم هوش مصنوعی را نه به‌عنوان یک موج زودگذر، بلکه به‌عنوان یک مهارت عملی برای ساختن، یادگرفتن و رشد کسب‌وکار به کار بگیرید.",
-    founderQuote: "هوش مصنوعی جای شما را نمی‌گیرد؛ کسی که استفاده از آن را بلد است، احتمالاً این کار را می‌کند.",
-    pythonKicker: "ابزار رایگان",
-    pythonTitle: "کد پایتون را همین‌جا بنویسید و اجرا کنید.",
-    pythonText: "یک محیط ساده و فارسی برای تمرین برنامه‌نویسی، اجرای نمونه‌ها و یادگیری قدم‌به‌قدم.",
-    pythonCta: "ورود به آزمایشگاه پایتون",
-    finalTitle: "برای یادگیری، ساختن یا همکاری آماده‌اید؟",
-    finalText: "دوره مناسب خود را پیدا کنید یا درباره پروژه تبلیغاتی و اپلیکیشن هوشمندتان با ما صحبت کنید.",
-    finalPrimary: "مشاهده دوره‌ها",
-    finalSecondary: "تماس با سمیز",
-    footer: "آکادمی و استودیوی خلاق هوش مصنوعی — آلبرتا، کانادا",
-    backTop: "بازگشت به بالا",
+    heroKicker: "آکادمی هوش مصنوعی + استودیوی خلاق",
+    heroTitleA: "یاد بگیر.",
+    heroTitleB: "بساز.",
+    heroTitleC: "دیده شو.",
+    heroLead: "سمیز جایی است برای یادگیری کاربردی هوش مصنوعی، ساخت ویدیوهای تبلیغاتی متفاوت و دنبال‌کردن مهم‌ترین تغییرات دنیای AI.",
+    heroPrimary: "مشاهده دوره‌ها",
+    heroSecondary: "دیدن نمونه‌کارها",
+    reelLabel: "ویدیوی منتخب",
+    marquee: ["آموزش کاربردی AI", "ویدیوی تبلیغاتی", "ساخت اپلیکیشن", "اخبار هوش مصنوعی"],
+    courseKicker: "دوره منتخب / ۰۱",
+    courseTitle: "مهندسی پرامپت؛ از سؤال بهتر تا نتیجه واقعی",
+    courseText: "یک مسیر پروژه‌محور برای یادگیری گفت‌وگوی حرفه‌ای با مدل‌های هوش مصنوعی، تولید محتوا و ساخت ویدیوهای تبلیغاتی. مفاهیم را یاد می‌گیرید و همان‌جا به خروجی تبدیل می‌کنید.",
+    courseFacts: [["فرمت", "کلاس زنده"], ["رویکرد", "پروژه‌محور"], ["زبان", "فارسی"]],
+    courseCta: "جزئیات و ثبت‌نام",
+    workKicker: "SAMIZ FILMS / نمونه‌کارها",
+    workTitle: "تصویرهایی که برای توقف اسکرول ساخته شده‌اند.",
+    workText: "هر ویدیو با یک هدف روشن شروع می‌شود: جلب توجه، ساختن حس و رساندن پیام برند در چند ثانیه.",
+    playHint: "برای پخش کلیک کنید",
+    capabilitiesKicker: "آنچه در سمیز انجام می‌شود",
+    capabilitiesTitle: "یک برند؛ سه مسیر برای حرکت جلوتر.",
+    cards: [
+      ["۰۱", "آکادمی", "دوره‌های کاربردی برای تبدیل AI به یک مهارت واقعی.", "مشاهده دوره", "#course"],
+      ["۰۲", "استودیوی ویدیو", "ایده‌پردازی و تولید ویدیوهای تبلیغاتی با هوش مصنوعی.", "دیدن ویدیوها", "#work"],
+      ["۰۳", "محصولات AI", "طراحی ابزارها و اپلیکیشن‌های هوشمند برای نیاز واقعی.", "شروع گفتگو", "#contact"],
+    ],
+    newsKicker: "SAMIZ INTELLIGENCE",
+    newsTitle: "خبر کمتر. فهم بیشتر.",
+    newsText: "مهم‌ترین اتفاقات هوش مصنوعی را انتخاب می‌کنیم، ساده توضیح می‌دهیم و نشان می‌دهیم چرا برای کار و آینده شما مهم‌اند.",
+    newsTags: ["کسب‌وکار AI", "محصول", "مدل‌ها"],
+    newsTitles: ["مدیریت سرمایه‌گذاری در عصر عامل‌های هوش مصنوعی", "GPT-5.6 مدل منتخب Microsoft 365 Copilot شد", "معرفی GPT-5.6؛ هوش مرزی در مقیاس بزرگ"],
+    founderKicker: "بنیان‌گذار سمیز",
+    founderTitle: "فناوری پیچیده، با زبان روشن.",
+    founderText: "من حامد سمیع‌زاده‌ام. هدفم این است که هوش مصنوعی را از یک موضوع پیچیده و دور، به ابزاری قابل‌فهم برای ساختن، یادگرفتن و رشد تبدیل کنم.",
+    pythonLabel: "ابزار رایگان",
+    pythonTitle: "آزمایشگاه آنلاین پایتون",
+    pythonText: "کد بنویسید، همان‌جا اجرا کنید و با نمونه‌های فارسی تمرین کنید.",
+    pythonCta: "ورود به آزمایشگاه",
+    finalKicker: "یک ایده دارید؟",
+    finalTitle: "بیایید آن را به چیزی تبدیل کنیم که دیده شود.",
+    finalText: "برای دوره‌های آموزشی، ساخت ویدیوهای تبلیغاتی و پروژه‌های هوش مصنوعی با سمیز در ارتباط باشید.",
+    whatsapp: "گفتگو در واتساپ",
+    instagram: "اینستاگرام",
+    footerLine: "آکادمی و استودیوی خلاق هوش مصنوعی — آلبرتا، کانادا",
+    top: "بازگشت به بالا",
   },
   en: {
-    nav: ["Home", "Courses", "AI Video", "AI News", "Python Lab"],
+    nav: ["Home", "Courses", "Selected work", "Services", "AI News"],
     contact: "Start a project",
-    heroKicker: "AI ACADEMY & CREATIVE STUDIO",
-    heroTitle: "Turn artificial intelligence into a real advantage.",
-    heroText: "Practical AI education, high-impact AI video production, and the news that matters — for people ready to move ahead.",
-    explore: "Discover what Samiz does",
-    pillars: [["LEARN", "Project-based courses"], ["CREATE", "AI video and applications"], ["UNDERSTAND", "Useful AI intelligence"]],
-    courseKicker: "SAMIZ ACADEMY / FEATURED COURSE",
-    courseTitle: "Learn prompt engineering for real-world results.",
-    courseText: "From communicating clearly with AI models to professional content and advertising video production — a practical path into the world of AI.",
-    courseMeta: ["Live cohort", "Project-based", "Built for serious beginners"],
-    courseCta: "View course and register",
-    videoKicker: "SAMIZ CREATIVE / PRODUCTION",
-    videoTitle: "Advertising made to stop the scroll.",
-    videoText: "We combine concept, creative direction, and AI production so brands can look exceptional without the weight of a traditional shoot.",
-    videoCta: "Watch selected work",
-    appKicker: "AI APP STUDIO / PRODUCT DESIGN",
-    appTitle: "Your idea, transformed into a useful intelligent product.",
-    appText: "From problem definition to design and delivery, we build AI-powered applications around real business needs.",
-    appCta: "Discuss your app idea",
-    portfolioKicker: "SELECTED WORK",
-    portfolioTitle: "Advertising videos created with AI",
-    portfolioText: "Select a film to play. Every project is shaped around the brand's own objective, rhythm, and visual language.",
-    newsKicker: "SAMIZ INTELLIGENCE / AI UPDATES",
-    newsTitle: "Less noise. More understanding.",
-    newsText: "We select and simplify the most important AI developments, so you know what changed and why it matters.",
-    newsCta: "Read the latest updates",
-    newsLabels: ["AI INVESTMENT", "PRODUCT", "MODELS"],
-    newsTitles: ["Managing AI investments in the agentic era", "GPT-5.6 becomes the preferred model in Microsoft 365 Copilot", "Introducing GPT-5.6: frontier intelligence at scale"],
-    founderKicker: "MEET THE FOUNDER",
-    founderTitle: "Complex technology, explained clearly and used practically.",
-    founderText: "I'm Hamed Sami Zadeh. At Samiz, I help people use AI not as a passing trend, but as a practical skill for creating, learning, and growing a business.",
-    founderQuote: "AI will not replace you. Someone who knows how to use it probably will.",
-    pythonKicker: "FREE TOOL",
-    pythonTitle: "Write and run Python code right here.",
-    pythonText: "A simple learning environment for practicing code, running examples, and improving one step at a time.",
+    heroKicker: "AI ACADEMY + CREATIVE STUDIO",
+    heroTitleA: "Learn.",
+    heroTitleB: "Create.",
+    heroTitleC: "Get seen.",
+    heroLead: "Samiz is where practical AI education, distinctive advertising films, and the developments shaping artificial intelligence come together.",
+    heroPrimary: "Explore courses",
+    heroSecondary: "View selected work",
+    reelLabel: "Featured film",
+    marquee: ["PRACTICAL AI EDUCATION", "AI ADVERTISING FILMS", "INTELLIGENT APPS", "AI INTELLIGENCE"],
+    courseKicker: "FEATURED COURSE / 01",
+    courseTitle: "Prompt engineering, from better questions to real results",
+    courseText: "A project-led path through professional AI communication, content creation, and advertising film production. Learn each concept, then turn it into something useful.",
+    courseFacts: [["FORMAT", "Live cohort"], ["METHOD", "Project-led"], ["LANGUAGE", "Persian"]],
+    courseCta: "Course details and registration",
+    workKicker: "SAMIZ FILMS / SELECTED WORK",
+    workTitle: "Images made to stop the scroll.",
+    workText: "Every film begins with a clear objective: capture attention, create emotion, and communicate the brand in seconds.",
+    playHint: "Select a film to play",
+    capabilitiesKicker: "WHAT SAMIZ DOES",
+    capabilitiesTitle: "One brand. Three ways to move ahead.",
+    cards: [
+      ["01", "Academy", "Practical courses that turn AI into a real skill.", "Explore courses", "#course"],
+      ["02", "Video studio", "Concept and AI production for high-impact advertising films.", "View the films", "#work"],
+      ["03", "AI products", "Useful intelligent tools and applications built around real needs.", "Start a conversation", "#contact"],
+    ],
+    newsKicker: "SAMIZ INTELLIGENCE",
+    newsTitle: "Less news. More understanding.",
+    newsText: "We select the AI developments that matter, explain them clearly, and show why they matter to your work and future.",
+    newsTags: ["AI BUSINESS", "PRODUCT", "MODELS"],
+    newsTitles: ["Managing investment in the age of AI agents", "GPT-5.6 becomes the preferred model in Microsoft 365 Copilot", "Introducing GPT-5.6: frontier intelligence at scale"],
+    founderKicker: "FOUNDER OF SAMIZ",
+    founderTitle: "Complex technology, spoken clearly.",
+    founderText: "I'm Hamed Sami Zadeh. My goal is to turn AI from a distant, complicated subject into an understandable tool for creating, learning, and growing.",
+    pythonLabel: "FREE TOOL",
+    pythonTitle: "Online Python Lab",
+    pythonText: "Write code, run it in the browser, and learn through practical examples.",
     pythonCta: "Open Python Lab",
-    finalTitle: "Ready to learn, create, or collaborate?",
-    finalText: "Find the right course or tell us about your next advertising or intelligent application project.",
-    finalPrimary: "Explore courses",
-    finalSecondary: "Contact Samiz",
-    footer: "AI academy and creative studio — Alberta, Canada",
-    backTop: "Back to top",
+    finalKicker: "HAVE AN IDEA?",
+    finalTitle: "Let's turn it into something worth seeing.",
+    finalText: "Connect with Samiz for practical courses, advertising films, and intelligent product projects.",
+    whatsapp: "Talk on WhatsApp",
+    instagram: "Instagram",
+    footerLine: "AI academy and creative studio — Alberta, Canada",
+    top: "Back to top",
   },
 };
 
@@ -108,154 +114,112 @@ const newsImages = [
   "https://images.ctfassets.net/kftzwdyauwt9/1a9IPPV5nXWydTBosgmgYI/8e03f28ca04f26edc8bc81cdba387df1/5-6.jpg?fm=webp&q=75&w=1200",
 ];
 
-function BrandMark() {
-  return <span className="home-mark" aria-hidden="true"><span>S</span><b>AI</b></span>;
+function Brand() {
+  return <span className="neo-brand"><b>S</b><i>AI</i><strong>SAMIZ</strong></span>;
 }
-
-function Arrow() {
-  return <span className="home-arrow" aria-hidden="true">↗</span>;
+function Arrow() { return <span aria-hidden="true">↗</span>; }
+function InstagramIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle className="fill-dot" cx="17.4" cy="6.7" r="1"/></svg>;
+}
+function WhatsAppIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 11.8a8.4 8.4 0 0 1-12.5 7.3l-4.4 1.4 1.4-4.2a8.4 8.4 0 1 1 15.5-4.5Z"/><path className="phone-fill" d="M8.1 7.7c.2-.4.4-.5.7-.5h.5c.2 0 .4.1.5.4l.8 2c.1.3.1.5-.1.7l-.6.8c-.2.2-.2.4-.1.7.5 1 1.3 1.8 2.3 2.3.3.2.5.1.7-.1l.8-1c.2-.2.4-.3.7-.2l2 .9c.3.1.4.3.4.5 0 .3-.2 1.4-1 2-.7.6-1.6.8-2.6.5-1.4-.4-2.8-1.1-4.1-2.3-1.1-1-2.1-2.4-2.5-3.8-.4-1.2 0-2.4.6-3Z"/></svg>;
 }
 
 export default function Home() {
   const [lang, setLang] = useState<Lang>("fa");
   const [menuOpen, setMenuOpen] = useState(false);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
-  const t = content[lang];
+  const t = copy[lang];
 
   useEffect(() => {
     const saved = localStorage.getItem("samiz-lang");
     if (saved === "fa" || saved === "en") setLang(saved);
   }, []);
 
-  const changeLanguage = (next: Lang) => {
+  const setLanguage = (next: Lang) => {
     setLang(next);
     localStorage.setItem("samiz-lang", next);
     setMenuOpen(false);
   };
 
-  const links = ["#top", "#courses", "#video", "#news", "/python"];
+  const anchors = ["#top", "#course", "#work", "#services", "#news"];
 
   return (
-    <main id="top" className={`home ${lang === "fa" ? "home-fa" : "home-en"}`} lang={lang} dir={lang === "fa" ? "rtl" : "ltr"}>
-      <header className="home-header">
-        <a className="home-logo" href="#top" aria-label="Samiz AI home"><BrandMark /><span>SAMIZ AI</span></a>
-        <nav className={`home-nav ${menuOpen ? "is-open" : ""}`} aria-label={lang === "fa" ? "منوی اصلی" : "Main navigation"}>
-          {t.nav.map((item, index) => <a key={item} href={links[index]} onClick={() => setMenuOpen(false)}>{item}</a>)}
+    <main id="top" className={`neo-home ${lang === "fa" ? "is-fa" : "is-en"}`} dir={lang === "fa" ? "rtl" : "ltr"} lang={lang}>
+      <header className="neo-header">
+        <a href="#top" className="neo-logo" aria-label="Samiz AI"><Brand /></a>
+        <nav className={menuOpen ? "neo-nav is-open" : "neo-nav"} aria-label={lang === "fa" ? "منوی اصلی" : "Main navigation"}>
+          {t.nav.map((item, index) => <a href={anchors[index]} key={item} onClick={() => setMenuOpen(false)}>{item}</a>)}
         </nav>
-        <div className="home-header-actions">
-          <div className="home-language" aria-label={lang === "fa" ? "انتخاب زبان" : "Language selector"}>
-            <button className={lang === "fa" ? "active" : ""} onClick={() => changeLanguage("fa")}>فا</button><span>/</span>
-            <button className={lang === "en" ? "active" : ""} onClick={() => changeLanguage("en")}>EN</button>
-          </div>
-          <a className="home-header-cta" href="#contact">{t.contact}</a>
-          <button className={`home-menu ${menuOpen ? "is-open" : ""}`} type="button" aria-label={lang === "fa" ? "باز کردن منو" : "Open menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
+        <div className="neo-header-actions">
+          <div className="neo-lang"><button onClick={() => setLanguage("fa")} className={lang === "fa" ? "active" : ""}>فا</button><span>/</span><button onClick={() => setLanguage("en")} className={lang === "en" ? "active" : ""}>EN</button></div>
+          <a href="#contact" className="neo-contact">{t.contact}<Arrow /></a>
+          <button className={menuOpen ? "neo-menu is-open" : "neo-menu"} onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label={lang === "fa" ? "باز کردن منو" : "Open menu"}><span/><span/></button>
         </div>
       </header>
 
-      <section className="home-hero">
-        <div className="home-hero-media" aria-hidden="true"><img src="/images/hero-laptop-clean.webp" alt="" /></div>
-        <div className="home-hero-brain" aria-hidden="true">
-          <span className="home-hero-brain-glow" />
-          <img src="/images/ai-brain-header.webp" alt="" />
+      <section className="neo-hero">
+        <div className="neo-hero-copy">
+          <p className="neo-kicker">{t.heroKicker}</p>
+          <h1><span>{t.heroTitleA}</span><span>{t.heroTitleB}</span><em>{t.heroTitleC}</em></h1>
+          <p className="neo-hero-lead">{t.heroLead}</p>
+          <div className="neo-actions"><a href="#course" className="neo-button solid">{t.heroPrimary}<Arrow /></a><a href="#work" className="neo-button text">{t.heroSecondary}<span>↓</span></a></div>
         </div>
-        <div className="home-shade" />
-        <div className="home-hero-content home-shell">
-          <p className="home-kicker">{t.heroKicker}</p><h1>{t.heroTitle}</h1><p className="home-lead">{t.heroText}</p>
-          <a className="home-button home-button-light" href="#overview"><span>{t.explore}</span><Arrow /></a>
+        <div className="neo-hero-reel">
+          <video autoPlay muted loop playsInline poster="/videos/video-02.jpg"><source src="/videos/video-02.mp4" type="video/mp4"/></video>
+          <div className="neo-reel-top"><span>01 / 03</span><span>{t.reelLabel}</span></div>
+          <div className="neo-reel-play"><span>▶</span></div>
         </div>
-        <div className="home-scroll" aria-hidden="true"><span />SCROLL</div>
+        <div className="neo-hero-index">SAMIZ<small>AI / CREATIVE / EDUCATION</small></div>
       </section>
 
-      <section className="home-overview" id="overview">
-        <div className="home-shell home-pillars">
-          {t.pillars.map(([label, value], index) => <article key={label}><span>0{index + 1}</span><small>{label}</small><strong>{value}</strong></article>)}
-        </div>
+      <div className="neo-marquee" aria-hidden="true"><div>{[...t.marquee, ...t.marquee].map((item, index) => <span key={`${item}-${index}`}>{item}<i>✦</i></span>)}</div></div>
+
+      <section className="neo-course neo-shell" id="course">
+        <div className="neo-course-side"><span className="neo-section-number">01</span><p>{t.courseKicker}</p></div>
+        <div className="neo-course-main"><h2>{t.courseTitle}</h2><p>{t.courseText}</p><div className="neo-course-facts">{t.courseFacts.map(([label,value]) => <div key={label}><small>{label}</small><strong>{value}</strong></div>)}</div><a href="/register-2" className="neo-button outline">{t.courseCta}<Arrow /></a></div>
       </section>
 
-      <section className="home-panel home-course" id="courses">
-        <div className="home-course-art" aria-hidden="true"><div className="home-orbit orbit-one" /><div className="home-orbit orbit-two" /><div className="home-prompt-window"><span>PROMPT / 01</span><i /><i /><i /><b>AI</b></div></div>
-        <div className="home-panel-shade" />
-        <div className="home-panel-content home-shell">
-          <p className="home-kicker">{t.courseKicker}</p><h2>{t.courseTitle}</h2><p>{t.courseText}</p>
-          <div className="home-meta">{t.courseMeta.map(item => <span key={item}>{item}</span>)}</div>
-          <a className="home-button" href="/register-2"><span>{t.courseCta}</span><Arrow /></a>
-        </div>
-      </section>
-
-      <section className="home-panel home-media-panel" id="video">
-        <img className="home-panel-image" src="/images/slide-video-ad.png" alt={lang === "fa" ? "تولید ویدیوی تبلیغاتی با هوش مصنوعی" : "AI advertising video production"} />
-        <div className="home-panel-shade" />
-        <div className="home-panel-content home-shell">
-          <p className="home-kicker">{t.videoKicker}</p><h2>{t.videoTitle}</h2><p>{t.videoText}</p>
-          <a className="home-button" href="#portfolio"><span>{t.videoCta}</span><Arrow /></a>
-        </div>
-      </section>
-
-      <section className="home-panel home-app-panel">
-        <img className="home-panel-image" src="/images/slide-ai-app-studio.webp" alt={lang === "fa" ? "طراحی و ساخت اپلیکیشن هوش مصنوعی" : "AI application design and development"} />
-        <div className="home-panel-shade" />
-        <div className="home-panel-content home-shell">
-          <p className="home-kicker">{t.appKicker}</p><h2>{t.appTitle}</h2><p>{t.appText}</p>
-          <a className="home-button" href="#contact"><span>{t.appCta}</span><Arrow /></a>
-        </div>
-      </section>
-
-      <section className="home-portfolio" id="portfolio">
-        <div className="home-shell">
-          <div className="home-section-heading"><div><p className="home-kicker">{t.portfolioKicker}</p><h2>{t.portfolioTitle}</h2></div><p>{t.portfolioText}</p></div>
-          <div className="home-video-grid">
-            {["01", "02", "03"].map((id, index) => (
-              <article className="home-video-card" key={id}><span className="home-video-number">0{index + 1}</span>
-                <video ref={(video) => { videoRefs.current[index] = video; }} controls loop playsInline preload="metadata" poster={`/videos/video-${id}.jpg`} aria-label={`${t.portfolioTitle} ${index + 1}`} onPlay={(event) => videoRefs.current.forEach(video => { if (video && video !== event.currentTarget) video.pause(); })}>
-                  <source src={`/videos/video-${id}.mp4`} type="video/mp4" />
-                </video>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="home-panel home-news-panel" id="news">
-        <img className="home-panel-image" src="/images/slide-ai-news.png" alt={lang === "fa" ? "اخبار و تحلیل هوش مصنوعی" : "Artificial intelligence news and analysis"} />
-        <div className="home-panel-shade" />
-        <div className="home-panel-content home-shell">
-          <p className="home-kicker">{t.newsKicker}</p><h2>{t.newsTitle}</h2><p>{t.newsText}</p>
-          <a className="home-button" href="#latest-news"><span>{t.newsCta}</span><Arrow /></a>
-        </div>
-      </section>
-
-      <section className="home-latest" id="latest-news">
-        <div className="home-shell home-news-grid">
-          {newsLinks.map((link, index) => (
-            <a href={link} target="_blank" rel="noreferrer" className="home-news-card" key={link}>
-              <div className="home-news-image"><img src={newsImages[index]} alt="" /></div>
-              <div className="home-news-copy"><span>{t.newsLabels[index]}</span><h3>{t.newsTitles[index]}</h3><Arrow /></div>
-            </a>
+      <section className="neo-work" id="work">
+        <div className="neo-shell neo-section-head"><div><p className="neo-kicker">{t.workKicker}</p><h2>{t.workTitle}</h2></div><p>{t.workText}</p></div>
+        <div className="neo-film-grid">
+          {["01","02","03"].map((id,index) => (
+            <article className="neo-film" key={id}>
+              <video ref={video => {videoRefs.current[index]=video}} controls loop playsInline preload="metadata" poster={`/videos/video-${id}.jpg`} onPlay={event => videoRefs.current.forEach(video => {if(video && video!==event.currentTarget) video.pause()})}><source src={`/videos/video-${id}.mp4`} type="video/mp4"/></video>
+              <div className="neo-film-meta"><span>FILM / 0{index+1}</span><small>{t.playHint}</small></div>
+            </article>
           ))}
         </div>
       </section>
 
-      <section className="home-founder">
-        <div className="home-founder-image"><img src="/images/hamed-sami-zadeh.jpg" alt={lang === "fa" ? "حامد سمیع‌زاده، بنیان‌گذار سمیز" : "Hamed Sami Zadeh, founder of Samiz"} /></div>
-        <div className="home-founder-copy">
-          <p className="home-kicker">{t.founderKicker}</p><h2>{t.founderTitle}</h2><p>{t.founderText}</p><blockquote>{t.founderQuote}</blockquote>
-          <strong>{lang === "fa" ? "حامد سمیع‌زاده" : "Hamed Sami Zadeh"}</strong><small>FOUNDER / SAMIZ AI</small>
+      <section className="neo-services neo-shell" id="services">
+        <div className="neo-section-head"><div><p className="neo-kicker">{t.capabilitiesKicker}</p><h2>{t.capabilitiesTitle}</h2></div></div>
+        <div className="neo-service-grid">
+          {t.cards.map(([number,title,text,label,href],index) => <a href={href} className={`neo-service-card card-${index+1}`} key={title}><div><span>{number}</span><Arrow /></div><h3>{title}</h3><p>{text}</p><strong>{label}</strong>{index>0 && <img src={index===1?"/images/slide-video-ad.png":"/images/slide-ai-app-studio.webp"} alt=""/>}</a>)}
         </div>
       </section>
 
-      <section className="home-python">
-        <div className="home-shell home-python-inner">
-          <div><p className="home-kicker">{t.pythonKicker}</p><h2>{t.pythonTitle}</h2><p>{t.pythonText}</p><a className="home-button" href="/python"><span>{t.pythonCta}</span><Arrow /></a></div>
-          <div className="home-code" aria-hidden="true"><div><i /><i /><i /><span>python-lab.py</span></div><pre><b>idea</b> = <em>"build with AI"</em>{"\n"}<b>for</b> step <b>in</b> journey:{"\n"}    learn(step){"\n"}    create(step){"\n\n"}<strong>print</strong>(<em>"You are ready."</em>)</pre></div>
+      <section className="neo-news" id="news">
+        <div className="neo-shell">
+          <div className="neo-news-intro"><p className="neo-kicker">{t.newsKicker}</p><h2>{t.newsTitle}</h2><p>{t.newsText}</p></div>
+          <div className="neo-news-list">
+            {newsLinks.map((link,index) => <a href={link} target="_blank" rel="noreferrer" key={link}><span className="neo-news-index">0{index+1}</span><div className="neo-news-thumb"><img src={newsImages[index]} alt=""/></div><div><small>{t.newsTags[index]}</small><h3>{t.newsTitles[index]}</h3></div><Arrow /></a>)}
+          </div>
         </div>
       </section>
 
-      <section className="home-final" id="contact">
-        <div className="home-shell"><p className="home-kicker">SAMIZ AI</p><h2>{t.finalTitle}</h2><p>{t.finalText}</p><div className="home-final-actions"><a className="home-button home-button-light" href="/register-2"><span>{t.finalPrimary}</span><Arrow /></a><a className="home-text-link" href="https://wa.me/18259250075" target="_blank" rel="noreferrer">{t.finalSecondary}<Arrow /></a></div></div>
+      <section className="neo-about neo-shell">
+        <div className="neo-about-image"><img src="/images/hamed-sami-zadeh.jpg" alt={lang==="fa"?"حامد سمیع‌زاده":"Hamed Sami Zadeh"}/><span>HAMED / SAMIZ</span></div>
+        <div className="neo-about-copy"><p className="neo-kicker">{t.founderKicker}</p><h2>{t.founderTitle}</h2><p>{t.founderText}</p></div>
+        <a className="neo-python-card" href="/python"><small>{t.pythonLabel}</small><h3>{t.pythonTitle}</h3><p>{t.pythonText}</p><strong>{t.pythonCta}<Arrow /></strong><code>&gt;_</code></a>
       </section>
 
-      <footer className="home-footer">
-        <div className="home-shell"><a className="home-logo" href="#top"><BrandMark /><span>SAMIZ AI</span></a><p>{t.footer}</p><div><a href="https://www.instagram.com/hamedsamizadeh/" target="_blank" rel="noreferrer">INSTAGRAM</a><a href="#top">{t.backTop} ↑</a></div></div>
+      <section className="neo-final" id="contact">
+        <div className="neo-shell"><p className="neo-kicker">{t.finalKicker}</p><h2>{t.finalTitle}</h2><p>{t.finalText}</p><div className="neo-social-actions"><a href="https://wa.me/18259250075" target="_blank" rel="noreferrer"><WhatsAppIcon/><span>{t.whatsapp}</span><Arrow /></a><a href="https://www.instagram.com/hamedsamizadeh/" target="_blank" rel="noreferrer"><InstagramIcon/><span>{t.instagram}</span><Arrow /></a></div></div>
+      </section>
+
+      <footer className="neo-footer">
+        <div className="neo-shell"><a href="#top" className="neo-logo"><Brand /></a><p>{t.footerLine}</p><div className="neo-footer-socials"><a href="https://wa.me/18259250075" target="_blank" rel="noreferrer" aria-label="WhatsApp"><WhatsAppIcon/></a><a href="https://www.instagram.com/hamedsamizadeh/" target="_blank" rel="noreferrer" aria-label="Instagram"><InstagramIcon/></a></div><a href="#top" className="neo-top">{t.top} ↑</a></div>
       </footer>
     </main>
   );
