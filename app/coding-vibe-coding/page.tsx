@@ -83,6 +83,7 @@ export default function CodingVibeCodingPage() {
         <div className="cvc-hero-copy">
           <div className="cvc-status"><span /> ثبت‌نام دوره جدید آغاز شد</div>
           <p className="cvc-overline">CODING × AI × PYTHON</p>
+          <h2 className="cvc-hero-heading">آموزش هوش مصنوعی از پایه، به‌صورت اصولی و مفهومی</h2>
           <h1><span>کدینگ،</span><em>وایب‌کدینگ</em></h1>
           <p className="cvc-lead">از اولین پرامپت تا اولین پروژه پایتون؛ مسیری عملی برای یادگیری هوش مصنوعی، مهندسی پرامپت و برنامه‌نویسی با کمک AI.</p>
           <div className="cvc-teachers">
