@@ -18,9 +18,9 @@ const copy = {
     reelLabel: "ویدیوی منتخب",
     marquee: ["آموزش کاربردی AI", "ویدیوی تبلیغاتی", "ساخت اپلیکیشن", "اخبار هوش مصنوعی"],
     courseKicker: "دوره منتخب / ۰۱",
-    courseTitle: "مهندسی پرامپت؛ از سؤال بهتر تا نتیجه واقعی",
-    courseText: "یک مسیر پروژه‌محور برای یادگیری گفت‌وگوی حرفه‌ای با مدل‌های هوش مصنوعی، تولید محتوا و ساخت ویدیوهای تبلیغاتی. مفاهیم را یاد می‌گیرید و همان‌جا به خروجی تبدیل می‌کنید.",
-    courseFacts: [["فرمت", "کلاس زنده"], ["رویکرد", "پروژه‌محور"], ["زبان", "فارسی"]],
+    courseTitle: "کدینگ، وایب‌کدینگ؛ از اولین پرامپت تا اولین پروژه پایتون",
+    courseText: "یک مسیر پروژه‌محور و بدون پیش‌نیاز برای یادگیری هوش مصنوعی، مهندسی پرامپت، مبانی پایتون و ساخت پروژه با کمک AI؛ با تدریس حامد سمیع‌زاده و دکتر هادی روشن.",
+    courseFacts: [["شروع", "۱ مهر"], ["سطح", "از صفر"], ["رویکرد", "پروژه‌محور"]],
     courseCta: "جزئیات و ثبت‌نام",
     workKicker: "SAMIZ FILMS / نمونه‌کارها",
     workTitle: "تصویرهایی که برای توقف اسکرول ساخته شده‌اند.",
@@ -66,9 +66,9 @@ const copy = {
     reelLabel: "Featured film",
     marquee: ["PRACTICAL AI EDUCATION", "AI ADVERTISING FILMS", "INTELLIGENT APPS", "AI INTELLIGENCE"],
     courseKicker: "FEATURED COURSE / 01",
-    courseTitle: "Prompt engineering, from better questions to real results",
-    courseText: "A project-led path through professional AI communication, content creation, and advertising film production. Learn each concept, then turn it into something useful.",
-    courseFacts: [["FORMAT", "Live cohort"], ["METHOD", "Project-led"], ["LANGUAGE", "Persian"]],
+    courseTitle: "Coding & Vibe Coding: from your first prompt to your first Python project",
+    courseText: "A beginner-friendly, project-led path through AI, prompt engineering, Python fundamentals, and building real projects with AI; taught in Persian by Hamed Sami Zadeh and Dr. Hadi Roshan.",
+    courseFacts: [["START", "1 Mehr"], ["LEVEL", "Beginner"], ["METHOD", "Project-led"]],
     courseCta: "Course details and registration",
     workKicker: "SAMIZ FILMS / SELECTED WORK",
     workTitle: "Images made to stop the scroll.",
@@ -177,7 +177,7 @@ export default function Home() {
 
       <section className="neo-course neo-shell" id="course">
         <div className="neo-course-side"><span className="neo-section-number">01</span><p>{t.courseKicker}</p></div>
-        <div className="neo-course-main"><h2>{t.courseTitle}</h2><p>{t.courseText}</p><div className="neo-course-facts">{t.courseFacts.map(([label,value]) => <div key={label}><small>{label}</small><strong>{value}</strong></div>)}</div><a href="/register-2" className="neo-button outline">{t.courseCta}<Arrow /></a></div>
+        <div className="neo-course-main"><h2>{t.courseTitle}</h2><p>{t.courseText}</p><div className="neo-course-facts">{t.courseFacts.map(([label,value]) => <div key={label}><small>{label}</small><strong>{value}</strong></div>)}</div><a href="/coding-vibe-coding" className="neo-button outline">{t.courseCta}<Arrow /></a></div>
       </section>
 
       <section className="neo-work" id="work">
