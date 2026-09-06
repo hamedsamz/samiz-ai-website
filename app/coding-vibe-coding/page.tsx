@@ -194,10 +194,29 @@ export default function CodingVibeCodingPage() {
             </div>
             <label className="cvc-consent"><input type="checkbox" required /><span>تأیید می‌کنم اطلاعات واردشده صحیح است و پرداخت مربوط به ثبت‌نام همین دوره است.</span></label>
             <button className="cvc-submit" disabled={busy}>{busy ? "در حال ثبت درخواست…" : "ارسال رسید و ثبت درخواست"}<span>↙</span></button>
-            <p className="cvc-form-note">پس از بررسی پرداخت، تأیید نهایی و لینک کانال دوره به ایمیل شما ارسال می‌شود. پوشه Spam را نیز بررسی کنید.</p>
+            <div className="cvc-review-note">
+              <span aria-hidden="true">✓</span>
+              <div>
+                <strong>بررسی رسید حداکثر تا ۴۸ ساعت</strong>
+                <p>رسید شما حداکثر تا ۴۸ ساعت پس از بارگذاری بررسی می‌شود. بعد از تأیید، ایمیل تأیید ثبت‌نام و لینک ورود به کانال دوره برایتان ارسال خواهد شد. پوشه Spam را هم بررسی کنید.</p>
+              </div>
+            </div>
             {message && <p className={message.error ? "cvc-message error" : "cvc-message success"}>{message.text}</p>}
           </form>
         </div>
+      </section>
+
+      <section className="cvc-support" aria-labelledby="support-title">
+        <div>
+          <p className="cvc-section-label">پشتیبانی ثبت‌نام</p>
+          <h2 id="support-title">سؤالی دارید؟ مستقیم پیام بدهید.</h2>
+          <p>برای پرسش‌های مربوط به پرداخت، ارسال رسید یا ثبت‌نام دوره در واتساپ با ما در ارتباط باشید.</p>
+        </div>
+        <a href="https://wa.me/18259250075" target="_blank" rel="noreferrer" aria-label="پیام به پشتیبانی ثبت‌نام در واتساپ">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 3.5A11.8 11.8 0 0 0 12.1 0C5.6 0 .3 5.3.3 11.8c0 2.1.6 4.2 1.6 6L0 24l6.4-1.7a11.8 11.8 0 0 0 5.7 1.5h.1c6.5 0 11.8-5.3 11.8-11.8 0-3.2-1.2-6.2-3.5-8.5Zm-8.4 18.3c-1.8 0-3.6-.5-5.1-1.4l-.4-.2-3.8 1 1-3.7-.2-.4a9.8 9.8 0 1 1 8.5 4.7Zm5.4-7.3c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-1.8-.9-3-1.6-4.2-3.7-.3-.5.3-.5.9-1.6.1-.2.1-.4 0-.6l-1-2.4c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.2-1.2 3s1.3 3.5 1.5 3.8c.2.2 2.6 4 6.3 5.6.9.4 1.6.6 2.1.8.9.3 1.7.2 2.3.1.7-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.3-.3-.4-.6-.6Z" /></svg>
+          <span><small>پشتیبانی در واتساپ</small><strong>پیام به حامد سمیع‌زاده</strong></span>
+          <i>↗</i>
+        </a>
       </section>
 
       <footer className="cvc-footer"><span>SAMIZ AI ACADEMY</span><p>دوره کدینگ، وایب‌کدینگ · حامد سمیع‌زاده × دکتر هادی روشن</p><Link href="/">بازگشت به سایت</Link></footer>
