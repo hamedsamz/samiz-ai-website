@@ -205,8 +205,8 @@ export default function Home() {
           <div className="neo-orbit orbit-two" aria-hidden="true" />
           <div className="neo-brain-scene" aria-hidden="true">
             <span className="neo-brain-core" />
-            <img className="neo-brain brain-left" src="/images/ai-brain-header.webp" alt="" />
-            <img className="neo-brain brain-right" src="/images/ai-brain-header.webp" alt="" />
+            <img className="neo-brain brain-left" src="/images/ai-brain-hero-hd.webp" alt="" />
+            <img className="neo-brain brain-right" src="/images/ai-brain-hero-hd.webp" alt="" />
           </div>
 
           <div className="neo-scroll-brand" aria-hidden="true">SAMIZ <i>AI</i></div>
