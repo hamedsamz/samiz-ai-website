@@ -15,12 +15,6 @@ const copy = {
     heroLead: "سمیز جایی است برای یادگیری کاربردی هوش مصنوعی، ساخت ویدیوهای تبلیغاتی متفاوت و دنبال‌کردن مهم‌ترین تغییرات دنیای AI.",
     heroPrimary: "مشاهده دوره‌ها",
     heroSecondary: "دیدن نمونه‌کارها",
-    heroScroll: "برای شروع اسکرول کنید",
-    heroStages: [
-      ["۰۱ / یادگیری", "هوش مصنوعی را بفهم.", "آموزش کاربردی و مفهومی؛ برای اینکه فقط مصرف‌کننده ابزارها نباشی."],
-      ["۰۲ / ساختن", "ایده‌ات را بساز.", "از اولین پرامپت تا پروژه‌های واقعی، وب‌سایت، اپلیکیشن و ویدیوی هوش مصنوعی."],
-      ["۰۳ / رشد", "دیده شو.", "دانش، خلاقیت و اجرا را کنار هم می‌گذاریم تا اثری بسازی که متوقف‌کننده اسکرول باشد."],
-    ],
     reelLabel: "ویدیوی منتخب",
     marquee: ["آموزش کاربردی AI", "ویدیوی تبلیغاتی", "ساخت اپلیکیشن", "اخبار هوش مصنوعی"],
     courseKicker: "دوره منتخب / ۰۱",
@@ -69,12 +63,6 @@ const copy = {
     heroLead: "Samiz is where practical AI education, distinctive advertising films, and the developments shaping artificial intelligence come together.",
     heroPrimary: "Explore courses",
     heroSecondary: "View selected work",
-    heroScroll: "Scroll to begin",
-    heroStages: [
-      ["01 / LEARN", "Understand AI.", "Practical, concept-led education—so you can do more than simply use the tools."],
-      ["02 / CREATE", "Build your idea.", "Move from your first prompt to real projects, intelligent products, and AI films."],
-      ["03 / GROW", "Get seen.", "Bring knowledge, creativity, and execution together to create work worth stopping for."],
-    ],
     reelLabel: "Featured film",
     marquee: ["PRACTICAL AI EDUCATION", "AI ADVERTISING FILMS", "INTELLIGENT APPS", "AI INTELLIGENCE"],
     courseKicker: "FEATURED COURSE / 01",
@@ -140,40 +128,12 @@ function WhatsAppIcon() {
 export default function Home() {
   const [lang, setLang] = useState<Lang>("fa");
   const [menuOpen, setMenuOpen] = useState(false);
-  const [heroStage, setHeroStage] = useState(0);
-  const scrollHeroRef = useRef<HTMLElement | null>(null);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const t = copy[lang];
 
   useEffect(() => {
     const saved = localStorage.getItem("samiz-lang");
     if (saved === "fa" || saved === "en") setLang(saved);
-  }, []);
-
-  useEffect(() => {
-    let frame = 0;
-    const updateHero = () => {
-      frame = 0;
-      const hero = scrollHeroRef.current;
-      if (!hero) return;
-      const rect = hero.getBoundingClientRect();
-      const travel = Math.max(1, hero.offsetHeight - window.innerHeight);
-      const progress = Math.min(1, Math.max(0, -rect.top / travel));
-      hero.style.setProperty("--scroll-progress", progress.toFixed(4));
-      const nextStage = progress < 0.3 ? 0 : progress < 0.67 ? 1 : 2;
-      setHeroStage((current) => current === nextStage ? current : nextStage);
-    };
-    const requestUpdate = () => {
-      if (!frame) frame = window.requestAnimationFrame(updateHero);
-    };
-    updateHero();
-    window.addEventListener("scroll", requestUpdate, { passive: true });
-    window.addEventListener("resize", requestUpdate);
-    return () => {
-      window.removeEventListener("scroll", requestUpdate);
-      window.removeEventListener("resize", requestUpdate);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
   }, []);
 
   const setLanguage = (next: Lang) => {
@@ -198,34 +158,19 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="neo-scroll-hero" ref={scrollHeroRef}>
-        <div className="neo-scroll-stage">
-          <div className="neo-scroll-grid" aria-hidden="true" />
-          <div className="neo-orbit orbit-one" aria-hidden="true" />
-          <div className="neo-orbit orbit-two" aria-hidden="true" />
-          <div className="neo-brain-scene" aria-hidden="true">
-            <span className="neo-brain-core" />
-            <img className="neo-brain brain-left" src="/images/ai-brain-hero-hd.webp" alt="" />
-            <img className="neo-brain brain-right" src="/images/ai-brain-hero-hd.webp" alt="" />
-          </div>
-
-          <div className="neo-scroll-brand" aria-hidden="true">SAMIZ <i>AI</i></div>
-          <div className="neo-stage-copy" aria-live="polite">
-            {t.heroStages.map(([label, title, text], index) => (
-              <div className={heroStage === index ? "neo-stage-text is-active" : "neo-stage-text"} key={label}>
-                <p>{label}</p>
-                <h1>{title}</h1>
-                <span>{text}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="neo-scroll-footer">
-            <div className="neo-actions"><a href="#course" className="neo-button solid">{t.heroPrimary}<Arrow /></a><a href="#work" className="neo-button text">{t.heroSecondary}<span>↓</span></a></div>
-            <div className="neo-scroll-cue"><span>{t.heroScroll}</span><i><b /></i></div>
-            <div className="neo-progress" aria-hidden="true"><span style={{ transform: `scaleX(${(heroStage + 1) / 3})` }} /></div>
-          </div>
+      <section className="neo-hero">
+        <div className="neo-hero-copy">
+          <p className="neo-kicker">{t.heroKicker}</p>
+          <h1><span>{t.heroTitleA}</span><span>{t.heroTitleB}</span><em>{t.heroTitleC}</em></h1>
+          <p className="neo-hero-lead">{t.heroLead}</p>
+          <div className="neo-actions"><a href="#course" className="neo-button solid">{t.heroPrimary}<Arrow /></a><a href="#work" className="neo-button text">{t.heroSecondary}<span>↓</span></a></div>
         </div>
+        <div className="neo-hero-reel">
+          <video autoPlay muted loop playsInline poster="/videos/video-02.jpg"><source src="/videos/video-02.mp4" type="video/mp4"/></video>
+          <div className="neo-reel-top"><span>01 / 03</span><span>{t.reelLabel}</span></div>
+          <div className="neo-reel-play"><span>▶</span></div>
+        </div>
+        <div className="neo-hero-index">SAMIZ<small>AI / CREATIVE / EDUCATION</small></div>
       </section>
 
       <div className="neo-marquee" aria-hidden="true"><div>{[...t.marquee, ...t.marquee].map((item, index) => <span key={`${item}-${index}`}>{item}<i>✦</i></span>)}</div></div>
