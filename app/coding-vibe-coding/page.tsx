@@ -76,7 +76,10 @@ export default function CodingVibeCodingPage() {
         <Link href="/" className="cvc-brand" aria-label="SAMIZ AI">
           <span>S</span><strong>SAMIZ AI</strong><small>ACADEMY</small>
         </Link>
-        <a href="#registration" className="cvc-header-cta">ثبت‌نام دوره <i>↙</i></a>
+        <div className="cvc-header-links">
+          <Link href="/courses">همه دوره‌ها</Link>
+          <a href="#registration" className="cvc-header-cta">ثبت‌نام دوره <i>↙</i></a>
+        </div>
       </header>
 
       <section className="cvc-hero">
@@ -219,7 +222,7 @@ export default function CodingVibeCodingPage() {
         </a>
       </section>
 
-      <footer className="cvc-footer"><span>SAMIZ AI ACADEMY</span><p>دوره کدینگ، وایب‌کدینگ · حامد سمیع‌زاده × دکتر هادی روشن</p><Link href="/">بازگشت به سایت</Link></footer>
+      <footer className="cvc-footer"><span>SAMIZ AI ACADEMY</span><p>دوره کدینگ، وایب‌کدینگ · حامد سمیع‌زاده × دکتر هادی روشن</p><Link href="/courses">مشاهده همه دوره‌ها</Link></footer>
     </main>
   );
 }

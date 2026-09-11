@@ -29,7 +29,7 @@ const copy = {
     capabilitiesKicker: "آنچه در سمیز انجام می‌شود",
     capabilitiesTitle: "یک برند؛ سه مسیر برای حرکت جلوتر.",
     cards: [
-      ["۰۱", "آکادمی", "دوره‌های کاربردی برای تبدیل AI به یک مهارت واقعی.", "مشاهده دوره", "#course"],
+      ["۰۱", "آکادمی", "دوره‌های کاربردی برای تبدیل AI به یک مهارت واقعی.", "مشاهده دوره‌ها", "/courses"],
       ["۰۲", "استودیوی ویدیو", "ایده‌پردازی و تولید ویدیوهای تبلیغاتی با هوش مصنوعی.", "دیدن ویدیوها", "#work"],
       ["۰۳", "محصولات AI", "طراحی ابزارها و اپلیکیشن‌های هوشمند برای نیاز واقعی.", "شروع گفتگو", "#contact"],
     ],
@@ -77,7 +77,7 @@ const copy = {
     capabilitiesKicker: "WHAT SAMIZ DOES",
     capabilitiesTitle: "One brand. Three ways to move ahead.",
     cards: [
-      ["01", "Academy", "Practical courses that turn AI into a real skill.", "Explore courses", "#course"],
+      ["01", "Academy", "Practical courses that turn AI into a real skill.", "Explore courses", "/courses"],
       ["02", "Video studio", "Concept and AI production for high-impact advertising films.", "View the films", "#work"],
       ["03", "AI products", "Useful intelligent tools and applications built around real needs.", "Start a conversation", "#contact"],
     ],
@@ -142,7 +142,7 @@ export default function Home() {
     setMenuOpen(false);
   };
 
-  const anchors = ["#top", "#course", "#work", "#services", "#news"];
+  const anchors = ["#top", "/courses", "#work", "#services", "#news"];
 
   return (
     <main id="top" className={`neo-home ${lang === "fa" ? "is-fa" : "is-en"}`} dir={lang === "fa" ? "rtl" : "ltr"} lang={lang}>
@@ -163,7 +163,7 @@ export default function Home() {
           <p className="neo-kicker">{t.heroKicker}</p>
           <h1><span>{t.heroTitleA}</span><span>{t.heroTitleB}</span><em>{t.heroTitleC}</em></h1>
           <p className="neo-hero-lead">{t.heroLead}</p>
-          <div className="neo-actions"><a href="#course" className="neo-button solid">{t.heroPrimary}<Arrow /></a><a href="#work" className="neo-button text">{t.heroSecondary}<span>↓</span></a></div>
+          <div className="neo-actions"><a href="/courses" className="neo-button solid">{t.heroPrimary}<Arrow /></a><a href="#work" className="neo-button text">{t.heroSecondary}<span>↓</span></a></div>
         </div>
         <div className="neo-hero-reel">
           <video autoPlay muted loop playsInline poster="/videos/video-02.jpg"><source src="/videos/video-02.mp4" type="video/mp4"/></video>
