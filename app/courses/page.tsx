@@ -10,9 +10,10 @@ const courses = [
     summary: "از اولین پرامپت تا اولین پروژه پایتون",
     meta: "از صفر · پروژه‌محور · دوره ضبط‌شده",
     badges: ["ثبت‌نام فعال", "پایتون + AI"],
-    image: "/images/hero-laptop-clean.webp",
+    image: "/images/courses/coding-vibe-coding-poster.webp",
     href: "/coding-vibe-coding",
     imagePosition: "center",
+    portrait: true,
   },
   {
     id: "video",
@@ -24,6 +25,7 @@ const courses = [
     image: "/images/slide-video-ad.png",
     href: "/ai-video-creation",
     imagePosition: "center",
+    portrait: false,
   },
 ];
 
@@ -59,10 +61,21 @@ export default function CoursesPage() {
           {courses.map((course) => (
             <article className="catalog-card" id={course.id} key={course.id}>
               <Link href={course.href} className="catalog-card-link" aria-label={`مشاهده ${course.title}`}>
-                <div className="catalog-image">
+                <div className={`catalog-image${course.portrait ? " is-poster" : ""}`}>
+                  {course.portrait && (
+                    <Image
+                      className="catalog-image-backdrop"
+                      src={course.image}
+                      alt=""
+                      fill
+                      sizes="(max-width: 760px) 100vw, 50vw"
+                      aria-hidden="true"
+                    />
+                  )}
                   <Image
+                    className={course.portrait ? "catalog-image-poster" : "catalog-image-cover"}
                     src={course.image}
-                    alt=""
+                    alt={`تصویر ${course.title}`}
                     fill
                     sizes="(max-width: 760px) 100vw, 50vw"
                     style={{ objectPosition: course.imagePosition }}
