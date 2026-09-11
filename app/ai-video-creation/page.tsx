@@ -1,4 +1,5 @@
 import Link from "next/link";
+import VideoCourseRegistration from "./VideoCourseRegistration";
 import "./video-course.css";
 
 const modules = [
@@ -83,19 +84,20 @@ export default function AiVideoCreationPage() {
         <nav aria-label="مسیر صفحه">
           <Link href="/courses">همه دوره‌ها</Link>
           <a href="#curriculum">سرفصل‌ها</a>
+          <a href="#registration">ثبت‌نام</a>
         </nav>
       </header>
 
       <section className="avc-hero">
         <div className="avc-hero-copy">
-          <div className="avc-status"><span/> دوره تخصصی جدید</div>
+          <div className="avc-status"><span/> ثبت‌نام دوره آغاز شد</div>
           <p className="avc-overline">AI VIDEO DIRECTION · GENERATIVE FILMMAKING</p>
           <h1>ساخت ویدیو<br/><em>با هوش مصنوعی</em></h1>
           <p className="avc-lead">فقط کار با یک ابزار را یاد نمی‌گیرید؛ یاد می‌گیرید مثل یک کارگردان حرفه‌ای برای تصویر، حرکت، دوربین، نور، صدا، بازی، رفرنس و تدوین تصمیم دقیق بگیرید.</p>
           <div className="avc-teacher"><small>مدرس دوره</small><strong>مج بهرامی</strong><span>Mage Bahrami</span></div>
           <div className="avc-actions">
-            <a href="#curriculum" className="avc-primary">مشاهده مسیر دوره <span>↙</span></a>
-            <a href="#notify" className="avc-secondary">اطلاع از ثبت‌نام</a>
+            <a href="#registration" className="avc-primary">ثبت‌نام دوره <span>↙</span></a>
+            <a href="#curriculum" className="avc-secondary">مشاهده مسیر دوره</a>
           </div>
         </div>
         <div className="avc-hero-visual">
@@ -110,8 +112,8 @@ export default function AiVideoCreationPage() {
       <section className="avc-facts" aria-label="مشخصات دوره">
         <div><small>مدرس</small><strong>مج بهرامی</strong></div>
         <div><small>ساختار</small><strong>۱۵ فصل تخصصی</strong></div>
-        <div><small>رویکرد</small><strong>کارگردانی + پروژه عملی</strong></div>
-        <div><small>ثبت‌نام</small><strong>به‌زودی اعلام می‌شود</strong></div>
+        <div><small>نحوه برگزاری</small><strong>ضبط‌شده در کانال تلگرام</strong></div>
+        <div><small>هزینه ثبت‌نام</small><strong>۸ میلیون تومان / ۱۰۰ تتر</strong></div>
       </section>
 
       <section className="avc-positioning">
@@ -157,17 +159,7 @@ export default function AiVideoCreationPage() {
         </div>
       </section>
 
-      <section className="avc-notify" id="notify">
-        <div>
-          <p className="avc-section-label">ثبت‌نام دوره</p>
-          <h2>جزئیات ثبت‌نام<br/>به‌زودی اعلام می‌شود.</h2>
-          <p>برای اینکه زمان شروع، قیمت و روش ثبت‌نام را از دست ندهید، صفحه اینستاگرام سمیز را دنبال کنید یا از طریق واتساپ پیام بدهید.</p>
-        </div>
-        <div className="avc-contact-actions">
-          <a href="https://www.instagram.com/hamedsamizadeh/" target="_blank" rel="noreferrer">اینستاگرام سمیز <span>↗</span></a>
-          <a href="https://wa.me/18259250075" target="_blank" rel="noreferrer">پرسش در واتساپ <span>↗</span></a>
-        </div>
-      </section>
+      <VideoCourseRegistration />
 
       <footer className="avc-footer"><span>SAMIZ AI ACADEMY</span><p>دوره تخصصی ساخت ویدیو با هوش مصنوعی · مج بهرامی</p><Link href="/courses">مشاهده همه دوره‌ها</Link></footer>
     </main>

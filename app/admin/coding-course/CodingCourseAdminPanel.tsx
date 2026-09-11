@@ -23,7 +23,7 @@ type Stats = { pending: number; approved: number; iran: number; international: n
 const statusLabels: Record<Status, string> = { pending: "در انتظار", approved: "تأییدشده", rejected: "ردشده" };
 const number = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
 
-export default function CodingCourseAdminPanel() {
+export default function CodingCourseAdminPanel({ apiBase = "/api/admin/coding-course" }: { apiBase?: string }) {
   const [items, setItems] = useState<Registration[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,13 +35,13 @@ export default function CodingCourseAdminPanel() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const response = await fetch("/api/admin/coding-course/registrations", { cache: "no-store" });
+    const response = await fetch(`${apiBase}/registrations`, { cache: "no-store" });
     const data = await response.json();
     setAuthorized(response.ok);
     setItems(data.registrations ?? []);
     setStats(data.stats ?? null);
     setLoading(false);
-  }, []);
+  }, [apiBase]);
 
   useEffect(() => {
     // Initial data comes from the protected admin endpoint.
@@ -64,7 +64,7 @@ export default function CodingCourseAdminPanel() {
 
   async function decide(id: string, status: "approved" | "rejected") {
     setNotice("");
-    const response = await fetch(`/api/admin/coding-course/registrations/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+    const response = await fetch(`${apiBase}/registrations/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
     const data = await response.json();
     setNotice(data.message ?? data.warning ?? data.error ?? "عملیات انجام شد.");
     await load();
@@ -73,7 +73,7 @@ export default function CodingCourseAdminPanel() {
   async function emailAction(payload: Record<string, string>) {
     setEmailBusy(true);
     setNotice("");
-    const response = await fetch("/api/admin/coding-course/confirmation-emails", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const response = await fetch(`${apiBase}/confirmation-emails`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const data = await response.json();
     setNotice(data.message ?? data.error ?? "عملیات انجام نشد.");
     setEmailBusy(false);
@@ -136,7 +136,7 @@ export default function CodingCourseAdminPanel() {
               <span><b>ایمیل کانال:</b> {item.emailSentAt ? "ارسال شده ✓" : "ارسال نشده"}</span>
             </div>
             <div className="admin-actions">
-              <a className="receipt-button" href={`/api/admin/coding-course/receipts/${item.id}`} target="_blank">مشاهده رسید</a>
+              <a className="receipt-button" href={`${apiBase}/receipts/${item.id}`} target="_blank">مشاهده رسید</a>
               {item.status === "pending" && <><button className="approve" onClick={() => decide(item.id, "approved")}>تأیید</button><button className="reject" onClick={() => decide(item.id, "rejected")}>رد</button></>}
               {item.status === "approved" && !item.emailSentAt && <button disabled={emailBusy} onClick={() => emailAction({ action: "single", id: item.id })}>ارسال ایمیل</button>}
               {item.emailSentAt && <span className="email-sent">ایمیل ارسال شد ✓</span>}

@@ -1,0 +1,7 @@
+export const AI_VIDEO_COURSE_NAME = "ساخت ویدیو با هوش مصنوعی";
+export const AI_VIDEO_COURSE_IRAN_FEE = 8_000_000;
+export const AI_VIDEO_COURSE_INTERNATIONAL_FEE = 100;
+export const AI_VIDEO_COURSE_CARD_NUMBER = process.env.NEXT_PUBLIC_AI_VIDEO_COURSE_CARD_NUMBER ?? "6104338929517668";
+export const AI_VIDEO_COURSE_CARD_HOLDER = process.env.NEXT_PUBLIC_AI_VIDEO_COURSE_CARD_HOLDER ?? "هاجر سمیع‌زاده";
+export const AI_VIDEO_COURSE_PAYMENT_TELEGRAM_URL = "https://t.me/hamedsamiz";
+export const AI_VIDEO_COURSE_CHANNEL_URL = process.env.AI_VIDEO_COURSE_CHANNEL_URL ?? "";
