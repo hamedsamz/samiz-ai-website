@@ -21,7 +21,7 @@ const courses = [
     provider: "میج بهرامی · Mage Bahrami",
     summary: "از پرامپت و کارگردانی تا تدوین و کنترل کیفیت",
     meta: "۱۵ فصل · تخصصی · پروژه‌محور",
-    badges: ["دوره جدید", "ثبت‌نام به‌زودی"],
+    badges: ["دوره جدید", "ثبت‌نام فعال"],
     image: "/images/slide-video-ad.png",
     href: "/ai-video-creation",
     imagePosition: "center",
