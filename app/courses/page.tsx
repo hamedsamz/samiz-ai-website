@@ -18,7 +18,7 @@ const courses = [
   {
     id: "video",
     title: "دوره تخصصی ساخت ویدیو با هوش مصنوعی",
-    provider: "مج بهرامی · Mage Bahrami",
+    provider: "میج بهرامی · Mage Bahrami",
     summary: "از پرامپت و کارگردانی تا تدوین و کنترل کیفیت",
     meta: "۱۵ فصل · تخصصی · پروژه‌محور",
     badges: ["دوره جدید", "ثبت‌نام به‌زودی"],

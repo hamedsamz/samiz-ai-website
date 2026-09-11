@@ -94,7 +94,7 @@ export default function AiVideoCreationPage() {
           <p className="avc-overline">AI VIDEO DIRECTION · GENERATIVE FILMMAKING</p>
           <h1>ساخت ویدیو<br/><em>با هوش مصنوعی</em></h1>
           <p className="avc-lead">فقط کار با یک ابزار را یاد نمی‌گیرید؛ یاد می‌گیرید مثل یک کارگردان حرفه‌ای برای تصویر، حرکت، دوربین، نور، صدا، بازی، رفرنس و تدوین تصمیم دقیق بگیرید.</p>
-          <div className="avc-teacher"><small>مدرس دوره</small><strong>مج بهرامی</strong><span>Mage Bahrami</span></div>
+          <div className="avc-teacher"><small>مدرس دوره</small><strong>میج بهرامی</strong><span>Mage Bahrami</span></div>
           <div className="avc-actions">
             <a href="#registration" className="avc-primary">ثبت‌نام دوره <span>↙</span></a>
             <a href="#curriculum" className="avc-secondary">مشاهده مسیر دوره</a>
@@ -110,10 +110,10 @@ export default function AiVideoCreationPage() {
       </section>
 
       <section className="avc-facts" aria-label="مشخصات دوره">
-        <div><small>مدرس</small><strong>مج بهرامی</strong></div>
+        <div><small>مدرس</small><strong>میج بهرامی</strong></div>
         <div><small>ساختار</small><strong>۱۵ فصل تخصصی</strong></div>
         <div><small>نحوه برگزاری</small><strong>ضبط‌شده در کانال تلگرام</strong></div>
-        <div><small>هزینه ثبت‌نام</small><strong>۸ میلیون تومان / ۱۰۰ تتر</strong></div>
+        <div><small>هزینه ثبت‌نام</small><strong>۹ میلیون تومان / ۱۲۰ تتر</strong></div>
       </section>
 
       <section className="avc-positioning">
@@ -161,7 +161,7 @@ export default function AiVideoCreationPage() {
 
       <VideoCourseRegistration />
 
-      <footer className="avc-footer"><span>SAMIZ AI ACADEMY</span><p>دوره تخصصی ساخت ویدیو با هوش مصنوعی · مج بهرامی</p><Link href="/courses">مشاهده همه دوره‌ها</Link></footer>
+      <footer className="avc-footer"><span>SAMIZ AI ACADEMY</span><p>دوره تخصصی ساخت ویدیو با هوش مصنوعی · میج بهرامی</p><Link href="/courses">مشاهده همه دوره‌ها</Link></footer>
     </main>
   );
 }

@@ -43,6 +43,13 @@ export default function VideoCourseRegistration() {
 
   return (
     <section className="avc-registration" id="registration">
+      <aside className="avc-requirements" aria-label="پیش‌نیازهای ضروری دوره">
+        <span aria-hidden="true">!</span>
+        <div>
+          <strong>پیش‌نیاز ضروری برای شرکت در دوره</strong>
+          <p>برای شروع دوره، داشتن اکانت ChatGPT Plus و در انتهای دوره برای ساخت ویدیو، داشتن اشتراک یکی از پلتفرم‌های ارائه‌دهنده مدل‌های ساخت ویدیو مانند Higgsfield الزامی است.</p>
+        </div>
+      </aside>
       <div className="avc-registration-copy">
         <p className="avc-section-label">ثبت‌نام دوره</p>
         <h2>آماده‌ای کارگردانی کنی؟</h2>
@@ -56,20 +63,20 @@ export default function VideoCourseRegistration() {
 
       <div className="avc-form-card">
         <div className="avc-location-picker" role="radiogroup" aria-label="محل زندگی">
-          <button type="button" role="radio" aria-checked={location === "iran"} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small>۸ میلیون تومان</small></button>
-          <button type="button" role="radio" aria-checked={location === "international"} className={location === "international" ? "active" : ""} onClick={() => { setLocation("international"); setMessage(null); }}><span>خارج از ایران</span><small>۱۰۰ تتر (USDT)</small></button>
+          <button type="button" role="radio" aria-checked={location === "iran"} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small className="avc-picker-price"><del>۱۲۰ دلار</del><b>۹ میلیون تومان</b></small></button>
+          <button type="button" role="radio" aria-checked={location === "international"} className={location === "international" ? "active" : ""} onClick={() => { setLocation("international"); setMessage(null); }}><span>خارج از ایران</span><small>۱۲۰ تتر (USDT)</small></button>
         </div>
 
         {location === "iran" ? (
           <div className="avc-payment-card iran">
-            <div><small>مبلغ ثبت‌نام</small><strong>۸,۰۰۰,۰۰۰ <i>تومان</i></strong></div>
+            <div><small>مبلغ ثبت‌نام</small><div className="avc-discount-price"><del>۱۲۰ دلار</del><strong>۹,۰۰۰,۰۰۰ <i>تومان</i></strong></div></div>
             <p>مبلغ را به کارت زیر واریز کنید و سپس تصویر رسید را در فرم بارگذاری کنید.</p>
             <div className="avc-card-number" dir="ltr"><code>{AI_VIDEO_COURSE_CARD_NUMBER.replace(/(\d{4})(?=\d)/g, "$1 ")}</code><button type="button" onClick={copyCard}>{copied ? "کپی شد ✓" : "کپی شماره"}</button></div>
             <small className="avc-holder">به نام {AI_VIDEO_COURSE_CARD_HOLDER}</small>
           </div>
         ) : (
           <div className="avc-payment-card international">
-            <div><small>مبلغ ثبت‌نام</small><strong>۱۰۰ <i>USDT</i></strong></div>
+            <div><small>مبلغ ثبت‌نام</small><strong>۱۲۰ <i>USDT</i></strong></div>
             <p>برای دریافت آدرس شبکه و جزئیات پرداخت تتر، در تلگرام به حامد پیام بدهید. بعد از پرداخت، رسید را در فرم زیر بارگذاری کنید.</p>
             <a href={AI_VIDEO_COURSE_PAYMENT_TELEGRAM_URL} target="_blank" rel="noreferrer">پیام در تلگرام · @hamedsamiz <span>↗</span></a>
           </div>
