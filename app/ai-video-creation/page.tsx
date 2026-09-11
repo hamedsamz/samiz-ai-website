@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import "./video-course.css";
 
@@ -100,7 +99,9 @@ export default function AiVideoCreationPage() {
           </div>
         </div>
         <div className="avc-hero-visual">
-          <Image src="/images/slide-video-ad.png" alt="نمونه فضای تولید ویدیو با هوش مصنوعی" fill priority sizes="(max-width: 900px) 100vw, 48vw" />
+          <video autoPlay muted loop playsInline preload="metadata" poster="/videos/video-01.jpg" aria-label="نمونه ویدیوی ساخته‌شده با هوش مصنوعی">
+            <source src="/videos/video-01.mp4" type="video/mp4" />
+          </video>
           <div className="avc-frame-corners" aria-hidden="true"><span/><span/><span/><span/></div>
           <div className="avc-visual-meta"><span>SCENE / 01</span><strong>DIRECT THE MODEL</strong><span>9:16 · 16:9 · 2.39:1</span></div>
         </div>
