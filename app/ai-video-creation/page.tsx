@@ -92,7 +92,7 @@ export default function AiVideoCreationPage() {
         <div className="avc-hero-copy">
           <div className="avc-status"><span/> ثبت‌نام دوره آغاز شد</div>
           <p className="avc-overline">AI VIDEO DIRECTION · GENERATIVE FILMMAKING</p>
-          <h1>ساخت ویدیو<br/><em>با هوش مصنوعی</em></h1>
+          <h1>دوره تخصصی ساخت ویدیو<br/><em>با هوش مصنوعی</em></h1>
           <p className="avc-lead">فقط کار با یک ابزار را یاد نمی‌گیرید؛ یاد می‌گیرید مثل یک کارگردان حرفه‌ای برای تصویر، حرکت، دوربین، نور، صدا، بازی، رفرنس و تدوین تصمیم دقیق بگیرید.</p>
           <div className="avc-teacher"><small>مدرس دوره</small><strong>میج بهرامی</strong><span>Mage Bahrami</span></div>
           <div className="avc-actions">
@@ -160,6 +160,17 @@ export default function AiVideoCreationPage() {
       </section>
 
       <VideoCourseRegistration />
+
+      <section className="avc-support" aria-labelledby="avc-support-title">
+        <div>
+          <p className="avc-section-label">پشتیبانی دوره</p>
+          <h2 id="avc-support-title">برای راهنمایی، مستقیم پیام بدهید</h2>
+          <p>اگر درباره ثبت‌نام، پرداخت یا شرکت در دوره سؤالی دارید، از طریق واتساپ با حامد در ارتباط باشید.</p>
+        </div>
+        <a href="https://wa.me/18259250075" target="_blank" rel="noreferrer" aria-label="پیام به پشتیبانی دوره در واتساپ">
+          پیام در واتساپ <span aria-hidden="true">↗</span>
+        </a>
+      </section>
 
       <footer className="avc-footer"><span>SAMIZ AI ACADEMY</span><p>دوره تخصصی ساخت ویدیو با هوش مصنوعی · میج بهرامی</p><Link href="/courses">مشاهده همه دوره‌ها</Link></footer>
     </main>
