@@ -113,7 +113,12 @@ export default function AiVideoCreationPage() {
         <div><small>مدرس</small><strong>میج بهرامی</strong></div>
         <div><small>ساختار</small><strong>۱۵ فصل تخصصی</strong></div>
         <div><small>نحوه برگزاری</small><strong>ضبط‌شده در کانال تلگرام</strong></div>
-        <div><small>هزینه ثبت‌نام</small><strong>۹ میلیون تومان / ۱۲۰ تتر</strong></div>
+        <div className="avc-fact-fee">
+          <small>هزینه ثبت‌نام</small>
+          <div className="avc-fact-price"><del>۹ میلیون تومان</del><strong>۳ میلیون تومان</strong></div>
+          <em>برای کسانی که توان پرداخت مبلغ دوره را ندارند</em>
+          <span>خارج از ایران: ۱۲۰ تتر</span>
+        </div>
       </section>
 
       <section className="avc-positioning">

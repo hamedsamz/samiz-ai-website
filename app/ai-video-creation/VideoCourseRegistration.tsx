@@ -63,13 +63,13 @@ export default function VideoCourseRegistration() {
 
       <div className="avc-form-card">
         <div className="avc-location-picker" role="radiogroup" aria-label="محل زندگی">
-          <button type="button" role="radio" aria-checked={location === "iran"} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small className="avc-picker-price"><del>۱۲۰ دلار</del><b>۹ میلیون تومان</b></small></button>
+          <button type="button" role="radio" aria-checked={location === "iran"} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small className="avc-picker-price"><del>۱۲۰ دلار</del><del>۹ میلیون تومان</del><b>۳ میلیون تومان</b></small></button>
           <button type="button" role="radio" aria-checked={location === "international"} className={location === "international" ? "active" : ""} onClick={() => { setLocation("international"); setMessage(null); }}><span>خارج از ایران</span><small>۱۲۰ تتر (USDT)</small></button>
         </div>
 
         {location === "iran" ? (
           <div className="avc-payment-card iran">
-            <div><small>مبلغ ثبت‌نام</small><div className="avc-discount-price"><del>۱۲۰ دلار</del><strong>۹,۰۰۰,۰۰۰ <i>تومان</i></strong></div></div>
+            <div><small>مبلغ ثبت‌نام</small><div><div className="avc-discount-price"><del>۱۲۰ دلار</del><del>۹,۰۰۰,۰۰۰ تومان</del><strong>۳,۰۰۰,۰۰۰ <i>تومان</i></strong></div><small className="avc-access-note">برای کسانی که توان پرداخت مبلغ دوره را ندارند</small></div></div>
             <p>مبلغ را به کارت زیر واریز کنید و سپس تصویر رسید را در فرم بارگذاری کنید.</p>
             <div className="avc-card-number" dir="ltr"><code>{AI_VIDEO_COURSE_CARD_NUMBER.replace(/(\d{4})(?=\d)/g, "$1 ")}</code><button type="button" onClick={copyCard}>{copied ? "کپی شد ✓" : "کپی شماره"}</button></div>
             <small className="avc-holder">به نام {AI_VIDEO_COURSE_CARD_HOLDER}</small>

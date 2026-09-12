@@ -1,5 +1,5 @@
 export const AI_VIDEO_COURSE_NAME = "ساخت ویدیو با هوش مصنوعی";
-export const AI_VIDEO_COURSE_IRAN_FEE = 9_000_000;
+export const AI_VIDEO_COURSE_IRAN_FEE = 3_000_000;
 export const AI_VIDEO_COURSE_INTERNATIONAL_FEE = 120;
 export const AI_VIDEO_COURSE_CARD_NUMBER = process.env.NEXT_PUBLIC_AI_VIDEO_COURSE_CARD_NUMBER ?? "6104338929517668";
 export const AI_VIDEO_COURSE_CARD_HOLDER = process.env.NEXT_PUBLIC_AI_VIDEO_COURSE_CARD_HOLDER ?? "هاجر سمیع‌زاده";
