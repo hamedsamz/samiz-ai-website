@@ -8,9 +8,11 @@ import {
 } from "../../lib/ai-video-course-config";
 
 type Location = "iran" | "international";
+type IranPricingTier = "standard" | "supportive";
 
 export default function VideoCourseRegistration() {
   const [location, setLocation] = useState<Location>("iran");
+  const [iranPricingTier, setIranPricingTier] = useState<IranPricingTier>("standard");
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -29,6 +31,7 @@ export default function VideoCourseRegistration() {
     const form = event.currentTarget;
     const formData = new FormData(form);
     formData.set("location", location);
+    formData.set("pricingTier", iranPricingTier);
     const response = await fetch("/api/ai-video-course/registration", { method: "POST", body: formData });
     const result = await response.json() as { message?: string; error?: string };
     setBusy(false);
@@ -63,14 +66,19 @@ export default function VideoCourseRegistration() {
 
       <div className="avc-form-card">
         <div className="avc-location-picker" role="radiogroup" aria-label="محل زندگی">
-          <button type="button" role="radio" aria-checked={location === "iran"} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small className="avc-picker-price"><del>۱۲۰ دلار</del><del>۹ میلیون تومان</del><b>۳ میلیون تومان</b></small></button>
+          <button type="button" role="radio" aria-checked={location === "iran"} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small>قیمت اصلی: ۹ میلیون تومان</small></button>
           <button type="button" role="radio" aria-checked={location === "international"} className={location === "international" ? "active" : ""} onClick={() => { setLocation("international"); setMessage(null); }}><span>خارج از ایران</span><small>۱۲۰ تتر (USDT)</small></button>
         </div>
 
         {location === "iran" ? (
           <div className="avc-payment-card iran">
-            <div><small>مبلغ ثبت‌نام</small><div><div className="avc-discount-price"><del>۱۲۰ دلار</del><del>۹,۰۰۰,۰۰۰ تومان</del><strong>۳,۰۰۰,۰۰۰ <i>تومان</i></strong></div><small className="avc-access-note">برای کسانی که توان پرداخت مبلغ دوره را ندارند</small></div></div>
-            <p>مبلغ را به کارت زیر واریز کنید و سپس تصویر رسید را در فرم بارگذاری کنید.</p>
+            <div className="avc-payment-heading"><small>قیمت اصلی دوره</small><strong>۹,۰۰۰,۰۰۰ <i>تومان</i></strong></div>
+            <p className="avc-supportive-copy">با توجه به شرایط کشور، اگر پرداخت مبلغ کامل برایتان مقدور نیست، می‌توانید از مبلغ حمایتی ۳ میلیون تومان استفاده کنید.</p>
+            <div className="avc-iran-price-options" role="radiogroup" aria-label="انتخاب مبلغ پرداختی">
+              <button type="button" role="radio" aria-checked={iranPricingTier === "standard"} className={iranPricingTier === "standard" ? "active" : ""} onClick={() => setIranPricingTier("standard")}><span><b>پرداخت قیمت اصلی</b><small>اگر امکان پرداخت کامل را دارید</small></span><strong>۹ میلیون تومان</strong></button>
+              <button type="button" role="radio" aria-checked={iranPricingTier === "supportive"} className={iranPricingTier === "supportive" ? "active" : ""} onClick={() => setIranPricingTier("supportive")}><span><b>مبلغ حمایتی</b><small>برای کسانی که قادر به پرداخت مبلغ کامل نیستند</small></span><strong>۳ میلیون تومان</strong></button>
+            </div>
+            <p>مبلغ انتخاب‌شده را به کارت زیر واریز کنید و سپس تصویر رسید را در فرم بارگذاری کنید.</p>
             <div className="avc-card-number" dir="ltr"><code>{AI_VIDEO_COURSE_CARD_NUMBER.replace(/(\d{4})(?=\d)/g, "$1 ")}</code><button type="button" onClick={copyCard}>{copied ? "کپی شد ✓" : "کپی شماره"}</button></div>
             <small className="avc-holder">به نام {AI_VIDEO_COURSE_CARD_HOLDER}</small>
           </div>
@@ -84,6 +92,7 @@ export default function VideoCourseRegistration() {
 
         <form onSubmit={submit}>
           <input type="hidden" name="location" value={location} />
+          <input type="hidden" name="pricingTier" value={iranPricingTier} />
           <div className="avc-field full"><label htmlFor="videoFullName">نام و نام خانوادگی</label><input id="videoFullName" name="fullName" required minLength={3} maxLength={80} autoComplete="name" placeholder="نام کامل خود را وارد کنید" /></div>
           <div className="avc-field"><label htmlFor="videoAge">سن</label><input id="videoAge" name="age" type="number" required min={12} max={100} inputMode="numeric" placeholder="مثلاً ۲۸" /></div>
           <div className="avc-field"><label htmlFor="videoPhone">شماره تماس دارای واتساپ</label><input id="videoPhone" name="phone" type="tel" required inputMode="tel" autoComplete="tel" placeholder="با کد کشور وارد کنید" /></div>

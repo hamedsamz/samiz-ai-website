@@ -115,8 +115,8 @@ export default function AiVideoCreationPage() {
         <div><small>نحوه برگزاری</small><strong>ضبط‌شده در کانال تلگرام</strong></div>
         <div className="avc-fact-fee">
           <small>هزینه ثبت‌نام</small>
-          <div className="avc-fact-price"><del>۹ میلیون تومان</del><strong>۳ میلیون تومان</strong></div>
-          <em>برای کسانی که توان پرداخت مبلغ دوره را ندارند</em>
+          <strong>قیمت اصلی: ۹ میلیون تومان</strong>
+          <em>با توجه به شرایط کشور، برای کسانی که قادر به پرداخت مبلغ کامل نیستند: ۳ میلیون تومان</em>
           <span>خارج از ایران: ۱۲۰ تتر</span>
         </div>
       </section>
