@@ -116,7 +116,7 @@ export default function AiVideoCreationPage() {
         <div className="avc-fact-fee">
           <small>هزینه ثبت‌نام</small>
           <strong>قیمت اصلی: ۹ میلیون تومان</strong>
-          <em>با توجه به شرایط کشور، برای کسانی که قادر به پرداخت مبلغ کامل نیستند: ۳ میلیون تومان</em>
+          <em>با توجه به شرایط کشور، برای استفاده از مبلغ حمایتی ۳ میلیون تومان (۶۶٫۶۷٪ تخفیف)، کد <b dir="ltr">Mehr</b> را هنگام ثبت‌نام وارد کنید.</em>
           <span>خارج از ایران: ۱۲۰ تتر</span>
         </div>
       </section>
