@@ -90,7 +90,7 @@ export default function AiVideoCreationPage() {
 
       <section className="avc-hero">
         <div className="avc-hero-copy">
-          <div className="avc-status"><span/> ثبت‌نام دوره آغاز شد</div>
+          <div className="avc-status"><span/> ثبت‌نام فعال · شروع دوره ۳ مهر</div>
           <p className="avc-overline">AI VIDEO DIRECTION · GENERATIVE FILMMAKING</p>
           <h1>دوره تخصصی ساخت ویدیو<br/><em>با هوش مصنوعی</em></h1>
           <p className="avc-lead">فقط کار با یک ابزار را یاد نمی‌گیرید؛ یاد می‌گیرید مثل یک کارگردان حرفه‌ای برای تصویر، حرکت، دوربین، نور، صدا، بازی، رفرنس و تدوین تصمیم دقیق بگیرید.</p>
