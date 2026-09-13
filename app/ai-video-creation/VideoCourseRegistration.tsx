@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import {
   AI_VIDEO_COURSE_CARD_HOLDER,
   AI_VIDEO_COURSE_CARD_NUMBER,
@@ -9,6 +9,8 @@ import {
 } from "../../lib/ai-video-course-config";
 
 type Location = "iran" | "international";
+const MAX_RECEIPT_SIZE = 2.5 * 1024 * 1024;
+const ALLOWED_RECEIPT_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 
 export default function VideoCourseRegistration() {
   const [location, setLocation] = useState<Location>("iran");
@@ -42,19 +44,54 @@ export default function VideoCourseRegistration() {
     const formData = new FormData(form);
     formData.set("location", location);
     formData.set("discountCode", location === "iran" && discountApplied ? discountCode.trim() : "");
-    const response = await fetch("/api/ai-video-course/registration", { method: "POST", body: formData });
-    const result = await response.json() as { message?: string; error?: string };
-    setBusy(false);
-    if (!response.ok) {
-      setMessage({ text: result.error ?? "خطایی رخ داد؛ دوباره تلاش کنید.", error: true });
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 90_000);
+
+    try {
+      const response = await fetch("/api/ai-video-course/registration", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+      const result = await response.json().catch(() => ({})) as { message?: string; error?: string };
+      if (!response.ok) {
+        setMessage({ text: result.error ?? "ارسال فرم کامل نشد. حجم و فرمت رسید را بررسی و دوباره تلاش کنید.", error: true });
+        return;
+      }
+      setMessage({ text: result.message ?? "درخواست شما ثبت شد." });
+      form.reset();
+      setFileName("");
+      setDiscountCode("");
+      setDiscountApplied(false);
+      setDiscountMessage(null);
+    } catch (error) {
+      const timedOut = error instanceof DOMException && error.name === "AbortError";
+      setMessage({
+        text: timedOut
+          ? "ارسال درخواست بیشتر از حد معمول طول کشید. اینترنت خود را بررسی کنید و دوباره بزنید؛ اگر درخواست قبلی ثبت شده باشد، سیستم به شما اطلاع می‌دهد."
+          : "ارتباط با سرور قطع شد. اینترنت خود را بررسی کنید و دوباره روی ثبت درخواست بزنید.",
+        error: true,
+      });
+    } finally {
+      window.clearTimeout(timeoutId);
+      setBusy(false);
+    }
+  }
+
+  function selectReceipt(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    setMessage(null);
+    if (!file) {
+      setFileName("");
       return;
     }
-    setMessage({ text: result.message ?? "درخواست شما ثبت شد." });
-    form.reset();
-    setFileName("");
-    setDiscountCode("");
-    setDiscountApplied(false);
-    setDiscountMessage(null);
+    if (!ALLOWED_RECEIPT_TYPES.has(file.type) || file.size > MAX_RECEIPT_SIZE) {
+      event.currentTarget.value = "";
+      setFileName("");
+      setMessage({ text: "رسید باید JPG، PNG، WEBP یا PDF و حداکثر ۲.۵ مگابایت باشد.", error: true });
+      return;
+    }
+    setFileName(file.name);
   }
 
   return (
@@ -122,15 +159,15 @@ export default function VideoCourseRegistration() {
           <div className="avc-field full">
             <label htmlFor="videoReceipt">رسید پرداخت</label>
             <label className="avc-upload" htmlFor="videoReceipt"><span>{fileName || "انتخاب تصویر یا فایل رسید"}</span><small>JPG، PNG، WEBP یا PDF — حداکثر ۲.۵ مگابایت</small></label>
-            <input className="avc-file-input" id="videoReceipt" name="receipt" type="file" required accept="image/jpeg,image/png,image/webp,application/pdf" onChange={event => setFileName(event.target.files?.[0]?.name ?? "")} />
+            <input className="avc-file-input" id="videoReceipt" name="receipt" type="file" required accept="image/jpeg,image/png,image/webp,application/pdf" onChange={selectReceipt} />
           </div>
           <label className="avc-consent"><input type="checkbox" required /><span>تأیید می‌کنم اطلاعات واردشده صحیح است و پرداخت مربوط به ثبت‌نام همین دوره است.</span></label>
-          <button className="avc-submit" disabled={busy}>{busy ? "در حال ثبت درخواست…" : "ارسال رسید و ثبت درخواست"}<span>↙</span></button>
+          <button className="avc-submit" type="submit" disabled={busy}>{busy ? "در حال ارسال؛ لطفاً این صفحه را نبندید…" : "ارسال رسید و ثبت درخواست"}<span>↙</span></button>
           <div className="avc-review-note">
             <span aria-hidden="true">✓</span>
             <div><strong>بررسی رسید حداکثر تا ۴۸ ساعت</strong><p>پس از تأیید، ایمیل ثبت‌نام و لینک ورود به کانال اختصاصی دوره ارسال می‌شود. پوشه Spam را هم بررسی کنید.</p></div>
           </div>
-          {message && <p className={message.error ? "avc-message error" : "avc-message success"}>{message.text}</p>}
+          {message && <p className={message.error ? "avc-message error" : "avc-message success"} role="status" aria-live="polite">{message.text}</p>}
         </form>
       </div>
     </section>

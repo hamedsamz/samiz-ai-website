@@ -6,6 +6,8 @@ export const dynamic = "force-dynamic";
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 
 export async function POST(request: Request) {
+  const requestId = crypto.randomUUID();
+  console.info("[ai-video-registration] request started", { requestId });
   try {
     await ensureAiVideoCourseSchema();
     const form = await request.formData();
@@ -18,6 +20,12 @@ export async function POST(request: Request) {
     const telegramUsername = String(form.get("telegramUsername") ?? "").trim().replace(/^@/, "");
     const age = Number(String(form.get("age") ?? ""));
     const receipt = form.get("receipt");
+    console.info("[ai-video-registration] form parsed", {
+      requestId,
+      location,
+      receiptSize: receipt instanceof File ? receipt.size : 0,
+      receiptType: receipt instanceof File ? receipt.type : "missing",
+    });
 
     if (location !== "iran" && location !== "international") return Response.json({ error: "محل زندگی را انتخاب کنید." }, { status: 400 });
     const hasSupportDiscount = location === "iran" && discountCode.toLocaleLowerCase("en-US") === AI_VIDEO_COURSE_SUPPORT_DISCOUNT_CODE.toLocaleLowerCase("en-US");
@@ -33,7 +41,10 @@ export async function POST(request: Request) {
 
     const sql = db();
     const duplicate = await sql`SELECT id FROM ai_video_course_registrations WHERE (phone = ${phone} OR email = ${email}) AND status IN ('pending', 'approved') LIMIT 1`;
-    if (duplicate.length) return Response.json({ error: "با این شماره تماس یا ایمیل قبلاً برای این دوره ثبت‌نام شده است." }, { status: 409 });
+    if (duplicate.length) {
+      console.info("[ai-video-registration] duplicate blocked", { requestId });
+      return Response.json({ error: "با این شماره تماس یا ایمیل قبلاً برای این دوره ثبت‌نام شده است." }, { status: 409 });
+    }
 
     const now = Date.now();
     const receiptData = Buffer.from(await receipt.arrayBuffer()).toString("base64");
@@ -48,9 +59,10 @@ export async function POST(request: Request) {
       ${crypto.randomUUID()}, ${location}, ${fullName}, ${age}, ${phone}, ${email}, ${telegramUsername || null}, ${paidAmount}, ${paymentCurrency},
       ${receipt.name.slice(0, 160)}, ${receipt.type}, ${receiptData}, 'pending', ${now}, ${now}
     )`;
+    console.info("[ai-video-registration] request saved", { requestId, location, paidAmount, paymentCurrency });
     return Response.json({ ok: true, message: "درخواست ثبت‌نام شما با موفقیت ثبت شد. نتیجه بررسی از طریق ایمیل اعلام می‌شود." }, { status: 201 });
   } catch (error) {
-    console.error("ai video course registration error", error);
+    console.error("[ai-video-registration] request failed", { requestId, error });
     return Response.json({ error: "ثبت اطلاعات انجام نشد. لطفاً دوباره تلاش کنید." }, { status: 500 });
   }
 }
