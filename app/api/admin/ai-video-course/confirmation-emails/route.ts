@@ -1,7 +1,7 @@
 import { db } from "../../../../../db/registrations";
 import { ensureAiVideoCourseSchema } from "../../../../../db/ai-video-course-registrations";
 import { isAdmin } from "../../../../../lib/admin-auth";
-import { sendAiVideoCourseConfirmationBatch, sendAiVideoCourseConfirmationEmail, sendAiVideoCourseReminderBatch } from "../../../../../lib/ai-video-course-confirmation-email";
+import { sendAiVideoCourseConfirmationBatch, sendAiVideoCourseConfirmationEmail, sendAiVideoCourseReminderBatch, sendAiVideoCourseReminderEmail } from "../../../../../lib/ai-video-course-confirmation-email";
 
 export const dynamic = "force-dynamic";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -16,6 +16,12 @@ export async function POST(request: Request) {
       if (!emailPattern.test(email)) return Response.json({ error: "ایمیل آزمایشی معتبر نیست." }, { status: 400 });
       await sendAiVideoCourseConfirmationEmail(email, "کاربر آزمایشی");
       return Response.json({ message: "ایمیل آزمایشی ارسال شد." });
+    }
+    if (body.action === "test-reminder") {
+      const email = String(body.email ?? "").trim().toLowerCase();
+      if (!emailPattern.test(email)) return Response.json({ error: "ایمیل آزمایشی معتبر نیست." }, { status: 400 });
+      await sendAiVideoCourseReminderEmail(email, "کاربر آزمایشی");
+      return Response.json({ message: "نمونه ایمیل یادآوری ارسال شد." });
     }
     if (body.action === "single") {
       const rows = await db()`SELECT id, full_name AS "fullName", email, confirmation_email_sent_at AS "sentAt" FROM ai_video_course_registrations WHERE id = ${body.id ?? ""} AND status = 'approved'`;
