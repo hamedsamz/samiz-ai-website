@@ -1,7 +1,7 @@
 import { db } from "../../../../../db/registrations";
 import { ensureAiVideoCourseSchema } from "../../../../../db/ai-video-course-registrations";
 import { isAdmin } from "../../../../../lib/admin-auth";
-import { sendAiVideoCourseConfirmationBatch, sendAiVideoCourseConfirmationEmail } from "../../../../../lib/ai-video-course-confirmation-email";
+import { sendAiVideoCourseConfirmationBatch, sendAiVideoCourseConfirmationEmail, sendAiVideoCourseReminderBatch } from "../../../../../lib/ai-video-course-confirmation-email";
 
 export const dynamic = "force-dynamic";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -34,6 +34,16 @@ export async function POST(request: Request) {
       const sql = db();
       await sql.transaction(rows.map(row => sql`UPDATE ai_video_course_registrations SET confirmation_email_sent_at = ${now} WHERE id = ${row.id} AND confirmation_email_sent_at IS NULL`));
       return Response.json({ message: `ایمیل تأیید برای ${rows.length} نفر ارسال شد.` });
+    }
+    if (body.action === "reminder") {
+      const rows = await db()`SELECT DISTINCT ON (LOWER(email))
+        full_name AS "fullName", email
+        FROM ai_video_course_registrations
+        WHERE status = 'approved' AND email <> ''
+        ORDER BY LOWER(email), created_at DESC` as Array<{ fullName: string; email: string }>;
+      if (!rows.length) return Response.json({ error: "فرد تأییدشده‌ای برای ارسال یادآوری وجود ندارد." }, { status: 409 });
+      await sendAiVideoCourseReminderBatch(rows.map(row => ({ email: row.email, fullName: row.fullName })));
+      return Response.json({ message: `ایمیل یادآوری برای ${rows.length} نفر تأییدشده ارسال شد.` });
     }
     return Response.json({ error: "درخواست نامعتبر است." }, { status: 400 });
   } catch (error) {
