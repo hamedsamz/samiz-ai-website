@@ -89,7 +89,7 @@ export default function CodingCourseAdminPanel({
   async function testEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    await emailAction({ action: "test", email: String(form.get("email") ?? "") });
+    await emailAction({ action: enableReminder ? "test-reminder" : "test", email: String(form.get("email") ?? "") });
   }
 
   async function bulkEmail() {
@@ -118,7 +118,7 @@ export default function CodingCourseAdminPanel({
 
       <section className="coding-email-tools">
         <div><p className="eyebrow">ایمیل کانال دوره</p><h2>ارسال لینک ورود</h2><span>{number(approvedWithoutEmail)} نفر تأییدشده هنوز ایمیل نگرفته‌اند.</span></div>
-        <form onSubmit={testEmail}><input name="email" type="email" required placeholder="ایمیل آزمایشی" /><button disabled={emailBusy}>ارسال تست</button></form>
+        <form onSubmit={testEmail}><input name="email" type="email" required placeholder="ایمیل آزمایشی" /><button disabled={emailBusy}>{enableReminder ? "تست ایمیل یادآوری" : "ارسال تست"}</button></form>
         <div className="coding-email-actions">
           <button className="coding-bulk" disabled={emailBusy || approvedWithoutEmail === 0} onClick={bulkEmail}>ارسال به همه افراد ارسال‌نشده</button>
           {enableReminder && <button className="coding-reminder" disabled={emailBusy || (stats?.approved ?? 0) === 0} onClick={reminderEmail}>ارسال یادآوری به همه تأییدشده‌ها</button>}
