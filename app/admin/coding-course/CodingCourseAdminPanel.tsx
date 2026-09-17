@@ -23,7 +23,13 @@ type Stats = { pending: number; approved: number; iran: number; international: n
 const statusLabels: Record<Status, string> = { pending: "در انتظار", approved: "تأییدشده", rejected: "ردشده" };
 const number = (value: number) => new Intl.NumberFormat("fa-IR").format(value);
 
-export default function CodingCourseAdminPanel({ apiBase = "/api/admin/coding-course" }: { apiBase?: string }) {
+export default function CodingCourseAdminPanel({
+  apiBase = "/api/admin/coding-course",
+  enableReminder = false,
+}: {
+  apiBase?: string;
+  enableReminder?: boolean;
+}) {
   const [items, setItems] = useState<Registration[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,6 +97,11 @@ export default function CodingCourseAdminPanel({ apiBase = "/api/admin/coding-co
     await emailAction({ action: "bulk" });
   }
 
+  async function reminderEmail() {
+    if (!confirm(`ایمیل یادآوری ورود به کانال برای همه ${number(stats?.approved ?? 0)} نفر تأییدشده ارسال شود؟`)) return;
+    await emailAction({ action: "reminder" });
+  }
+
   const visibleItems = useMemo(() => filter === "all" ? items : items.filter(item => item.location === filter), [filter, items]);
   const approvedWithoutEmail = items.filter(item => item.status === "approved" && !item.emailSentAt).length;
 
@@ -108,7 +119,10 @@ export default function CodingCourseAdminPanel({ apiBase = "/api/admin/coding-co
       <section className="coding-email-tools">
         <div><p className="eyebrow">ایمیل کانال دوره</p><h2>ارسال لینک ورود</h2><span>{number(approvedWithoutEmail)} نفر تأییدشده هنوز ایمیل نگرفته‌اند.</span></div>
         <form onSubmit={testEmail}><input name="email" type="email" required placeholder="ایمیل آزمایشی" /><button disabled={emailBusy}>ارسال تست</button></form>
-        <button className="coding-bulk" disabled={emailBusy || approvedWithoutEmail === 0} onClick={bulkEmail}>ارسال به همه افراد ارسال‌نشده</button>
+        <div className="coding-email-actions">
+          <button className="coding-bulk" disabled={emailBusy || approvedWithoutEmail === 0} onClick={bulkEmail}>ارسال به همه افراد ارسال‌نشده</button>
+          {enableReminder && <button className="coding-reminder" disabled={emailBusy || (stats?.approved ?? 0) === 0} onClick={reminderEmail}>ارسال یادآوری به همه تأییدشده‌ها</button>}
+        </div>
       </section>
 
       {notice && <p className="coding-admin-notice">{notice}</p>}
