@@ -12,7 +12,7 @@ export default function AiVideoCourseAdminPage() {
         <div><p className="eyebrow">SAMIZ AI ACADEMY · AI VIDEO</p><h1>مدیریت دوره ساخت ویدیو با هوش مصنوعی</h1></div>
         <div><Link href="/admin/coding-course">دوره کدینگ</Link><Link href="/ai-video-creation">صفحه ثبت‌نام</Link><Link href="/">سایت اصلی</Link></div>
       </header>
-      <CodingCourseAdminPanel apiBase="/api/admin/ai-video-course" />
+      <CodingCourseAdminPanel apiBase="/api/admin/ai-video-course" enableReminder />
     </main>
   );
 }
