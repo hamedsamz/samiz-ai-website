@@ -114,6 +114,10 @@ export async function sendAiVideoCourseConfirmationEmail(to: string, fullName: s
   await sendOne(to, fullName, "confirmation");
 }
 
+export async function sendAiVideoCourseReminderEmail(to: string, fullName: string) {
+  await sendOne(to, fullName, "reminder");
+}
+
 export async function sendAiVideoCourseConfirmationBatch(recipients: Recipient[]) {
   await sendBatch(recipients, "confirmation");
 }
