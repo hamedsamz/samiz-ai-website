@@ -58,16 +58,29 @@ export default function CodingVibeCodingPage() {
     const form = event.currentTarget;
     const formData = new FormData(form);
     formData.set("location", location);
-    const response = await fetch("/api/coding-course/registration", { method: "POST", body: formData });
-    const result = await response.json() as { message?: string; error?: string };
-    setBusy(false);
-    if (!response.ok) {
-      setMessage({ text: result.error ?? "خطایی رخ داد؛ دوباره تلاش کنید.", error: true });
-      return;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 90_000);
+    try {
+      const response = await fetch("/api/coding-course/registration", { method: "POST", body: formData, signal: controller.signal });
+      if (!response.headers.get("content-type")?.includes("application/json")) {
+        setMessage({ text: "تأیید مرورگر اجازهٔ ارسال نداد. لینک ثبت‌نام را مستقیم در Safari یا Chrome باز کنید و دوباره تلاش کنید. اگر قبلاً درخواست ثبت شده باشد، سیستم به شما اطلاع می‌دهد.", error: true });
+        return;
+      }
+      const result = await response.json() as { message?: string; error?: string };
+      if (!response.ok) {
+        setMessage({ text: result.error ?? "خطایی رخ داد؛ دوباره تلاش کنید.", error: true });
+        return;
+      }
+      setMessage({ text: result.message ?? "درخواست شما ثبت شد." });
+      form.reset();
+      setFileName("");
+    } catch (error) {
+      const timedOut = error instanceof DOMException && error.name === "AbortError";
+      setMessage({ text: timedOut ? "ارسال بیش از حد طول کشید. اینترنت را بررسی کنید و دوباره تلاش کنید؛ اگر درخواست قبلی ثبت شده باشد، سیستم به شما اطلاع می‌دهد." : "ارتباط با سرور برقرار نشد. لینک را مستقیم در Safari یا Chrome باز کنید و دوباره تلاش کنید.", error: true });
+    } finally {
+      window.clearTimeout(timeoutId);
+      setBusy(false);
     }
-    setMessage({ text: result.message ?? "درخواست شما ثبت شد." });
-    form.reset();
-    setFileName("");
   }
 
   return (
@@ -183,6 +196,7 @@ export default function CodingVibeCodingPage() {
           )}
 
           <form onSubmit={submit}>
+            <p className="cvc-browser-note">اگر این صفحه را داخل اینستاگرام باز کرده‌اید، پیش از ارسال رسید از منوی مرورگر گزینهٔ «Open in browser» را بزنید و ثبت‌نام را در Safari یا Chrome انجام دهید.</p>
             <input type="hidden" name="location" value={location} />
             <div className="cvc-field full"><label htmlFor="fullName">نام و نام خانوادگی</label><input id="fullName" name="fullName" required minLength={3} maxLength={80} autoComplete="name" placeholder="نام کامل خود را وارد کنید" /></div>
             <div className="cvc-field"><label htmlFor="age">سن</label><input id="age" name="age" type="number" required min={12} max={100} inputMode="numeric" placeholder="مثلاً ۲۸" /></div>

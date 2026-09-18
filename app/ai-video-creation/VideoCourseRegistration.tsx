@@ -53,6 +53,10 @@ export default function VideoCourseRegistration() {
         body: formData,
         signal: controller.signal,
       });
+      if (!response.headers.get("content-type")?.includes("application/json")) {
+        setMessage({ text: "تأیید مرورگر اجازهٔ ارسال نداد. لینک ثبت‌نام را مستقیم در Safari یا Chrome باز کنید و دوباره تلاش کنید. اگر قبلاً درخواست ثبت شده باشد، سیستم به شما اطلاع می‌دهد.", error: true });
+        return;
+      }
       const result = await response.json().catch(() => ({})) as { message?: string; error?: string };
       if (!response.ok) {
         setMessage({ text: result.error ?? "ارسال فرم کامل نشد. حجم و فرمت رسید را بررسی و دوباره تلاش کنید.", error: true });
@@ -148,6 +152,7 @@ export default function VideoCourseRegistration() {
         )}
 
         <form onSubmit={submit}>
+          <p className="avc-browser-note">اگر این صفحه را داخل اینستاگرام باز کرده‌اید، پیش از ارسال رسید از منوی مرورگر گزینهٔ «Open in browser» را بزنید و ثبت‌نام را در Safari یا Chrome انجام دهید.</p>
           <input type="hidden" name="location" value={location} />
           <input type="hidden" name="discountCode" value={location === "iran" && discountApplied ? discountCode.trim() : ""} />
           <div className="avc-field full"><label htmlFor="videoFullName">نام و نام خانوادگی</label><input id="videoFullName" name="fullName" required minLength={3} maxLength={80} autoComplete="name" placeholder="نام کامل خود را وارد کنید" /></div>
