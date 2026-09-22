@@ -38,6 +38,15 @@ const copy = {
     newsText: "مهم‌ترین اتفاقات هوش مصنوعی را انتخاب می‌کنیم، ساده توضیح می‌دهیم و نشان می‌دهیم چرا برای کار و آینده شما مهم‌اند.",
     newsTags: ["کسب‌وکار AI", "محصول", "مدل‌ها"],
     newsTitles: ["مدیریت سرمایه‌گذاری در عصر عامل‌های هوش مصنوعی", "GPT-5.6 مدل منتخب Microsoft 365 Copilot شد", "معرفی GPT-5.6؛ هوش مرزی در مقیاس بزرگ"],
+    podcastKicker: "SAMIZ AI PODCAST",
+    podcastTitle: "پادکست Samiz AI",
+    podcastText: "گفت‌وگوهای کوتاه و دقیق درباره تغییراتی که هوش مصنوعی در کار، زندگی و آینده ما ایجاد می‌کند.",
+    podcastEpisode: "اپیزود",
+    podcastFormat: "روایت کوتاه",
+    podcastEpisodes: [
+      ["هوش مصنوعی و بیل گیتس — این بار چه فرقی می‌کند؟", "چرا موج جدید هوش مصنوعی با انقلاب‌های تکنولوژیک قبلی فرق دارد؟"],
+      ["هوش مصنوعی دیگر فقط جواب نمی‌دهد؛ دارد کار انجام می‌دهد", "از چت‌بات‌ها تا عامل‌هایی که می‌توانند یک کار واقعی را از ابتدا تا انتها انجام دهند."],
+    ],
     founderKicker: "بنیان‌گذار سمیز",
     founderTitle: "فناوری پیچیده، با زبان روشن.",
     founderText: "من حامد سمیع‌زاده‌ام. هدفم این است که هوش مصنوعی را از یک موضوع پیچیده و دور، به ابزاری قابل‌فهم برای ساختن، یادگرفتن و رشد تبدیل کنم.",
@@ -86,6 +95,15 @@ const copy = {
     newsText: "We select the AI developments that matter, explain them clearly, and show why they matter to your work and future.",
     newsTags: ["AI BUSINESS", "PRODUCT", "MODELS"],
     newsTitles: ["Managing investment in the age of AI agents", "GPT-5.6 becomes the preferred model in Microsoft 365 Copilot", "Introducing GPT-5.6: frontier intelligence at scale"],
+    podcastKicker: "SAMIZ AI PODCAST",
+    podcastTitle: "The Samiz AI Podcast",
+    podcastText: "Short, focused conversations about how artificial intelligence is changing our work, our lives, and what comes next.",
+    podcastEpisode: "EPISODE",
+    podcastFormat: "SHORT LISTEN",
+    podcastEpisodes: [
+      ["AI and Bill Gates — what makes this time different?", "Why is the new wave of artificial intelligence different from earlier technological revolutions?"],
+      ["AI no longer just answers; it gets work done", "From chatbots to agents that can carry a real task from beginning to end."],
+    ],
     founderKicker: "FOUNDER OF SAMIZ",
     founderTitle: "Complex technology, spoken clearly.",
     founderText: "I'm Hamed Sami Zadeh. My goal is to turn AI from a distant, complicated subject into an understandable tool for creating, learning, and growing.",
@@ -133,7 +151,9 @@ export default function Home() {
 
   useEffect(() => {
     const saved = localStorage.getItem("samiz-lang");
-    if (saved === "fa" || saved === "en") setLang(saved);
+    if (saved !== "fa" && saved !== "en") return;
+    const frame = window.requestAnimationFrame(() => setLang(saved));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const setLanguage = (next: Lang) => {
@@ -204,6 +224,35 @@ export default function Home() {
           <div className="neo-news-intro"><p className="neo-kicker">{t.newsKicker}</p><h2>{t.newsTitle}</h2><p>{t.newsText}</p></div>
           <div className="neo-news-list">
             {newsLinks.map((link,index) => <a href={link} target="_blank" rel="noreferrer" key={link}><span className="neo-news-index">0{index+1}</span><div className="neo-news-thumb"><img src={newsImages[index]} alt=""/></div><div><small>{t.newsTags[index]}</small><h3>{t.newsTitles[index]}</h3></div><Arrow /></a>)}
+          </div>
+        </div>
+      </section>
+
+      <section className="neo-podcast" id="podcast">
+        <div className="neo-shell">
+          <div className="neo-podcast-intro">
+            <p className="neo-kicker">{t.podcastKicker}</p>
+            <h2>{t.podcastTitle}</h2>
+            <p>{t.podcastText}</p>
+          </div>
+          <div className="neo-podcast-list">
+            {t.podcastEpisodes.map(([title, description], index) => (
+              <article className="neo-podcast-card" key={title}>
+                <div className="neo-podcast-card-top">
+                  <span>{t.podcastEpisode} / 0{index + 1}</span>
+                  <small>{t.podcastFormat}</small>
+                </div>
+                <div className="neo-podcast-wave" aria-hidden="true">
+                  {[28, 52, 74, 42, 88, 58, 34, 68, 46, 80, 36, 60].map((height, barIndex) => (
+                    <i key={barIndex} style={{ "--bar-height": `${height}%` } as React.CSSProperties} />
+                  ))}
+                </div>
+                <div className="neo-podcast-card-copy">
+                  <span className="neo-podcast-play" aria-hidden="true">▶</span>
+                  <div><h3>{title}</h3><p>{description}</p></div>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
