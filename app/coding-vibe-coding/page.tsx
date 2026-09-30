@@ -6,6 +6,9 @@ import {
   CODING_COURSE_CARD_HOLDER,
   CODING_COURSE_CARD_NUMBER,
   CODING_COURSE_PAYMENT_TELEGRAM_URL,
+  CODING_COURSE_IRAN_FEE,
+  CODING_COURSE_IRAN_DISCOUNT_FEE,
+  isCodingCourseDiscountCode,
 } from "../../lib/coding-course-config";
 import "./coding-course.css";
 
@@ -40,6 +43,10 @@ const curriculum = [
 
 export default function CodingVibeCodingPage() {
   const [location, setLocation] = useState<Location>("iran");
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountAttempted, setDiscountAttempted] = useState(false);
+  const discountApplied = location === "iran" && isCodingCourseDiscountCode(discountCode);
+  const iranFee = discountApplied ? CODING_COURSE_IRAN_DISCOUNT_FEE : CODING_COURSE_IRAN_FEE;
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -58,6 +65,7 @@ export default function CodingVibeCodingPage() {
     const form = event.currentTarget;
     const formData = new FormData(form);
     formData.set("location", location);
+    formData.set("discountCode", discountApplied ? discountCode.trim() : "");
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 90_000);
     try {
@@ -74,6 +82,8 @@ export default function CodingVibeCodingPage() {
       setMessage({ text: result.message ?? "درخواست شما ثبت شد." });
       form.reset();
       setFileName("");
+      setDiscountCode("");
+      setDiscountAttempted(false);
     } catch (error) {
       const timedOut = error instanceof DOMException && error.name === "AbortError";
       setMessage({ text: timedOut ? "ارسال بیش از حد طول کشید. اینترنت را بررسی کنید و دوباره تلاش کنید؛ اگر درخواست قبلی ثبت شده باشد، سیستم به شما اطلاع می‌دهد." : "ارتباط با سرور برقرار نشد. لینک را مستقیم در Safari یا Chrome باز کنید و دوباره تلاش کنید.", error: true });
@@ -176,14 +186,22 @@ export default function CodingVibeCodingPage() {
 
         <div className="cvc-form-card">
           <div className="cvc-location-picker" role="radiogroup" aria-label="محل زندگی">
-            <button type="button" role="radio" aria-checked={location === "iran"} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small>۳ میلیون تومان</small></button>
+            <button type="button" role="radio" aria-checked={location === "iran"} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small>{discountApplied ? "۲ میلیون تومان با تخفیف" : "۳ میلیون تومان"}</small></button>
             <button type="button" role="radio" aria-checked={location === "international"} className={location === "international" ? "active" : ""} onClick={() => { setLocation("international"); setMessage(null); }}><span>خارج از ایران</span><small>۴۵ تتر (USDT)</small></button>
           </div>
 
           {location === "iran" ? (
             <div className="cvc-payment-card iran">
-              <div><small>مبلغ ثبت‌نام</small><strong>۳,۰۰۰,۰۰۰ <i>تومان</i></strong></div>
-              <p>مبلغ را به کارت زیر واریز کنید و سپس تصویر رسید را در فرم بارگذاری کنید.</p>
+              <div aria-live="polite"><small>{discountApplied ? "مبلغ پس از تخفیف" : "مبلغ ثبت‌نام"}</small><strong>{discountApplied && <del className="cvc-original-price">۳٬۰۰۰٬۰۰۰ تومان</del>}{iranFee.toLocaleString("fa-IR")} <i>تومان</i></strong></div>
+              <div className="cvc-coupon">
+                <label htmlFor="codingDiscountCode">کد تخفیف</label>
+                <div>
+                  <input id="codingDiscountCode" value={discountCode} onChange={event => { setDiscountCode(event.target.value); setDiscountAttempted(false); }} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); setDiscountAttempted(true); } }} placeholder="کد تخفیف را وارد کنید" dir="ltr" autoComplete="off" maxLength={40} />
+                  <button type="button" onClick={() => setDiscountAttempted(true)}>{discountApplied ? "اعمال شد ✓" : "اعمال کد"}</button>
+                </div>
+                <p className={`cvc-coupon-message ${discountApplied ? "success" : "error"}`} aria-live="polite">{discountApplied ? "کد تخفیف اعمال شد؛ مبلغ قابل پرداخت ۲ میلیون تومان است." : discountAttempted ? "کد تخفیف معتبر نیست." : ""}</p>
+              </div>
+              <p>مبلغ {iranFee.toLocaleString("fa-IR")} تومان را به کارت زیر واریز کنید و سپس تصویر رسید را در فرم بارگذاری کنید.</p>
               <div className="cvc-card-number" dir="ltr"><code>{CODING_COURSE_CARD_NUMBER.replace(/(\d{4})(?=\d)/g, "$1 ")}</code><button type="button" onClick={copyCard}>{copied ? "کپی شد ✓" : "کپی شماره"}</button></div>
               <small className="cvc-holder">به نام {CODING_COURSE_CARD_HOLDER}</small>
             </div>

@@ -1,6 +1,6 @@
 import { ensureCodingCourseSchema, type CodingCourseLocation } from "../../../../db/coding-course-registrations";
 import { db } from "../../../../db/registrations";
-import { CODING_COURSE_INTERNATIONAL_FEE, CODING_COURSE_IRAN_FEE } from "../../../../lib/coding-course-config";
+import { CODING_COURSE_INTERNATIONAL_FEE, CODING_COURSE_IRAN_FEE, CODING_COURSE_IRAN_DISCOUNT_FEE, isCodingCourseDiscountCode } from "../../../../lib/coding-course-config";
 
 export const dynamic = "force-dynamic";
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
@@ -10,6 +10,7 @@ export async function POST(request: Request) {
     await ensureCodingCourseSchema();
     const form = await request.formData();
     const location = String(form.get("location") ?? "") as CodingCourseLocation;
+    const discountCode = String(form.get("discountCode") ?? "").trim();
     const fullName = String(form.get("fullName") ?? "").trim();
     const phone = String(form.get("phone") ?? "").replace(/[\s()-]/g, "").trim();
     const email = String(form.get("email") ?? "").trim().toLowerCase();
@@ -19,6 +20,8 @@ export async function POST(request: Request) {
     const receipt = form.get("receipt");
 
     if (location !== "iran" && location !== "international") return Response.json({ error: "محل زندگی را انتخاب کنید." }, { status: 400 });
+    const hasDiscount = location === "iran" && isCodingCourseDiscountCode(discountCode);
+    if (location === "iran" && discountCode && !hasDiscount) return Response.json({ error: "کد تخفیف معتبر نیست." }, { status: 400 });
     if (fullName.length < 3 || fullName.length > 80) return Response.json({ error: "نام و نام خانوادگی را کامل وارد کنید." }, { status: 400 });
     if (!Number.isInteger(age) || age < 12 || age > 100) return Response.json({ error: "سن معتبر وارد کنید." }, { status: 400 });
     if (!/^\+?[0-9۰-۹]{7,15}$/.test(phone)) return Response.json({ error: "شماره تماس دارای واتساپ را درست وارد کنید." }, { status: 400 });
@@ -34,7 +37,7 @@ export async function POST(request: Request) {
 
     const now = Date.now();
     const receiptData = Buffer.from(await receipt.arrayBuffer()).toString("base64");
-    const paidAmount = location === "iran" ? CODING_COURSE_IRAN_FEE : CODING_COURSE_INTERNATIONAL_FEE;
+    const paidAmount = location === "iran" ? (hasDiscount ? CODING_COURSE_IRAN_DISCOUNT_FEE : CODING_COURSE_IRAN_FEE) : CODING_COURSE_INTERNATIONAL_FEE;
     const paymentCurrency = location === "iran" ? "toman" : "usdt";
     await sql`INSERT INTO coding_course_registrations (
       id, location, full_name, age, phone, email, telegram_username, paid_amount, payment_currency,
