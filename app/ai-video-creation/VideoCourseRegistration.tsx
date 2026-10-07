@@ -32,7 +32,7 @@ export default function VideoCourseRegistration() {
     const isValid = discountCode.trim().toLocaleLowerCase("en-US") === AI_VIDEO_COURSE_SUPPORT_DISCOUNT_CODE.toLocaleLowerCase("en-US");
     setDiscountApplied(isValid);
     setDiscountMessage(isValid
-      ? { text: "کد تخفیف حمایتی اعمال شد؛ مبلغ قابل پرداخت ۳ میلیون تومان است." }
+      ? { text: "کد تخفیف حمایتی اعمال شد؛ مبلغ قابل پرداخت ۵ میلیون تومان است." }
       : { text: "کد تخفیف معتبر نیست. عبارت Mehr را وارد کنید.", error: true });
   }
 
@@ -128,9 +128,9 @@ export default function VideoCourseRegistration() {
           <div className="avc-payment-card iran">
             <div className="avc-payment-heading">
               <small>{discountApplied ? "مبلغ پس از تخفیف حمایتی" : "قیمت اصلی دوره"}</small>
-              {discountApplied ? <div className="avc-applied-price"><del>۹,۰۰۰,۰۰۰ تومان</del><strong>۳,۰۰۰,۰۰۰ <i>تومان</i></strong></div> : <strong>۹,۰۰۰,۰۰۰ <i>تومان</i></strong>}
+              {discountApplied ? <div className="avc-applied-price"><del>۹,۰۰۰,۰۰۰ تومان</del><strong>۵,۰۰۰,۰۰۰ <i>تومان</i></strong></div> : <strong>۹,۰۰۰,۰۰۰ <i>تومان</i></strong>}
             </div>
-            <p className="avc-supportive-copy">با توجه به شرایط کشور، اگر قادر به پرداخت مبلغ کامل نیستید، جهت بهره‌مندی از تخفیف حمایتی ۶۶٫۶۷٪ و پرداخت ۳ میلیون تومان، کد <code dir="ltr">Mehr</code> را وارد کنید.</p>
+            <p className="avc-supportive-copy">با توجه به شرایط کشور، اگر قادر به پرداخت مبلغ کامل نیستید، جهت بهره‌مندی از تخفیف حمایتی ۴۴٫۴۴٪ و پرداخت ۵ میلیون تومان، کد <code dir="ltr">Mehr</code> را وارد کنید.</p>
             <div className="avc-coupon">
               <label htmlFor="videoDiscountCode">کد تخفیف حمایتی</label>
               <div>
@@ -139,7 +139,7 @@ export default function VideoCourseRegistration() {
               </div>
               {discountMessage && <p className={`avc-coupon-message ${discountMessage.error ? "error" : "success"}`} aria-live="polite">{discountMessage.text}</p>}
             </div>
-            <p>{discountApplied ? "مبلغ حمایتی ۳ میلیون تومان" : "قیمت اصلی ۹ میلیون تومان"} را به کارت زیر واریز کنید و سپس تصویر رسید را در فرم بارگذاری کنید.</p>
+            <p>{discountApplied ? "مبلغ حمایتی ۵ میلیون تومان" : "قیمت اصلی ۹ میلیون تومان"} را به کارت زیر واریز کنید و سپس تصویر رسید را در فرم بارگذاری کنید.</p>
             <div className="avc-card-number" dir="ltr"><code>{AI_VIDEO_COURSE_CARD_NUMBER.replace(/(\d{4})(?=\d)/g, "$1 ")}</code><button type="button" onClick={copyCard}>{copied ? "کپی شد ✓" : "کپی شماره"}</button></div>
             <small className="avc-holder">به نام {AI_VIDEO_COURSE_CARD_HOLDER}</small>
           </div>
