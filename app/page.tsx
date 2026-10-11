@@ -150,7 +150,7 @@ export default function Home() {
         <a href="#top" className="neo-logo" aria-label="Samiz AI"><Brand /></a>
         <nav className={menuOpen ? "neo-nav is-open" : "neo-nav"} aria-label={lang === "fa" ? "منوی اصلی" : "Main navigation"}>
           {t.nav.map((item, index) => <a href={anchors[index]} key={item} onClick={() => setMenuOpen(false)}>{item}</a>)}
-          <a href="/dangi" onClick={() => setMenuOpen(false)}>{lang === "fa" ? "دنگی" : "Dangi"}</a>
+          <a href="/dongi" onClick={() => setMenuOpen(false)}>{lang === "fa" ? "دنگی" : "Dongi"}</a>
         </nav>
         <div className="neo-header-actions">
           <div className="neo-lang"><button onClick={() => setLanguage("fa")} className={lang === "fa" ? "active" : ""}>فا</button><span>/</span><button onClick={() => setLanguage("en")} className={lang === "en" ? "active" : ""}>EN</button></div>
