@@ -10,6 +10,7 @@ import {
   CODING_COURSE_IRAN_DISCOUNT_FEE,
   isCodingCourseDiscountCode,
 } from "../../lib/coding-course-config";
+import { CODING_COURSE_REGISTRATION_OPEN, COURSE_CAPACITY_FULL_LABEL, COURSE_REGISTRATION_CLOSED_MESSAGE } from "../../lib/course-registration-status";
 import "./coding-course.css";
 
 type Location = "iran" | "international";
@@ -60,6 +61,10 @@ export default function CodingVibeCodingPage() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!CODING_COURSE_REGISTRATION_OPEN) {
+      setMessage({ text: COURSE_REGISTRATION_CLOSED_MESSAGE, error: true });
+      return;
+    }
     setBusy(true);
     setMessage(null);
     const form = event.currentTarget;
@@ -101,13 +106,13 @@ export default function CodingVibeCodingPage() {
         </Link>
         <div className="cvc-header-links">
           <Link href="/courses">همه دوره‌ها</Link>
-          <a href="#registration" className="cvc-header-cta">ثبت‌نام دوره <i>↙</i></a>
+          <a href="#registration" className="cvc-header-cta">وضعیت ثبت‌نام <i>↙</i></a>
         </div>
       </header>
 
       <section className="cvc-hero">
         <div className="cvc-hero-copy">
-          <div className="cvc-status"><span /> ثبت‌نام دوره جدید آغاز شد</div>
+          <div className="cvc-status"><span /> {CODING_COURSE_REGISTRATION_OPEN ? "ثبت‌نام دوره جدید آغاز شد" : COURSE_CAPACITY_FULL_LABEL}</div>
           <p className="cvc-overline">CODING × AI × PYTHON</p>
           <h2 className="cvc-hero-heading">آموزش هوش مصنوعی از پایه، به‌صورت اصولی و مفهومی</h2>
           <h1><span>کدینگ،</span><em>وایب‌کدینگ</em></h1>
@@ -118,7 +123,11 @@ export default function CodingVibeCodingPage() {
             <div><small>مدرس پایتون و مبانی کدنویسی</small><strong>دکتر هادی روشن</strong></div>
           </div>
           <div className="cvc-hero-actions">
-            <a href="#registration" className="cvc-primary">رزرو جایگاه <span>↙</span></a>
+            {CODING_COURSE_REGISTRATION_OPEN ? (
+              <a href="#registration" className="cvc-primary">رزرو جایگاه <span>↙</span></a>
+            ) : (
+              <button type="button" className="cvc-primary" disabled style={{ cursor: "not-allowed", opacity: 0.7 }}>{COURSE_CAPACITY_FULL_LABEL}</button>
+            )}
             <a href="#curriculum" className="cvc-secondary">مشاهده مسیر یادگیری</a>
           </div>
         </div>
@@ -176,6 +185,15 @@ export default function CodingVibeCodingPage() {
         </div>
       </section>
 
+      {!CODING_COURSE_REGISTRATION_OPEN ? (
+        <section className="cvc-registration" id="registration" aria-labelledby="coding-registration-status">
+          <div className="cvc-registration-copy">
+            <p className="cvc-section-label">وضعیت ثبت‌نام دوره</p>
+            <h2 id="coding-registration-status">{COURSE_CAPACITY_FULL_LABEL}</h2>
+            <p>{COURSE_REGISTRATION_CLOSED_MESSAGE}</p>
+          </div>
+        </section>
+      ) : (
       <section className="cvc-registration" id="registration">
         <div className="cvc-registration-copy">
           <p className="cvc-section-label">ثبت‌نام دوره</p>
@@ -240,6 +258,8 @@ export default function CodingVibeCodingPage() {
           </form>
         </div>
       </section>
+
+      )}
 
       <section className="cvc-support" aria-labelledby="support-title">
         <div>

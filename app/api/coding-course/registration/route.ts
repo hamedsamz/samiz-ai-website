@@ -1,3 +1,4 @@
+import { CODING_COURSE_REGISTRATION_OPEN, COURSE_REGISTRATION_CLOSED_MESSAGE } from "../../../../lib/course-registration-status";
 import { ensureCodingCourseSchema, type CodingCourseLocation } from "../../../../db/coding-course-registrations";
 import { db } from "../../../../db/registrations";
 import { CODING_COURSE_INTERNATIONAL_FEE, CODING_COURSE_IRAN_FEE, CODING_COURSE_IRAN_DISCOUNT_FEE, isCodingCourseDiscountCode } from "../../../../lib/coding-course-config";
@@ -6,6 +7,10 @@ export const dynamic = "force-dynamic";
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 
 export async function POST(request: Request) {
+  if (!CODING_COURSE_REGISTRATION_OPEN) {
+    return Response.json({ error: COURSE_REGISTRATION_CLOSED_MESSAGE }, { status: 409 });
+  }
+
   try {
     await ensureCodingCourseSchema();
     const form = await request.formData();

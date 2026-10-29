@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { CODING_COURSE_REGISTRATION_OPEN, AI_VIDEO_COURSE_REGISTRATION_OPEN, COURSE_CAPACITY_FULL_LABEL } from "../../lib/course-registration-status";
 import "./courses.css";
 
 const courses = [
@@ -9,7 +10,7 @@ const courses = [
     provider: "حامد سمیع‌زاده × دکتر هادی روشن",
     summary: "از اولین پرامپت تا اولین پروژه پایتون",
     meta: "از صفر · پروژه‌محور · دوره ضبط‌شده",
-    badges: ["ثبت‌نام فعال", "پایتون + AI"],
+    badges: [CODING_COURSE_REGISTRATION_OPEN ? "ثبت‌نام فعال" : COURSE_CAPACITY_FULL_LABEL, "پایتون + AI"],
     image: "/images/courses/coding-vibe-coding-poster.webp",
     href: "/coding-vibe-coding",
     imagePosition: "center",
@@ -21,7 +22,7 @@ const courses = [
     provider: "میج بهرامی · Mage Bahrami",
     summary: "از پرامپت و کارگردانی تا تدوین و کنترل کیفیت",
     meta: "۱۵ فصل · تخصصی · پروژه‌محور",
-    badges: ["دوره جدید", "ثبت‌نام فعال"],
+    badges: [AI_VIDEO_COURSE_REGISTRATION_OPEN ? "ثبت‌نام فعال" : COURSE_CAPACITY_FULL_LABEL, "۱۵ فصل تخصصی"],
     image: "/images/slide-video-ad.png",
     href: "/ai-video-creation",
     imagePosition: "center",

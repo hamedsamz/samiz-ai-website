@@ -1,5 +1,6 @@
 import Link from "next/link";
 import VideoCourseRegistration from "./VideoCourseRegistration";
+import { AI_VIDEO_COURSE_REGISTRATION_OPEN, COURSE_CAPACITY_FULL_LABEL, COURSE_REGISTRATION_CLOSED_MESSAGE } from "../../lib/course-registration-status";
 import "./video-course.css";
 
 const modules = [
@@ -84,19 +85,23 @@ export default function AiVideoCreationPage() {
         <nav aria-label="مسیر صفحه">
           <Link href="/courses">همه دوره‌ها</Link>
           <a href="#curriculum">سرفصل‌ها</a>
-          <a href="#registration">ثبت‌نام</a>
+          <a href="#registration">وضعیت ثبت‌نام</a>
         </nav>
       </header>
 
       <section className="avc-hero">
         <div className="avc-hero-copy">
-          <div className="avc-status"><span/> ثبت‌نام فعال · شروع دوره ۳ مهر</div>
+          <div className="avc-status"><span/> {AI_VIDEO_COURSE_REGISTRATION_OPEN ? "ثبت‌نام فعال · شروع دوره ۳ مهر" : COURSE_CAPACITY_FULL_LABEL}</div>
           <p className="avc-overline">AI VIDEO DIRECTION · GENERATIVE FILMMAKING</p>
           <h1>دوره تخصصی ساخت ویدیو<br/><em>با هوش مصنوعی</em></h1>
           <p className="avc-lead">فقط کار با یک ابزار را یاد نمی‌گیرید؛ یاد می‌گیرید مثل یک کارگردان حرفه‌ای برای تصویر، حرکت، دوربین، نور، صدا، بازی، رفرنس و تدوین تصمیم دقیق بگیرید.</p>
           <div className="avc-teacher"><small>مدرس دوره</small><strong>میج بهرامی</strong><span>Mage Bahrami</span></div>
           <div className="avc-actions">
-            <a href="#registration" className="avc-primary">ثبت‌نام دوره <span>↙</span></a>
+            {AI_VIDEO_COURSE_REGISTRATION_OPEN ? (
+              <a href="#registration" className="avc-primary">ثبت‌نام دوره <span>↙</span></a>
+            ) : (
+              <button type="button" className="avc-primary" disabled style={{ cursor: "not-allowed", opacity: 0.7 }}>{COURSE_CAPACITY_FULL_LABEL}</button>
+            )}
             <a href="#curriculum" className="avc-secondary">مشاهده مسیر دوره</a>
           </div>
         </div>
@@ -116,7 +121,7 @@ export default function AiVideoCreationPage() {
         <div className="avc-fact-fee">
           <small>هزینه ثبت‌نام</small>
           <strong>قیمت اصلی: ۹ میلیون تومان</strong>
-          <em>با توجه به شرایط کشور، برای استفاده از مبلغ حمایتی ۵ میلیون تومان (۴۴٫۴۴٪ تخفیف)، کد <b dir="ltr">Mehr</b> را هنگام ثبت‌نام وارد کنید.</em>
+          {AI_VIDEO_COURSE_REGISTRATION_OPEN ? <em>با توجه به شرایط کشور، برای استفاده از مبلغ حمایتی ۵ میلیون تومان (۴۴٫۴۴٪ تخفیف)، کد <b dir="ltr">Mehr</b> را هنگام ثبت‌نام وارد کنید.</em> : <em>{COURSE_CAPACITY_FULL_LABEL}</em>}
           <span>خارج از ایران: ۱۲۰ تتر</span>
         </div>
       </section>
@@ -164,7 +169,15 @@ export default function AiVideoCreationPage() {
         </div>
       </section>
 
-      <VideoCourseRegistration />
+      {AI_VIDEO_COURSE_REGISTRATION_OPEN ? <VideoCourseRegistration /> : (
+        <section className="avc-registration" id="registration" aria-labelledby="video-registration-status">
+          <div className="avc-registration-copy">
+            <p className="avc-section-label">وضعیت ثبت‌نام دوره</p>
+            <h2 id="video-registration-status">{COURSE_CAPACITY_FULL_LABEL}</h2>
+            <p>{COURSE_REGISTRATION_CLOSED_MESSAGE}</p>
+          </div>
+        </section>
+      )}
 
       <section className="avc-support" aria-labelledby="avc-support-title">
         <div>

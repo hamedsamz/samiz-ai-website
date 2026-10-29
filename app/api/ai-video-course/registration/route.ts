@@ -1,3 +1,4 @@
+import { AI_VIDEO_COURSE_REGISTRATION_OPEN, COURSE_REGISTRATION_CLOSED_MESSAGE } from "../../../../lib/course-registration-status";
 import { ensureAiVideoCourseSchema, type AiVideoCourseLocation } from "../../../../db/ai-video-course-registrations";
 import { db } from "../../../../db/registrations";
 import { AI_VIDEO_COURSE_INTERNATIONAL_FEE, AI_VIDEO_COURSE_IRAN_STANDARD_FEE, AI_VIDEO_COURSE_IRAN_SUPPORT_FEE, AI_VIDEO_COURSE_SUPPORT_DISCOUNT_CODE } from "../../../../lib/ai-video-course-config";
@@ -6,6 +7,10 @@ export const dynamic = "force-dynamic";
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 
 export async function POST(request: Request) {
+  if (!AI_VIDEO_COURSE_REGISTRATION_OPEN) {
+    return Response.json({ error: COURSE_REGISTRATION_CLOSED_MESSAGE }, { status: 409 });
+  }
+
   const requestId = crypto.randomUUID();
   console.info("[ai-video-registration] request started", { requestId });
   try {
