@@ -1,6 +1,7 @@
 import "server-only";
 import { betterAuth } from "better-auth";
 import { APIError } from "better-auth/api";
+import { getSessionCookie } from "better-auth/cookies";
 import { emailOTP } from "better-auth/plugins";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -8,6 +9,7 @@ import { academyEnabled, academyOrigin, normalizedEmail } from "./config";
 import { academyPool } from "./pool";
 import { hashAcademyOtp, matchesRegistration } from "./registration";
 
+const cookiePrefix = "samiz-academy";
 let auth: ReturnType<typeof createAcademyAuth> | undefined;
 
 function createAcademyAuth() {
@@ -34,7 +36,7 @@ function createAcademyAuth() {
     },
     session: { expiresIn: 60 * 60 * 24 * 7, cookieCache: { enabled: false } },
     advanced: {
-      cookiePrefix: "samiz-academy",
+      cookiePrefix,
       useSecureCookies: origin.startsWith("https:"),
       ipAddress: { ipAddressHeaders: process.env.VERCEL === "1" ? ["x-forwarded-for"] : [] },
     },
@@ -84,9 +86,11 @@ export function academyAuth() {
 }
 
 export async function academyUser() {
+  const requestHeaders = await headers();
+  if (!getSessionCookie(requestHeaders, { cookiePrefix })) return null;
   const auth = academyAuth();
   if (!auth) return null;
-  const session = await auth.api.getSession({ headers: await headers(), query: { disableCookieCache: true } });
+  const session = await auth.api.getSession({ headers: requestHeaders, query: { disableCookieCache: true } });
   const email = session?.user.emailVerified && normalizedEmail(session.user.email);
   if (!session?.user.id || !session.session.id || !email) return null;
   return { id: session.user.id, sessionId: session.session.id, email, name: session.user.name };

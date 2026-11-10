@@ -3,7 +3,6 @@
 import { createAuthClient } from "better-auth/react";
 import { emailOTPClient } from "better-auth/client/plugins";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 const auth = createAuthClient({ plugins: [emailOTPClient()] });
@@ -11,7 +10,6 @@ type View = "sign-in" | "sign-up" | "recover";
 type Stage = "initial" | "verify" | "reset";
 
 export function AuthForm({ view, invited }: { view: View; invited: boolean }) {
-  const router = useRouter();
   const [stage, setStage] = useState<Stage>("initial");
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
@@ -39,11 +37,11 @@ export function AuthForm({ view, invited }: { view: View; invited: boolean }) {
             : "کد تأیید معتبر نیست یا منقضی شده.");
           return;
         }
-        router.replace("/academy/sign-in" + suffix);
+        window.location.replace("/academy/sign-in" + suffix);
       } else if (stage === "reset") {
         const result = await auth.emailOtp.resetPassword({ email, otp, password });
         if (result.error) { setError("کد یا رمز پذیرفته نشد. کد تازه بگیر و دوباره امتحان کن."); return; }
-        router.replace("/academy/sign-in" + suffix);
+        window.location.replace("/academy/sign-in" + suffix);
       } else if (view === "recover") {
         await auth.emailOtp.requestPasswordReset({ email });
         setStage("reset");
