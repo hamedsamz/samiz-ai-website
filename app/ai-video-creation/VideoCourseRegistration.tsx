@@ -3,7 +3,6 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import {
   AI_VIDEO_COURSE_CARD_HOLDER,
-  AI_VIDEO_COURSE_CARD_NUMBER,
   AI_VIDEO_COURSE_PAYMENT_TELEGRAM_URL,
   AI_VIDEO_COURSE_PLANS,
   AI_VIDEO_COURSE_START_DATE,
@@ -26,8 +25,8 @@ export default function VideoCourseRegistration() {
   const [fileName, setFileName] = useState("");
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
 
-  async function copyCard() {
-    await navigator.clipboard.writeText(AI_VIDEO_COURSE_CARD_NUMBER);
+  async function copyCard(cardNumber: string) {
+    await navigator.clipboard.writeText(cardNumber);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
   }
@@ -124,7 +123,7 @@ export default function VideoCourseRegistration() {
           <div className="avc-location-picker">
             {(Object.keys(AI_VIDEO_COURSE_PLANS) as AiVideoCoursePlan[]).map(option => (
               <label key={option} className={plan === option ? "active" : ""}>
-                <input type="radio" name="videoPlan" checked={plan === option} onChange={() => { setPlan(option); setMessage(null); }} />
+                <input type="radio" name="videoPlan" checked={plan === option} onChange={() => { setPlan(option); setCopied(false); setMessage(null); }} />
                 <span>{AI_VIDEO_COURSE_PLANS[option].label}</span>
                 <small>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].fee)} تومان</small>
               </label>
@@ -147,7 +146,7 @@ export default function VideoCourseRegistration() {
               {location === "iran" ? (
                 <>
                   <p>مبلغ پلن انتخابی را به کارت زیر واریز کنید و تصویر رسید را در فرم بارگذاری کنید.</p>
-                  <div className="avc-card-number" dir="ltr"><code>{AI_VIDEO_COURSE_CARD_NUMBER.replace(/(\d{4})(?=\d)/g, "$1 ")}</code><button type="button" onClick={copyCard}>{copied ? "کپی شد ✓" : "کپی شماره"}</button></div>
+                  <div className="avc-card-number" dir="ltr"><code>{selectedPlan.cardNumber.replace(/(\d{4})(?=\d)/g, "$1 ")}</code><button type="button" onClick={() => copyCard(selectedPlan.cardNumber)}>{copied ? "کپی شد ✓" : "کپی شماره"}</button></div>
                   <small className="avc-holder">به نام {AI_VIDEO_COURSE_CARD_HOLDER}</small>
                 </>
               ) : (
