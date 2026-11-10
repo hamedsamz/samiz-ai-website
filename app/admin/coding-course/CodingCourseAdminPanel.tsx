@@ -2,9 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 
+import { AI_VIDEO_COURSE_PLANS, type AiVideoCoursePlan } from "../../../lib/ai-video-course-config";
+
+type EmailPlan = AiVideoCoursePlan | "legacy";
 type Status = "pending" | "approved" | "rejected";
 type Registration = {
   id: string;
+  plan?: AiVideoCoursePlan | null;
   location: "iran" | "international";
   fullName: string;
   age: number;
@@ -37,6 +41,7 @@ export default function CodingCourseAdminPanel({
   const [loginError, setLoginError] = useState("");
   const [notice, setNotice] = useState("");
   const [emailBusy, setEmailBusy] = useState(false);
+  const [emailPlan, setEmailPlan] = useState<EmailPlan>("without-support");
   const [filter, setFilter] = useState<"all" | "iran" | "international">("all");
 
   const load = useCallback(async () => {
@@ -89,21 +94,25 @@ export default function CodingCourseAdminPanel({
   async function testEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    await emailAction({ action: enableReminder ? "test-reminder" : "test", email: String(form.get("email") ?? "") });
+    await emailAction({ action: enableReminder ? "test-reminder" : "test", email: String(form.get("email") ?? ""), ...(enableReminder ? { plan: emailPlan } : {}) });
   }
 
   async function bulkEmail() {
-    if (!confirm("ایمیل ورود به کانال برای همه افراد تأییدشده و ارسال‌نشده فرستاده شود؟")) return;
-    await emailAction({ action: "bulk" });
+    const target = enableReminder ? emailPlanLabel : "همه افراد تأییدشده";
+    if (!confirm(`ایمیل ورود به کانال برای دریافت‌کنندگان ارسال‌نشدهٔ «${target}» فرستاده شود؟`)) return;
+    await emailAction({ action: "bulk", ...(enableReminder ? { plan: emailPlan } : {}) });
   }
 
   async function reminderEmail() {
-    if (!confirm(`ایمیل یادآوری ورود به کانال برای همه ${number(stats?.approved ?? 0)} نفر تأییدشده ارسال شود؟`)) return;
-    await emailAction({ action: "reminder" });
+    if (!confirm(`ایمیل یادآوری ورود به کانال برای ${number(approvedForEmail.length)} نفر تأییدشدهٔ «${emailPlanLabel}» ارسال شود؟`)) return;
+    await emailAction({ action: "reminder", plan: emailPlan });
   }
 
   const visibleItems = useMemo(() => filter === "all" ? items : items.filter(item => item.location === filter), [filter, items]);
-  const approvedWithoutEmail = items.filter(item => item.status === "approved" && !item.emailSentAt).length;
+  const emailPlanLabel = emailPlan === "legacy" ? "نوبت قبلی" : AI_VIDEO_COURSE_PLANS[emailPlan].label;
+  const approvedForEmail = items.filter(item => item.status === "approved" &&
+    (!enableReminder || (item.plan ?? "legacy") === emailPlan));
+  const approvedWithoutEmail = approvedForEmail.filter(item => !item.emailSentAt).length;
 
   if (authorized === false) return <form className="admin-login" onSubmit={login}><h2>ورود مدیر</h2><p>رمز مدیریت را وارد کنید.</p><input name="password" type="password" required placeholder="رمز مدیریت" /><button className="gold-button">ورود به پنل</button>{loginError && <p className="form-message error">{loginError}</p>}</form>;
 
@@ -118,10 +127,20 @@ export default function CodingCourseAdminPanel({
 
       <section className="coding-email-tools">
         <div><p className="eyebrow">ایمیل کانال دوره</p><h2>ارسال لینک ورود</h2><span>{number(approvedWithoutEmail)} نفر تأییدشده هنوز ایمیل نگرفته‌اند.</span></div>
+        {enableReminder && (
+          <label className="coding-email-plan">
+            گیرندگان ایمیل
+            <select value={emailPlan} onChange={event => setEmailPlan(event.target.value as EmailPlan)} disabled={emailBusy}>
+              <option value="without-support">{AI_VIDEO_COURSE_PLANS["without-support"].label}</option>
+              <option value="with-support">{AI_VIDEO_COURSE_PLANS["with-support"].label}</option>
+              <option value="legacy">نوبت قبلی</option>
+            </select>
+          </label>
+        )}
         <form onSubmit={testEmail}><input name="email" type="email" required placeholder="ایمیل آزمایشی" /><button disabled={emailBusy}>{enableReminder ? "تست ایمیل یادآوری" : "ارسال تست"}</button></form>
         <div className="coding-email-actions">
-          <button className="coding-bulk" disabled={emailBusy || approvedWithoutEmail === 0} onClick={bulkEmail}>ارسال به همه افراد ارسال‌نشده</button>
-          {enableReminder && <button className="coding-reminder" disabled={emailBusy || (stats?.approved ?? 0) === 0} onClick={reminderEmail}>ارسال یادآوری به همه تأییدشده‌ها</button>}
+          <button className="coding-bulk" disabled={emailBusy || approvedWithoutEmail === 0} onClick={bulkEmail}>{enableReminder ? "ارسال به افراد ارسال‌نشدهٔ انتخابی" : "ارسال به همه افراد ارسال‌نشده"}</button>
+          {enableReminder && <button className="coding-reminder" disabled={emailBusy || approvedForEmail.length === 0} onClick={reminderEmail}>ارسال یادآوری به تأییدشده‌های انتخابی</button>}
         </div>
       </section>
 
@@ -144,6 +163,7 @@ export default function CodingCourseAdminPanel({
               <small>{new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(item.createdAt)}</small>
             </div>
             <div className="coding-registration-details">
+              {enableReminder && <span><b>پلن:</b> {item.plan ? AI_VIDEO_COURSE_PLANS[item.plan].label : "نوبت قبلی"}</span>}
               <span><b>سن:</b> {number(item.age)} سال</span>
               <span><b>مبلغ:</b> {item.paymentCurrency === "toman" ? `${number(Number(item.paidAmount))} تومان` : `${number(Number(item.paidAmount))} USDT`}</span>
               <span><b>تلگرام:</b> {item.telegramUsername ? <a href={`https://t.me/${item.telegramUsername}`} target="_blank" rel="noreferrer">@{item.telegramUsername}</a> : "—"}</span>

@@ -1,7 +1,7 @@
 import { AI_VIDEO_COURSE_REGISTRATION_OPEN, COURSE_REGISTRATION_CLOSED_MESSAGE } from "../../../../lib/course-registration-status";
 import { ensureAiVideoCourseSchema, type AiVideoCourseLocation } from "../../../../db/ai-video-course-registrations";
 import { db } from "../../../../db/registrations";
-import { AI_VIDEO_COURSE_INTERNATIONAL_FEE, AI_VIDEO_COURSE_IRAN_STANDARD_FEE, AI_VIDEO_COURSE_IRAN_SUPPORT_FEE, AI_VIDEO_COURSE_SUPPORT_DISCOUNT_CODE } from "../../../../lib/ai-video-course-config";
+import { AI_VIDEO_COURSE_PLANS, isAiVideoCoursePlan, normalizeAiVideoCourseEmail } from "../../../../lib/ai-video-course-config";
 
 export const dynamic = "force-dynamic";
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
@@ -14,14 +14,13 @@ export async function POST(request: Request) {
   const requestId = crypto.randomUUID();
   console.info("[ai-video-registration] request started", { requestId });
   try {
-    await ensureAiVideoCourseSchema();
     const form = await request.formData();
     const location = String(form.get("location") ?? "") as AiVideoCourseLocation;
-    const discountCode = String(form.get("discountCode") ?? "").trim();
+    const plan = form.get("plan");
     const fullName = String(form.get("fullName") ?? "").trim();
     const phone = String(form.get("phone") ?? "").replace(/[\s()-]/g, "").trim();
-    const email = String(form.get("email") ?? "").trim().toLowerCase();
-    const emailConfirmation = String(form.get("emailConfirmation") ?? "").trim().toLowerCase();
+    const email = normalizeAiVideoCourseEmail(form.get("email"));
+    const emailConfirmation = normalizeAiVideoCourseEmail(form.get("emailConfirmation"));
     const telegramUsername = String(form.get("telegramUsername") ?? "").trim().replace(/^@/, "");
     const age = Number(String(form.get("age") ?? ""));
     const receipt = form.get("receipt");
@@ -33,8 +32,7 @@ export async function POST(request: Request) {
     });
 
     if (location !== "iran" && location !== "international") return Response.json({ error: "محل زندگی را انتخاب کنید." }, { status: 400 });
-    const hasSupportDiscount = location === "iran" && discountCode.toLocaleLowerCase("en-US") === AI_VIDEO_COURSE_SUPPORT_DISCOUNT_CODE.toLocaleLowerCase("en-US");
-    if (location === "iran" && discountCode && !hasSupportDiscount) return Response.json({ error: "کد تخفیف معتبر نیست." }, { status: 400 });
+    if (!isAiVideoCoursePlan(plan)) return Response.json({ error: "یکی از دو پلن ثبت‌نام را انتخاب کنید." }, { status: 400 });
     if (fullName.length < 3 || fullName.length > 80) return Response.json({ error: "نام و نام خانوادگی را کامل وارد کنید." }, { status: 400 });
     if (!Number.isInteger(age) || age < 12 || age > 100) return Response.json({ error: "سن معتبر وارد کنید." }, { status: 400 });
     if (!/^\+?[0-9۰-۹]{7,15}$/.test(phone)) return Response.json({ error: "شماره تماس دارای واتساپ را درست وارد کنید." }, { status: 400 });
@@ -44,27 +42,22 @@ export async function POST(request: Request) {
     if (!(receipt instanceof File) || receipt.size === 0) return Response.json({ error: "تصویر رسید پرداخت را انتخاب کنید." }, { status: 400 });
     if (!allowedTypes.has(receipt.type) || receipt.size > 2.5 * 1024 * 1024) return Response.json({ error: "رسید باید JPG، PNG، WEBP یا PDF و حداکثر ۲.۵ مگابایت باشد." }, { status: 400 });
 
+    await ensureAiVideoCourseSchema();
     const sql = db();
-    const duplicate = await sql`SELECT id FROM ai_video_course_registrations WHERE (phone = ${phone} OR email = ${email}) AND status IN ('pending', 'approved') LIMIT 1`;
-    if (duplicate.length) {
-      console.info("[ai-video-registration] duplicate blocked", { requestId });
-      return Response.json({ error: "با این شماره تماس یا ایمیل قبلاً برای این دوره ثبت‌نام شده است." }, { status: 409 });
-    }
-
     const now = Date.now();
     const receiptData = Buffer.from(await receipt.arrayBuffer()).toString("base64");
-    const paidAmount = location === "iran"
-      ? hasSupportDiscount ? AI_VIDEO_COURSE_IRAN_SUPPORT_FEE : AI_VIDEO_COURSE_IRAN_STANDARD_FEE
-      : AI_VIDEO_COURSE_INTERNATIONAL_FEE;
-    const paymentCurrency = location === "iran" ? "toman" : "usdt";
-    await sql`INSERT INTO ai_video_course_registrations (
-      id, location, full_name, age, phone, email, telegram_username, paid_amount, payment_currency,
+    const paidAmount = AI_VIDEO_COURSE_PLANS[plan].fee;
+    const inserted = await sql`INSERT INTO ai_video_course_registrations (
+      id, location, plan, full_name, age, phone, email, telegram_username, paid_amount, payment_currency,
       receipt_name, receipt_type, receipt_data, status, created_at, updated_at
     ) VALUES (
-      ${crypto.randomUUID()}, ${location}, ${fullName}, ${age}, ${phone}, ${email}, ${telegramUsername || null}, ${paidAmount}, ${paymentCurrency},
+      ${crypto.randomUUID()}, ${location}, ${plan}, ${fullName}, ${age}, ${phone}, ${email}, ${telegramUsername || null}, ${paidAmount}, 'toman',
       ${receipt.name.slice(0, 160)}, ${receipt.type}, ${receiptData}, 'pending', ${now}, ${now}
-    )`;
-    console.info("[ai-video-registration] request saved", { requestId, location, paidAmount, paymentCurrency });
+    ) ON CONFLICT DO NOTHING RETURNING id`;
+    if (!inserted.length) {
+      return Response.json({ error: "با این شماره تماس یا ایمیل قبلاً برای این نوبت دوره ثبت‌نام شده است." }, { status: 409 });
+    }
+    console.info("[ai-video-registration] request saved", { requestId, location, plan, paidAmount });
     return Response.json({ ok: true, message: "درخواست ثبت‌نام شما با موفقیت ثبت شد. نتیجه بررسی از طریق ایمیل اعلام می‌شود." }, { status: 201 });
   } catch (error) {
     console.error("[ai-video-registration] request failed", { requestId, error });

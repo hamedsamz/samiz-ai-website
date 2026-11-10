@@ -7,6 +7,7 @@ export async function ensureAiVideoCourseSchema() {
   await sql`CREATE TABLE IF NOT EXISTS ai_video_course_registrations (
     id TEXT PRIMARY KEY,
     location TEXT NOT NULL,
+    plan TEXT,
     full_name TEXT NOT NULL,
     age INTEGER NOT NULL,
     phone TEXT NOT NULL,
@@ -22,6 +23,11 @@ export async function ensureAiVideoCourseSchema() {
     created_at BIGINT NOT NULL,
     updated_at BIGINT NOT NULL
   )`;
+  await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS plan TEXT`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS ai_video_course_current_phone_idx
+    ON ai_video_course_registrations(phone) WHERE plan IS NOT NULL AND status IN ('pending', 'approved')`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS ai_video_course_current_email_idx
+    ON ai_video_course_registrations(email) WHERE plan IS NOT NULL AND status IN ('pending', 'approved')`;
   await sql`CREATE INDEX IF NOT EXISTS ai_video_course_registrations_phone_idx ON ai_video_course_registrations(phone)`;
   await sql`CREATE INDEX IF NOT EXISTS ai_video_course_registrations_email_idx ON ai_video_course_registrations(email)`;
   await sql`CREATE INDEX IF NOT EXISTS ai_video_course_registrations_status_idx ON ai_video_course_registrations(status)`;

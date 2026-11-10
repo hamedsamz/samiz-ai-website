@@ -5,18 +5,22 @@ import {
   AI_VIDEO_COURSE_CARD_HOLDER,
   AI_VIDEO_COURSE_CARD_NUMBER,
   AI_VIDEO_COURSE_PAYMENT_TELEGRAM_URL,
-  AI_VIDEO_COURSE_SUPPORT_DISCOUNT_CODE,
+  AI_VIDEO_COURSE_PLANS,
+  AI_VIDEO_COURSE_START_DATE,
+  normalizeAiVideoCourseEmail,
+  type AiVideoCoursePlan,
 } from "../../lib/ai-video-course-config";
 
 type Location = "iran" | "international";
+const formatPrice = new Intl.NumberFormat("fa-IR");
 const MAX_RECEIPT_SIZE = 2.5 * 1024 * 1024;
 const ALLOWED_RECEIPT_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 
 export default function VideoCourseRegistration() {
   const [location, setLocation] = useState<Location>("iran");
-  const [discountCode, setDiscountCode] = useState("");
-  const [discountApplied, setDiscountApplied] = useState(false);
-  const [discountMessage, setDiscountMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const [plan, setPlan] = useState<AiVideoCoursePlan | null>(null);
+  const [emailMismatch, setEmailMismatch] = useState(false);
+  const selectedPlan = plan && AI_VIDEO_COURSE_PLANS[plan];
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -28,22 +32,20 @@ export default function VideoCourseRegistration() {
     window.setTimeout(() => setCopied(false), 1800);
   }
 
-  function applyDiscountCode() {
-    const isValid = discountCode.trim().toLocaleLowerCase("en-US") === AI_VIDEO_COURSE_SUPPORT_DISCOUNT_CODE.toLocaleLowerCase("en-US");
-    setDiscountApplied(isValid);
-    setDiscountMessage(isValid
-      ? { text: "کد تخفیف حمایتی اعمال شد؛ مبلغ قابل پرداخت ۵ میلیون تومان است." }
-      : { text: "کد تخفیف معتبر نیست. عبارت Mehr را وارد کنید.", error: true });
-  }
-
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setBusy(true);
     setMessage(null);
     const form = event.currentTarget;
     const formData = new FormData(form);
     formData.set("location", location);
-    formData.set("discountCode", location === "iran" && discountApplied ? discountCode.trim() : "");
+    if (!plan) return;
+    if (normalizeAiVideoCourseEmail(formData.get("email")) !== normalizeAiVideoCourseEmail(formData.get("emailConfirmation"))) {
+      setEmailMismatch(true);
+      form.querySelector<HTMLInputElement>('[name="emailConfirmation"]')?.focus();
+      return;
+    }
+    formData.set("plan", plan);
+    setBusy(true);
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 90_000);
 
@@ -65,9 +67,7 @@ export default function VideoCourseRegistration() {
       setMessage({ text: result.message ?? "درخواست شما ثبت شد." });
       form.reset();
       setFileName("");
-      setDiscountCode("");
-      setDiscountApplied(false);
-      setDiscountMessage(null);
+      setEmailMismatch(false);
     } catch (error) {
       const timedOut = error instanceof DOMException && error.name === "AbortError";
       setMessage({
@@ -110,56 +110,64 @@ export default function VideoCourseRegistration() {
       <div className="avc-registration-copy">
         <p className="avc-section-label">ثبت‌نام دوره</p>
         <h2>آماده‌ای کارگردانی کنی؟</h2>
-        <p>محل زندگی خود را انتخاب کنید تا مبلغ و روش پرداخت مناسب نمایش داده شود.</p>
+        <p>یکی از دو پلن را انتخاب کنید. شروع دوره {AI_VIDEO_COURSE_START_DATE} است.</p>
         <div className="avc-format-note">
           <small>نحوه برگزاری</small>
           <strong>ضبط‌شده و همیشه در دسترس</strong>
-          <p>تمام جلسات در کانال اختصاصی تلگرام منتشر می‌شوند. بعد از تأیید رسید، لینک ورود به کانال از طریق ایمیل برایتان ارسال خواهد شد.</p>
+          <p>هر پلن کانال تلگرام جداگانه‌ای دارد. بعد از تأیید رسید، لینک ورود به کانال پلن انتخابی به ایمیل ثبت‌نام ارسال می‌شود.</p>
         </div>
       </div>
 
       <div className="avc-form-card">
-        <div className="avc-location-picker" role="radiogroup" aria-label="محل زندگی">
-          <button type="button" role="radio" aria-checked={location === "iran"} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small>قیمت اصلی: ۹ میلیون تومان</small></button>
-          <button type="button" role="radio" aria-checked={location === "international"} className={location === "international" ? "active" : ""} onClick={() => { setLocation("international"); setMessage(null); setDiscountApplied(false); setDiscountMessage(null); }}><span>خارج از ایران</span><small>۱۲۰ تتر (USDT)</small></button>
-        </div>
+        <fieldset className="avc-plan-picker" disabled={busy}>
+          <legend>پلن ثبت‌نام</legend>
+          <div className="avc-location-picker">
+            {(Object.keys(AI_VIDEO_COURSE_PLANS) as AiVideoCoursePlan[]).map(option => (
+              <label key={option} className={plan === option ? "active" : ""}>
+                <input type="radio" name="videoPlan" checked={plan === option} onChange={() => { setPlan(option); setMessage(null); }} />
+                <span>{AI_VIDEO_COURSE_PLANS[option].label}</span>
+                <small>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].fee)} تومان</small>
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
-        {location === "iran" ? (
-          <div className="avc-payment-card iran">
-            <div className="avc-payment-heading">
-              <small>{discountApplied ? "مبلغ پس از تخفیف حمایتی" : "قیمت اصلی دوره"}</small>
-              {discountApplied ? <div className="avc-applied-price"><del>۹,۰۰۰,۰۰۰ تومان</del><strong>۵,۰۰۰,۰۰۰ <i>تومان</i></strong></div> : <strong>۹,۰۰۰,۰۰۰ <i>تومان</i></strong>}
+        {selectedPlan && (
+          <>
+            <div className="avc-location-picker" role="group" aria-label="محل زندگی">
+              <button type="button" aria-pressed={location === "iran"} disabled={busy} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small>کارت‌به‌کارت</small></button>
+              <button type="button" aria-pressed={location === "international"} disabled={busy} className={location === "international" ? "active" : ""} onClick={() => { setLocation("international"); setMessage(null); }}><span>خارج از ایران</span><small>هماهنگی پرداخت در تلگرام</small></button>
             </div>
-            <p className="avc-supportive-copy">با توجه به شرایط کشور، اگر قادر به پرداخت مبلغ کامل نیستید، جهت بهره‌مندی از تخفیف حمایتی ۴۴٫۴۴٪ و پرداخت ۵ میلیون تومان، کد <code dir="ltr">Mehr</code> را وارد کنید.</p>
-            <div className="avc-coupon">
-              <label htmlFor="videoDiscountCode">کد تخفیف حمایتی</label>
-              <div>
-                <input id="videoDiscountCode" value={discountCode} onChange={event => { setDiscountCode(event.target.value); setDiscountApplied(false); setDiscountMessage(null); }} placeholder="Mehr" dir="ltr" autoComplete="off" />
-                <button type="button" onClick={applyDiscountCode}>{discountApplied ? "اعمال شد ✓" : "اعمال کد"}</button>
+
+            <div className={`avc-payment-card ${location}`}>
+              <div className="avc-payment-heading">
+                <small>{selectedPlan.label}</small>
+                <strong>{formatPrice.format(selectedPlan.fee)} <i>تومان</i></strong>
               </div>
-              {discountMessage && <p className={`avc-coupon-message ${discountMessage.error ? "error" : "success"}`} aria-live="polite">{discountMessage.text}</p>}
+              {location === "iran" ? (
+                <>
+                  <p>مبلغ پلن انتخابی را به کارت زیر واریز کنید و تصویر رسید را در فرم بارگذاری کنید.</p>
+                  <div className="avc-card-number" dir="ltr"><code>{AI_VIDEO_COURSE_CARD_NUMBER.replace(/(\d{4})(?=\d)/g, "$1 ")}</code><button type="button" onClick={copyCard}>{copied ? "کپی شد ✓" : "کپی شماره"}</button></div>
+                  <small className="avc-holder">به نام {AI_VIDEO_COURSE_CARD_HOLDER}</small>
+                </>
+              ) : (
+                <>
+                  <p>برای هماهنگی معادل مبلغ پلن و جزئیات پرداخت، در تلگرام به حامد پیام بدهید. پس از پرداخت، رسید را بارگذاری کنید.</p>
+                  <a href={AI_VIDEO_COURSE_PAYMENT_TELEGRAM_URL} target="_blank" rel="noreferrer">پیام در تلگرام · @hamedsamiz <span>↗</span></a>
+                </>
+              )}
             </div>
-            <p>{discountApplied ? "مبلغ حمایتی ۵ میلیون تومان" : "قیمت اصلی ۹ میلیون تومان"} را به کارت زیر واریز کنید و سپس تصویر رسید را در فرم بارگذاری کنید.</p>
-            <div className="avc-card-number" dir="ltr"><code>{AI_VIDEO_COURSE_CARD_NUMBER.replace(/(\d{4})(?=\d)/g, "$1 ")}</code><button type="button" onClick={copyCard}>{copied ? "کپی شد ✓" : "کپی شماره"}</button></div>
-            <small className="avc-holder">به نام {AI_VIDEO_COURSE_CARD_HOLDER}</small>
-          </div>
-        ) : (
-          <div className="avc-payment-card international">
-            <div><small>مبلغ ثبت‌نام</small><strong>۱۲۰ <i>USDT</i></strong></div>
-            <p>برای دریافت آدرس شبکه و جزئیات پرداخت تتر، در تلگرام به حامد پیام بدهید. بعد از پرداخت، رسید را در فرم زیر بارگذاری کنید.</p>
-            <a href={AI_VIDEO_COURSE_PAYMENT_TELEGRAM_URL} target="_blank" rel="noreferrer">پیام در تلگرام · @hamedsamiz <span>↗</span></a>
-          </div>
+          </>
         )}
 
-        <form onSubmit={submit}>
+        {selectedPlan && <form onSubmit={submit}>
           <p className="avc-browser-note">اگر این صفحه را داخل اینستاگرام باز کرده‌اید، پیش از ارسال رسید از منوی مرورگر گزینهٔ «Open in browser» را بزنید و ثبت‌نام را در Safari یا Chrome انجام دهید.</p>
-          <input type="hidden" name="location" value={location} />
-          <input type="hidden" name="discountCode" value={location === "iran" && discountApplied ? discountCode.trim() : ""} />
           <div className="avc-field full"><label htmlFor="videoFullName">نام و نام خانوادگی</label><input id="videoFullName" name="fullName" required minLength={3} maxLength={80} autoComplete="name" placeholder="نام کامل خود را وارد کنید" /></div>
           <div className="avc-field"><label htmlFor="videoAge">سن</label><input id="videoAge" name="age" type="number" required min={12} max={100} inputMode="numeric" placeholder="مثلاً ۲۸" /></div>
           <div className="avc-field"><label htmlFor="videoPhone">شماره تماس دارای واتساپ</label><input id="videoPhone" name="phone" type="tel" required inputMode="tel" autoComplete="tel" placeholder="با کد کشور وارد کنید" /></div>
-          <div className="avc-field"><label htmlFor="videoEmail">ایمیل</label><input id="videoEmail" name="email" type="email" required autoComplete="email" maxLength={160} placeholder="name@example.com" dir="ltr" /></div>
-          <div className="avc-field"><label htmlFor="videoEmailConfirmation">تأیید ایمیل</label><input id="videoEmailConfirmation" name="emailConfirmation" type="email" required autoComplete="email" maxLength={160} placeholder="ایمیل را دوباره وارد کنید" dir="ltr" /></div>
+          <div className="avc-field"><label htmlFor="videoEmail">ایمیل</label><input id="videoEmail" name="email" onChange={() => setEmailMismatch(false)} type="email" required autoComplete="email" maxLength={160} placeholder="name@example.com" dir="ltr" /></div>
+          <div className="avc-field"><label htmlFor="videoEmailConfirmation">ایمیل را دوباره وارد کنید</label><input id="videoEmailConfirmation" name="emailConfirmation" type="email" required autoComplete="off" onChange={() => setEmailMismatch(false)} aria-invalid={emailMismatch} aria-describedby={emailMismatch ? "videoEmailError" : undefined} maxLength={160} placeholder="ایمیل را دوباره وارد کنید" dir="ltr" /></div>
+          {emailMismatch && <p id="videoEmailError" className="avc-message error" role="alert">ایمیل و تکرار ایمیل یکسان نیستند.</p>}
           {location === "international" && <div className="avc-field full"><label htmlFor="videoTelegramUsername">یوزرنیم تلگرام <small>(اختیاری)</small></label><input id="videoTelegramUsername" name="telegramUsername" maxLength={80} placeholder="مثلاً hamedsamiz" dir="ltr" /></div>}
           <div className="avc-field full">
             <label htmlFor="videoReceipt">رسید پرداخت</label>
@@ -170,10 +178,10 @@ export default function VideoCourseRegistration() {
           <button className="avc-submit" type="submit" disabled={busy}>{busy ? "در حال ارسال؛ لطفاً این صفحه را نبندید…" : "ارسال رسید و ثبت درخواست"}<span>↙</span></button>
           <div className="avc-review-note">
             <span aria-hidden="true">✓</span>
-            <div><strong>بررسی رسید حداکثر تا ۴۸ ساعت</strong><p>پس از تأیید، ایمیل ثبت‌نام و لینک ورود به کانال اختصاصی دوره ارسال می‌شود. پوشه Spam را هم بررسی کنید.</p></div>
+            <div><strong>بررسی رسید حداکثر تا ۴۸ ساعت</strong><p>پس از تأیید، لینک ورود به کانال پلن انتخابی به همین ایمیل ارسال می‌شود. پوشه Spam را هم بررسی کنید.</p></div>
           </div>
           {message && <p className={message.error ? "avc-message error" : "avc-message success"} role="status" aria-live="polite">{message.text}</p>}
-        </form>
+        </form>}
       </div>
     </section>
   );

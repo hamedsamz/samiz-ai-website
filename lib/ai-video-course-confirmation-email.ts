@@ -1,22 +1,28 @@
-import { AI_VIDEO_COURSE_CHANNEL_URL, AI_VIDEO_COURSE_NAME } from "./ai-video-course-config";
+import { AI_VIDEO_COURSE_NAME, AI_VIDEO_COURSE_PLANS, AI_VIDEO_COURSE_START_DATE, type AiVideoCoursePlan } from "./ai-video-course-config";
 
-type Recipient = { email: string; fullName: string };
+type Recipient = { email: string; fullName: string; plan: AiVideoCoursePlan | null };
 type EmailKind = "confirmation" | "reminder";
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[character] ?? character);
 }
 
-function channelUrl() {
-  if (!AI_VIDEO_COURSE_CHANNEL_URL || !/^https:\/\/t\.me\//.test(AI_VIDEO_COURSE_CHANNEL_URL)) {
-    throw new Error("AI_VIDEO_COURSE_CHANNEL_URL is not configured");
+function channelUrl(plan: AiVideoCoursePlan | null) {
+  if (plan === null) {
+    const legacyUrl = process.env.AI_VIDEO_COURSE_CHANNEL_URL;
+    if (legacyUrl && /^https:\/\/t\.me\//.test(legacyUrl)) return legacyUrl;
+  } else {
+    const withoutSupportUrl = process.env.AI_VIDEO_COURSE_CHANNEL_URL_WITHOUT_SUPPORT?.trim();
+    const withSupportUrl = process.env.AI_VIDEO_COURSE_CHANNEL_URL_WITH_SUPPORT?.trim();
+    const url = plan === "with-support" ? withSupportUrl : withoutSupportUrl;
+    if (url && /^https:\/\/t\.me\/(?:\+|joinchat\/)[\w-]+$/.test(url) && withoutSupportUrl !== withSupportUrl) return url;
   }
-  return AI_VIDEO_COURSE_CHANNEL_URL;
+  throw new Error("AI_VIDEO_COURSE_CHANNEL_URL is not configured for this plan");
 }
 
-function aiVideoCourseMessage(fullName: string, kind: EmailKind) {
+function aiVideoCourseMessage(fullName: string, kind: EmailKind, plan: AiVideoCoursePlan | null) {
   const safeName = escapeHtml(fullName);
-  const url = channelUrl();
+  const url = channelUrl(plan);
   const safeUrl = escapeHtml(url);
   const isReminder = kind === "reminder";
   const subject = isReminder
@@ -27,9 +33,11 @@ function aiVideoCourseMessage(fullName: string, kind: EmailKind) {
     ? `این ایمیل برای یادآوری ورود شما به کانال اختصاصی دوره «${AI_VIDEO_COURSE_NAME}» ارسال شده است.`
     : `ثبت‌نام شما در دوره «${AI_VIDEO_COURSE_NAME}» با موفقیت تأیید شد.`;
 
+  const planDetails = plan ? `پلن ${AI_VIDEO_COURSE_PLANS[plan].label} · شروع دوره ${AI_VIDEO_COURSE_START_DATE}` : "";
+
   return {
     subject,
-    text: `${fullName} عزیز،\n\n${intro}\n\nبرای ورود به کانال تلگرام از لینک زیر استفاده کنید:\n${url}\n\nجلسات و اطلاعیه‌های دوره فقط در کانال اختصاصی تلگرام منتشر می‌شوند. لطفاً همین حالا وارد کانال شوید.\n\nاین لینک مخصوص شرکت‌کنندگان تأییدشده است؛ لطفاً آن را در اختیار دیگران قرار ندهید.\n\nSAMIZ AI Academy`,
+    text: `${fullName} عزیز،\n\n${intro}\n\n${planDetails ? `${planDetails}\n\n` : ""}برای ورود به کانال تلگرام از لینک زیر استفاده کنید:\n${url}\n\nجلسات و اطلاعیه‌های دوره فقط در کانال اختصاصی تلگرام منتشر می‌شوند. لطفاً همین حالا وارد کانال شوید.\n\nاین لینک مخصوص شرکت‌کنندگان تأییدشده است؛ لطفاً آن را در اختیار دیگران قرار ندهید.\n\nSAMIZ AI Academy`,
     html: `<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
@@ -49,6 +57,7 @@ function aiVideoCourseMessage(fullName: string, kind: EmailKind) {
           <h1 style="margin:0 0 18px;color:#9a5b08;font-size:25px;line-height:1.7">${title}</h1>
           <p style="margin:0 0 10px;color:#111827;font-size:16px;line-height:2">${safeName} عزیز،</p>
           <p style="margin:0 0 18px;color:#111827;font-size:16px;line-height:2">${intro}</p>
+          ${planDetails ? `<p style="margin:0 0 18px;color:#111827;font-size:16px">${planDetails}</p>` : ""}
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
             <tr><td align="center" bgcolor="#45d6e5" style="background-color:#45d6e5;border-radius:10px">
               <a href="${safeUrl}" style="display:block;padding:16px 18px;color:#071014;font-size:17px;font-weight:bold;text-decoration:none">ورود به کانال تلگرام دوره</a>
@@ -72,14 +81,6 @@ function aiVideoCourseMessage(fullName: string, kind: EmailKind) {
   };
 }
 
-export function aiVideoCourseConfirmationMessage(fullName: string) {
-  return aiVideoCourseMessage(fullName, "confirmation");
-}
-
-export function aiVideoCourseReminderMessage(fullName: string) {
-  return aiVideoCourseMessage(fullName, "reminder");
-}
-
 function emailSettings() {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
@@ -87,12 +88,12 @@ function emailSettings() {
   return { apiKey, from };
 }
 
-async function sendOne(to: string, fullName: string, kind: EmailKind) {
+async function sendOne(to: string, fullName: string, kind: EmailKind, plan: AiVideoCoursePlan | null) {
   const { apiKey, from } = emailSettings();
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from, to: [to], ...aiVideoCourseMessage(fullName, kind) }),
+    body: JSON.stringify({ from, to: [to], ...aiVideoCourseMessage(fullName, kind, plan) }),
   });
   if (!response.ok) throw new Error(`Resend request failed (${response.status})`);
 }
@@ -104,18 +105,18 @@ async function sendBatch(recipients: Recipient[], kind: EmailKind) {
     const response = await fetch("https://api.resend.com/emails/batch", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify(batch.map(recipient => ({ from, to: [recipient.email], ...aiVideoCourseMessage(recipient.fullName, kind) }))),
+      body: JSON.stringify(batch.map(recipient => ({ from, to: [recipient.email], ...aiVideoCourseMessage(recipient.fullName, kind, recipient.plan) }))),
     });
     if (!response.ok) throw new Error(`Resend batch request failed (${response.status})`);
   }
 }
 
-export async function sendAiVideoCourseConfirmationEmail(to: string, fullName: string) {
-  await sendOne(to, fullName, "confirmation");
+export async function sendAiVideoCourseConfirmationEmail(to: string, fullName: string, plan: AiVideoCoursePlan | null) {
+  await sendOne(to, fullName, "confirmation", plan);
 }
 
-export async function sendAiVideoCourseReminderEmail(to: string, fullName: string) {
-  await sendOne(to, fullName, "reminder");
+export async function sendAiVideoCourseReminderEmail(to: string, fullName: string, plan: AiVideoCoursePlan | null) {
+  await sendOne(to, fullName, "reminder", plan);
 }
 
 export async function sendAiVideoCourseConfirmationBatch(recipients: Recipient[]) {
