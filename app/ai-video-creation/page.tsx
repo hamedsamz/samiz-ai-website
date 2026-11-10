@@ -1,7 +1,10 @@
 import Link from "next/link";
 import VideoCourseRegistration from "./VideoCourseRegistration";
 import { AI_VIDEO_COURSE_REGISTRATION_OPEN, COURSE_CAPACITY_FULL_LABEL, COURSE_REGISTRATION_CLOSED_MESSAGE } from "../../lib/course-registration-status";
+import { AI_VIDEO_COURSE_PLANS, AI_VIDEO_COURSE_START_DATE } from "../../lib/ai-video-course-config";
 import "./video-course.css";
+
+const formatPrice = new Intl.NumberFormat("fa-IR");
 
 const modules = [
   {
@@ -91,7 +94,7 @@ export default function AiVideoCreationPage() {
 
       <section className="avc-hero">
         <div className="avc-hero-copy">
-          <div className="avc-status"><span/> {AI_VIDEO_COURSE_REGISTRATION_OPEN ? "ثبت‌نام فعال · شروع دوره ۳ مهر" : COURSE_CAPACITY_FULL_LABEL}</div>
+          <div className="avc-status"><span/> {AI_VIDEO_COURSE_REGISTRATION_OPEN ? `ثبت‌نام فعال · شروع دوره ${AI_VIDEO_COURSE_START_DATE}` : COURSE_CAPACITY_FULL_LABEL}</div>
           <p className="avc-overline">AI VIDEO DIRECTION · GENERATIVE FILMMAKING</p>
           <h1>دوره تخصصی ساخت ویدیو<br/><em>با هوش مصنوعی</em></h1>
           <p className="avc-lead">فقط کار با یک ابزار را یاد نمی‌گیرید؛ یاد می‌گیرید مثل یک کارگردان حرفه‌ای برای تصویر، حرکت، دوربین، نور، صدا، بازی، رفرنس و تدوین تصمیم دقیق بگیرید.</p>
@@ -120,9 +123,9 @@ export default function AiVideoCreationPage() {
         <div><small>نحوه برگزاری</small><strong>ضبط‌شده در کانال تلگرام</strong></div>
         <div className="avc-fact-fee">
           <small>هزینه ثبت‌نام</small>
-          <strong>قیمت اصلی: ۹ میلیون تومان</strong>
-          {AI_VIDEO_COURSE_REGISTRATION_OPEN ? <em>با توجه به شرایط کشور، برای استفاده از مبلغ حمایتی ۵ میلیون تومان (۴۴٫۴۴٪ تخفیف)، کد <b dir="ltr">Mehr</b> را هنگام ثبت‌نام وارد کنید.</em> : <em>{COURSE_CAPACITY_FULL_LABEL}</em>}
-          <span>خارج از ایران: ۱۲۰ تتر</span>
+          {Object.values(AI_VIDEO_COURSE_PLANS).map(plan => (
+            <strong key={plan.label}>{plan.label} · {formatPrice.format(plan.fee)} تومان</strong>
+          ))}
         </div>
       </section>
 

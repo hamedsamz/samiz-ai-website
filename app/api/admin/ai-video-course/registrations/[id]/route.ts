@@ -2,6 +2,7 @@ import { db } from "../../../../../../db/registrations";
 import { ensureAiVideoCourseSchema } from "../../../../../../db/ai-video-course-registrations";
 import { isAdmin } from "../../../../../../lib/admin-auth";
 import { sendAiVideoCourseConfirmationEmail } from "../../../../../../lib/ai-video-course-confirmation-email";
+import type { AiVideoCoursePlan } from "../../../../../../lib/ai-video-course-config";
 
 export const dynamic = "force-dynamic";
 
@@ -12,15 +13,19 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const { status } = await request.json() as { status?: string };
   if (status !== "approved" && status !== "rejected") return Response.json({ error: "وضعیت نامعتبر" }, { status: 400 });
   const sql = db();
-  const rows = await sql`SELECT id, status, full_name AS "fullName", email FROM ai_video_course_registrations WHERE id = ${id}`;
-  const registration = rows[0] as { id: string; status: string; fullName: string; email: string } | undefined;
-  if (!registration) return Response.json({ error: "ثبت‌نام پیدا نشد" }, { status: 404 });
-  if (registration.status !== "pending") return Response.json({ error: "این ثبت‌نام قبلاً بررسی شده است." }, { status: 409 });
-  await sql`UPDATE ai_video_course_registrations SET status = ${status}, updated_at = ${Date.now()} WHERE id = ${id}`;
+  const rows = await sql`UPDATE ai_video_course_registrations SET status = ${status}, updated_at = ${Date.now()}
+    WHERE id = ${id} AND status = 'pending' RETURNING plan, full_name AS "fullName", email`;
+  const registration = rows[0] as { plan: AiVideoCoursePlan | null; fullName: string; email: string } | undefined;
+  if (!registration) {
+    const existing = await sql`SELECT id FROM ai_video_course_registrations WHERE id = ${id}`;
+    return existing.length
+      ? Response.json({ error: "این ثبت‌نام قبلاً بررسی شده است." }, { status: 409 })
+      : Response.json({ error: "ثبت‌نام پیدا نشد" }, { status: 404 });
+  }
 
   if (status === "approved") {
     try {
-      await sendAiVideoCourseConfirmationEmail(registration.email, registration.fullName);
+      await sendAiVideoCourseConfirmationEmail(registration.email, registration.fullName, registration.plan);
       await sql`UPDATE ai_video_course_registrations SET confirmation_email_sent_at = ${Date.now()} WHERE id = ${id}`;
       return Response.json({ ok: true, message: "ثبت‌نام تأیید و ایمیل ورود به کانال ارسال شد." });
     } catch (error) {
