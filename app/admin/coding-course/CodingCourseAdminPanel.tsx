@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 import { AI_VIDEO_COURSE_PLANS, type AiVideoCoursePlan } from "../../../lib/ai-video-course-config";
 
-type EmailPlan = AiVideoCoursePlan | "legacy";
+type RegistrationPlan = AiVideoCoursePlan | "legacy";
 type Status = "pending" | "approved" | "rejected";
 type Registration = {
   id: string;
@@ -41,7 +41,7 @@ export default function CodingCourseAdminPanel({
   const [loginError, setLoginError] = useState("");
   const [notice, setNotice] = useState("");
   const [emailBusy, setEmailBusy] = useState(false);
-  const [emailPlan, setEmailPlan] = useState<EmailPlan>("without-support");
+  const [selectedPlan, setSelectedPlan] = useState<RegistrationPlan>("without-support");
   const [filter, setFilter] = useState<"all" | "iran" | "international">("all");
 
   const load = useCallback(async () => {
@@ -94,62 +94,75 @@ export default function CodingCourseAdminPanel({
   async function testEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    await emailAction({ action: enableReminder ? "test-reminder" : "test", email: String(form.get("email") ?? ""), ...(enableReminder ? { plan: emailPlan } : {}) });
+    await emailAction({ action: enableReminder ? "test-reminder" : "test", email: String(form.get("email") ?? ""), ...(enableReminder ? { plan: selectedPlan } : {}) });
   }
 
   async function bulkEmail() {
-    const target = enableReminder ? emailPlanLabel : "همه افراد تأییدشده";
+    const target = enableReminder ? selectedPlanLabel : "همه افراد تأییدشده";
     if (!confirm(`ایمیل ورود به کانال برای دریافت‌کنندگان ارسال‌نشدهٔ «${target}» فرستاده شود؟`)) return;
-    await emailAction({ action: "bulk", ...(enableReminder ? { plan: emailPlan } : {}) });
+    await emailAction({ action: "bulk", ...(enableReminder ? { plan: selectedPlan } : {}) });
   }
 
   async function reminderEmail() {
-    if (!confirm(`ایمیل یادآوری ورود به کانال برای ${number(approvedForEmail.length)} نفر تأییدشدهٔ «${emailPlanLabel}» ارسال شود؟`)) return;
-    await emailAction({ action: "reminder", plan: emailPlan });
+    if (!confirm(`ایمیل یادآوری ورود به کانال برای ${number(approvedForEmail.length)} نفر تأییدشدهٔ «${selectedPlanLabel}» ارسال شود؟`)) return;
+    await emailAction({ action: "reminder", plan: selectedPlan });
   }
 
-  const visibleItems = useMemo(() => filter === "all" ? items : items.filter(item => item.location === filter), [filter, items]);
-  const emailPlanLabel = emailPlan === "legacy" ? "نوبت قبلی" : AI_VIDEO_COURSE_PLANS[emailPlan].label;
-  const approvedForEmail = items.filter(item => item.status === "approved" &&
-    (!enableReminder || (item.plan ?? "legacy") === emailPlan));
+  const selectedPlanLabel = selectedPlan === "legacy" ? "نوبت قبلی" : AI_VIDEO_COURSE_PLANS[selectedPlan].label;
+  const planItems = enableReminder ? items.filter(item => (item.plan ?? "legacy") === selectedPlan) : items;
+  const visibleItems = filter === "all" ? planItems : planItems.filter(item => item.location === filter);
+  const approvedForEmail = planItems.filter(item => item.status === "approved");
+  const iranItems = planItems.filter(item => item.location === "iran");
+  const internationalItems = planItems.filter(item => item.location === "international");
+  const displayStats = enableReminder && stats ? {
+    pending: planItems.filter(item => item.status === "pending").length,
+    approved: approvedForEmail.length,
+    iran: iranItems.filter(item => item.status !== "rejected").length,
+    international: internationalItems.filter(item => item.status !== "rejected").length,
+  } : stats;
   const approvedWithoutEmail = approvedForEmail.filter(item => !item.emailSentAt).length;
 
   if (authorized === false) return <form className="admin-login" onSubmit={login}><h2>ورود مدیر</h2><p>رمز مدیریت را وارد کنید.</p><input name="password" type="password" required placeholder="رمز مدیریت" /><button className="gold-button">ورود به پنل</button>{loginError && <p className="form-message error">{loginError}</p>}</form>;
 
   return (
     <>
+      {enableReminder && (
+        <label className="coding-plan-picker">
+          پلن ثبت‌نام
+          <select value={selectedPlan} onChange={event => {
+            setSelectedPlan(event.target.value as RegistrationPlan);
+            setFilter("all");
+            setNotice("");
+          }} disabled={emailBusy}>
+            <option value="without-support">{AI_VIDEO_COURSE_PLANS["without-support"].label}</option>
+            <option value="with-support">{AI_VIDEO_COURSE_PLANS["with-support"].label}</option>
+            <option value="legacy">نوبت قبلی</option>
+          </select>
+        </label>
+      )}
+
       <div className="admin-stats coding-stats">
-        <div><span>در انتظار بررسی</span><strong>{stats?.pending ?? "—"}</strong></div>
-        <div><span>تأییدشده</span><strong>{stats?.approved ?? "—"}</strong></div>
-        <div><span>ثبت‌نام داخل ایران</span><strong>{stats?.iran ?? "—"}</strong></div>
-        <div><span>ثبت‌نام خارج ایران</span><strong>{stats?.international ?? "—"}</strong></div>
+        <div><span>در انتظار بررسی</span><strong>{displayStats?.pending ?? "—"}</strong></div>
+        <div><span>تأییدشده</span><strong>{displayStats?.approved ?? "—"}</strong></div>
+        <div><span>ثبت‌نام داخل ایران</span><strong>{displayStats?.iran ?? "—"}</strong></div>
+        <div><span>ثبت‌نام خارج ایران</span><strong>{displayStats?.international ?? "—"}</strong></div>
       </div>
 
       <section className="coding-email-tools">
         <div><p className="eyebrow">ایمیل کانال دوره</p><h2>ارسال لینک ورود</h2><span>{number(approvedWithoutEmail)} نفر تأییدشده هنوز ایمیل نگرفته‌اند.</span></div>
-        {enableReminder && (
-          <label className="coding-email-plan">
-            گیرندگان ایمیل
-            <select value={emailPlan} onChange={event => setEmailPlan(event.target.value as EmailPlan)} disabled={emailBusy}>
-              <option value="without-support">{AI_VIDEO_COURSE_PLANS["without-support"].label}</option>
-              <option value="with-support">{AI_VIDEO_COURSE_PLANS["with-support"].label}</option>
-              <option value="legacy">نوبت قبلی</option>
-            </select>
-          </label>
-        )}
         <form onSubmit={testEmail}><input name="email" type="email" required placeholder="ایمیل آزمایشی" /><button disabled={emailBusy}>{enableReminder ? "تست ایمیل یادآوری" : "ارسال تست"}</button></form>
         <div className="coding-email-actions">
-          <button className="coding-bulk" disabled={emailBusy || approvedWithoutEmail === 0} onClick={bulkEmail}>{enableReminder ? "ارسال به افراد ارسال‌نشدهٔ انتخابی" : "ارسال به همه افراد ارسال‌نشده"}</button>
-          {enableReminder && <button className="coding-reminder" disabled={emailBusy || approvedForEmail.length === 0} onClick={reminderEmail}>ارسال یادآوری به تأییدشده‌های انتخابی</button>}
+          <button className="coding-bulk" disabled={emailBusy || approvedWithoutEmail === 0} onClick={bulkEmail}>{enableReminder ? "ارسال به افراد این پلن که ایمیل نگرفته‌اند" : "ارسال به همه افراد ارسال‌نشده"}</button>
+          {enableReminder && <button className="coding-reminder" disabled={emailBusy || approvedForEmail.length === 0} onClick={reminderEmail}>ارسال یادآوری به تأییدشده‌های این پلن</button>}
         </div>
       </section>
 
       {notice && <p className="coding-admin-notice">{notice}</p>}
 
       <div className="admin-filters">
-        <button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>همه ({number(items.length)})</button>
-        <button className={filter === "iran" ? "active" : ""} onClick={() => setFilter("iran")}>داخل ایران ({number(items.filter(item => item.location === "iran").length)})</button>
-        <button className={filter === "international" ? "active" : ""} onClick={() => setFilter("international")}>خارج ایران ({number(items.filter(item => item.location === "international").length)})</button>
+        <button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>همه ({number(planItems.length)})</button>
+        <button className={filter === "iran" ? "active" : ""} onClick={() => setFilter("iran")}>داخل ایران ({number(iranItems.length)})</button>
+        <button className={filter === "international" ? "active" : ""} onClick={() => setFilter("international")}>خارج ایران ({number(internationalItems.length)})</button>
       </div>
 
       <div className="admin-list">
