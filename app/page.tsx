@@ -151,6 +151,8 @@ export default function Home() {
         <nav className={menuOpen ? "neo-nav is-open" : "neo-nav"} aria-label={lang === "fa" ? "منوی اصلی" : "Main navigation"}>
           {t.nav.map((item, index) => <a href={anchors[index]} key={item} onClick={() => setMenuOpen(false)}>{item}</a>)}
           <a href="/dongi" onClick={() => setMenuOpen(false)}>{lang === "fa" ? "دنگی" : "Dongi"}</a>
+          {process.env.NEXT_PUBLIC_ACADEMY_ENABLED === "true" &&
+            <a href="/academy" onClick={() => setMenuOpen(false)}>{lang === "fa" ? "حساب هنرجو" : "Student account"}</a>}
         </nav>
         <div className="neo-header-actions">
           <div className="neo-lang"><button onClick={() => setLanguage("fa")} className={lang === "fa" ? "active" : ""}>فا</button><span>/</span><button onClick={() => setLanguage("en")} className={lang === "en" ? "active" : ""}>EN</button></div>
