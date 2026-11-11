@@ -17,9 +17,9 @@ const ALLOWED_RECEIPT_TYPES = new Set(["image/jpeg", "image/png", "image/webp", 
 
 export default function VideoCourseRegistration() {
   const [location, setLocation] = useState<Location>("iran");
-  const [plan, setPlan] = useState<AiVideoCoursePlan | null>(null);
+  const [plan, setPlan] = useState<AiVideoCoursePlan>("without-support");
   const [emailMismatch, setEmailMismatch] = useState(false);
-  const selectedPlan = plan && AI_VIDEO_COURSE_PLANS[plan];
+  const selectedPlan = AI_VIDEO_COURSE_PLANS[plan];
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -37,7 +37,6 @@ export default function VideoCourseRegistration() {
     const form = event.currentTarget;
     const formData = new FormData(form);
     formData.set("location", location);
-    if (!plan) return;
     if (normalizeAiVideoCourseEmail(formData.get("email")) !== normalizeAiVideoCourseEmail(formData.get("emailConfirmation"))) {
       setEmailMismatch(true);
       form.querySelector<HTMLInputElement>('[name="emailConfirmation"]')?.focus();
@@ -131,35 +130,31 @@ export default function VideoCourseRegistration() {
           </div>
         </fieldset>
 
-        {selectedPlan && (
-          <>
-            <div className="avc-location-picker" role="group" aria-label="محل زندگی">
-              <button type="button" aria-pressed={location === "iran"} disabled={busy} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small>کارت‌به‌کارت</small></button>
-              <button type="button" aria-pressed={location === "international"} disabled={busy} className={location === "international" ? "active" : ""} onClick={() => { setLocation("international"); setMessage(null); }}><span>خارج از ایران</span><small>هماهنگی پرداخت در تلگرام</small></button>
-            </div>
+        <div className="avc-location-picker" role="group" aria-label="محل زندگی">
+          <button type="button" aria-pressed={location === "iran"} disabled={busy} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small>کارت‌به‌کارت</small></button>
+          <button type="button" aria-pressed={location === "international"} disabled={busy} className={location === "international" ? "active" : ""} onClick={() => { setLocation("international"); setMessage(null); }}><span>خارج از ایران</span><small>هماهنگی پرداخت در تلگرام</small></button>
+        </div>
 
-            <div className={`avc-payment-card ${location}`}>
-              <div className="avc-payment-heading">
-                <small>{selectedPlan.label}</small>
-                <strong>{formatPrice.format(selectedPlan.fee)} <i>تومان</i></strong>
-              </div>
-              {location === "iran" ? (
-                <>
-                  <p>مبلغ پلن انتخابی را به کارت زیر واریز کنید و تصویر رسید را در فرم بارگذاری کنید.</p>
-                  <div className="avc-card-number" dir="ltr"><code>{selectedPlan.cardNumber.replace(/(\d{4})(?=\d)/g, "$1 ")}</code><button type="button" onClick={() => copyCard(selectedPlan.cardNumber)}>{copied ? "کپی شد ✓" : "کپی شماره"}</button></div>
-                  <small className="avc-holder">به نام {AI_VIDEO_COURSE_CARD_HOLDER}</small>
-                </>
-              ) : (
-                <>
-                  <p>برای هماهنگی معادل مبلغ پلن و جزئیات پرداخت، در تلگرام به حامد پیام بدهید. پس از پرداخت، رسید را بارگذاری کنید.</p>
-                  <a href={AI_VIDEO_COURSE_PAYMENT_TELEGRAM_URL} target="_blank" rel="noreferrer">پیام در تلگرام · @hamedsamiz <span>↗</span></a>
-                </>
-              )}
-            </div>
-          </>
-        )}
+        <div className={`avc-payment-card ${location}`}>
+          <div className="avc-payment-heading">
+            <small>{selectedPlan.label}</small>
+            <strong>{formatPrice.format(selectedPlan.fee)} <i>تومان</i></strong>
+          </div>
+          {location === "iran" ? (
+            <>
+              <p>مبلغ پلن انتخابی را به کارت زیر واریز کنید و تصویر رسید را در فرم بارگذاری کنید.</p>
+              <div className="avc-card-number" dir="ltr"><code>{selectedPlan.cardNumber.replace(/(\d{4})(?=\d)/g, "$1 ")}</code><button type="button" onClick={() => copyCard(selectedPlan.cardNumber)}>{copied ? "کپی شد ✓" : "کپی شماره"}</button></div>
+              <small className="avc-holder">به نام {AI_VIDEO_COURSE_CARD_HOLDER}</small>
+            </>
+          ) : (
+            <>
+              <p>برای هماهنگی معادل مبلغ پلن و جزئیات پرداخت، در تلگرام به حامد پیام بدهید. پس از پرداخت، رسید را بارگذاری کنید.</p>
+              <a href={AI_VIDEO_COURSE_PAYMENT_TELEGRAM_URL} target="_blank" rel="noreferrer">پیام در تلگرام · @hamedsamiz <span>↗</span></a>
+            </>
+          )}
+        </div>
 
-        {selectedPlan && <form onSubmit={submit}>
+        <form onSubmit={submit}>
           <p className="avc-browser-note">اگر این صفحه را داخل اینستاگرام باز کرده‌اید، پیش از ارسال رسید از منوی مرورگر گزینهٔ «Open in browser» را بزنید و ثبت‌نام را در Safari یا Chrome انجام دهید.</p>
           <div className="avc-field full"><label htmlFor="videoFullName">نام و نام خانوادگی</label><input id="videoFullName" name="fullName" required minLength={3} maxLength={80} autoComplete="name" placeholder="نام کامل خود را وارد کنید" /></div>
           <div className="avc-field"><label htmlFor="videoAge">سن</label><input id="videoAge" name="age" type="number" required min={12} max={100} inputMode="numeric" placeholder="مثلاً ۲۸" /></div>
@@ -180,7 +175,7 @@ export default function VideoCourseRegistration() {
             <div><strong>بررسی رسید حداکثر تا ۴۸ ساعت</strong><p>پس از تأیید، لینک ورود به کانال پلن انتخابی به همین ایمیل ارسال می‌شود. پوشه Spam را هم بررسی کنید.</p></div>
           </div>
           {message && <p className={message.error ? "avc-message error" : "avc-message success"} role="status" aria-live="polite">{message.text}</p>}
-        </form>}
+        </form>
       </div>
     </section>
   );
