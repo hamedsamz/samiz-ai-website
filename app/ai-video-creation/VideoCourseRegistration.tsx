@@ -138,7 +138,7 @@ export default function VideoCourseRegistration() {
                 <input type="radio" name="videoPlan" checked={plan === option} disabled={option === "with-support" && supportRemaining === 0} onChange={() => { setPlan(option); setPaymentOption("full"); setCopied(false); setMessage(null); }} />
                 <span>{AI_VIDEO_COURSE_PLANS[option].label}</span>
                 <small className="avc-picker-price"><del>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].originalFee)}</del><b>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].fee)} تومان</b></small>
-                <small>{option === "with-support" ? supportRemaining === 0 ? "ظرفیت تکمیل شده" : `ظرفیت ${formatPrice.format(AI_VIDEO_SUPPORT_CAPACITY)} نفر${supportRemaining !== null ? ` · ${formatPrice.format(supportRemaining)} جای باقی‌مانده` : ""}` : "ظرفیت نامحدود"}</small>
+                <small>{option === "with-support" ? supportRemaining === 0 ? "ظرفیت تکمیل شده" : `ظرفیت محدود · ${formatPrice.format(AI_VIDEO_SUPPORT_CAPACITY)} نفر` : "ظرفیت نامحدود"}</small>
               </label>
             ))}
           </div>

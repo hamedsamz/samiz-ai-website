@@ -124,7 +124,7 @@ export default function AiVideoCreationPage() {
         <div className="avc-fact-fee">
           <small>هزینه ثبت‌نام</small>
           {Object.values(AI_VIDEO_COURSE_PLANS).map(plan => (
-            <strong key={plan.label}>{plan.label} · <del>{formatPrice.format(plan.originalFee)}</del> {formatPrice.format(plan.fee)} تومان</strong>
+            <strong key={plan.label}>{plan.label} · <del>{formatPrice.format(plan.originalFee)}</del> {formatPrice.format(plan.fee)} تومان{plan.label === "با پشتیبانی" && <span className="avc-fact-installments"> · امکان پرداخت اقساطی</span>}</strong>
           ))}
         </div>
       </section>
