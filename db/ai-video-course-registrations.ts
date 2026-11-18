@@ -1,4 +1,5 @@
 import { db } from "./registrations";
+import { AI_VIDEO_SUPPORT_CAPACITY } from "../lib/ai-video-course-config";
 
 export type AiVideoCourseLocation = "iran" | "international";
 
@@ -24,6 +25,19 @@ export async function ensureAiVideoCourseSchema() {
     updated_at BIGINT NOT NULL
   )`;
   await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS plan TEXT`;
+  await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS payment_option TEXT NOT NULL DEFAULT 'full'`;
+  await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS total_amount BIGINT`;
+  await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS first_paid_at BIGINT`;
+  await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS second_due_at BIGINT`;
+  await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS second_receipt_name TEXT`;
+  await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS second_receipt_type TEXT`;
+  await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS second_receipt_data TEXT`;
+  await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS second_status TEXT`;
+  await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS second_paid_at BIGINT`;
+  await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS payment_token TEXT`;
+  await sql`ALTER TABLE ai_video_course_registrations ADD COLUMN IF NOT EXISTS seat_number INTEGER`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS ai_video_course_seat_idx ON ai_video_course_registrations(seat_number) WHERE plan = 'with-support' AND seat_number IS NOT NULL`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS ai_video_course_payment_token_idx ON ai_video_course_registrations(payment_token) WHERE payment_token IS NOT NULL`;
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS ai_video_course_current_phone_idx
     ON ai_video_course_registrations(phone) WHERE plan IS NOT NULL AND status IN ('pending', 'approved')`;
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS ai_video_course_current_email_idx
@@ -31,6 +45,13 @@ export async function ensureAiVideoCourseSchema() {
   await sql`CREATE INDEX IF NOT EXISTS ai_video_course_registrations_phone_idx ON ai_video_course_registrations(phone)`;
   await sql`CREATE INDEX IF NOT EXISTS ai_video_course_registrations_email_idx ON ai_video_course_registrations(email)`;
   await sql`CREATE INDEX IF NOT EXISTS ai_video_course_registrations_status_idx ON ai_video_course_registrations(status)`;
+}
+
+export async function aiVideoSupportCapacity() {
+  await ensureAiVideoCourseSchema();
+  const rows = await db()`SELECT COUNT(*)::int AS used FROM ai_video_course_registrations WHERE plan = 'with-support' AND status = 'approved'`;
+  const used = Number(rows[0]?.used ?? 0);
+  return { capacity: AI_VIDEO_SUPPORT_CAPACITY, used, remaining: Math.max(0, AI_VIDEO_SUPPORT_CAPACITY - used), full: used >= AI_VIDEO_SUPPORT_CAPACITY };
 }
 
 export async function aiVideoCourseStats() {

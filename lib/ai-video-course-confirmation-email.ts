@@ -1,6 +1,7 @@
 import { AI_VIDEO_COURSE_NAME, AI_VIDEO_COURSE_PLANS, AI_VIDEO_COURSE_START_DATE, type AiVideoCoursePlan } from "./ai-video-course-config";
 
-type Recipient = { email: string; fullName: string; plan: AiVideoCoursePlan | null };
+type Installment = { dueAt: number; token: string };
+type Recipient = { email: string; fullName: string; plan: AiVideoCoursePlan | null; paymentOption?: string; secondDueAt?: number | null; paymentToken?: string | null };
 type EmailKind = "confirmation" | "reminder";
 
 function escapeHtml(value: string) {
@@ -20,7 +21,7 @@ function channelUrl(plan: AiVideoCoursePlan | null) {
   throw new Error("AI_VIDEO_COURSE_CHANNEL_URL is not configured for this plan");
 }
 
-function aiVideoCourseMessage(fullName: string, kind: EmailKind, plan: AiVideoCoursePlan | null) {
+function aiVideoCourseMessage(fullName: string, kind: EmailKind, plan: AiVideoCoursePlan | null, installment?: Installment) {
   const safeName = escapeHtml(fullName);
   const url = channelUrl(plan);
   const safeUrl = escapeHtml(url);
@@ -34,10 +35,13 @@ function aiVideoCourseMessage(fullName: string, kind: EmailKind, plan: AiVideoCo
     : `ثبت‌نام شما در دوره «${AI_VIDEO_COURSE_NAME}» با موفقیت تأیید شد.`;
 
   const planDetails = plan ? `پلن ${AI_VIDEO_COURSE_PLANS[plan].label} · شروع دوره ${AI_VIDEO_COURSE_START_DATE}` : "";
+  const dueDate = installment ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "long", timeZone: "Asia/Tehran" }).format(installment.dueAt) : "";
+  const paymentUrl = installment ? `https://samizai.com/ai-video-creation/second-payment?token=${encodeURIComponent(installment.token)}` : "";
+  const installmentText = installment ? `\nشما قسط اول (۴ میلیون تومان) را پرداخت کرده‌اید. موعد قسط دوم (۴ میلیون تومان): ${dueDate}. رسید قسط دوم را در لینک شخصی زیر ارسال کنید:\n${paymentUrl}\n` : "";
 
   return {
     subject,
-    text: `${fullName} عزیز،\n\n${intro}\n\n${planDetails ? `${planDetails}\n\n` : ""}برای ورود به کانال تلگرام از لینک زیر استفاده کنید:\n${url}\n\nجلسات و اطلاعیه‌های دوره فقط در کانال اختصاصی تلگرام منتشر می‌شوند. لطفاً همین حالا وارد کانال شوید.\n\nاین لینک مخصوص شرکت‌کنندگان تأییدشده است؛ لطفاً آن را در اختیار دیگران قرار ندهید.\n\nSAMIZ AI Academy`,
+    text: `${fullName} عزیز،\n\n${intro}\n\n${planDetails ? `${planDetails}\n\n` : ""}برای ورود به کانال تلگرام از لینک زیر استفاده کنید:\n${url}\n${installmentText}\nجلسات و اطلاعیه‌های دوره فقط در کانال اختصاصی تلگرام منتشر می‌شوند. لطفاً همین حالا وارد کانال شوید.\n\nاین لینک مخصوص شرکت‌کنندگان تأییدشده است؛ لطفاً آن را در اختیار دیگران قرار ندهید.\n\nSAMIZ AI Academy`,
     html: `<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
@@ -67,6 +71,7 @@ function aiVideoCourseMessage(fullName: string, kind: EmailKind, plan: AiVideoCo
           <p dir="ltr" style="margin:0 0 22px;padding:13px;background-color:#e8f7f9;border:1px solid #8fdce4;border-radius:8px;text-align:left;word-break:break-all">
             <a href="${safeUrl}" style="color:#075985;font-size:15px;font-weight:bold;text-decoration:underline">${safeUrl}</a>
           </p>
+          ${installment ? `<p style="margin:0 0 12px;color:#111827;font-size:15px;line-height:2">قسط اول شما تأیید شد. مبلغ قسط دوم <strong>۴ میلیون تومان</strong> و موعد آن <strong>${dueDate}</strong> است. برای ارسال رسید قسط دوم از لینک شخصی زیر استفاده کنید:</p><p dir="ltr" style="margin:0 0 22px;word-break:break-all;text-align:left"><a href="${escapeHtml(paymentUrl)}" style="color:#075985;font-size:15px;font-weight:bold">${escapeHtml(paymentUrl)}</a></p>` : ""}
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#f8fafc" style="background-color:#f8fafc;border-right:4px solid #0ea5b7">
             <tr><td style="padding:16px;color:#1f2937;font-size:15px;line-height:2">جلسات و اطلاعیه‌های دوره فقط در کانال اختصاصی تلگرام منتشر می‌شوند. لطفاً همین حالا وارد کانال شوید تا هیچ اطلاعیه‌ای را از دست ندهید.</td></tr>
           </table>
@@ -88,12 +93,12 @@ function emailSettings() {
   return { apiKey, from };
 }
 
-async function sendOne(to: string, fullName: string, kind: EmailKind, plan: AiVideoCoursePlan | null) {
+async function sendOne(to: string, fullName: string, kind: EmailKind, plan: AiVideoCoursePlan | null, installment?: Installment) {
   const { apiKey, from } = emailSettings();
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from, to: [to], ...aiVideoCourseMessage(fullName, kind, plan) }),
+    body: JSON.stringify({ from, to: [to], ...aiVideoCourseMessage(fullName, kind, plan, installment) }),
   });
   if (!response.ok) throw new Error(`Resend request failed (${response.status})`);
 }
@@ -105,14 +110,14 @@ async function sendBatch(recipients: Recipient[], kind: EmailKind) {
     const response = await fetch("https://api.resend.com/emails/batch", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify(batch.map(recipient => ({ from, to: [recipient.email], ...aiVideoCourseMessage(recipient.fullName, kind, recipient.plan) }))),
+      body: JSON.stringify(batch.map(recipient => ({ from, to: [recipient.email], ...aiVideoCourseMessage(recipient.fullName, kind, recipient.plan, recipient.paymentOption === "installments" && recipient.secondDueAt && recipient.paymentToken ? { dueAt: Number(recipient.secondDueAt), token: recipient.paymentToken } : undefined) }))),
     });
     if (!response.ok) throw new Error(`Resend batch request failed (${response.status})`);
   }
 }
 
-export async function sendAiVideoCourseConfirmationEmail(to: string, fullName: string, plan: AiVideoCoursePlan | null) {
-  await sendOne(to, fullName, "confirmation", plan);
+export async function sendAiVideoCourseConfirmationEmail(to: string, fullName: string, plan: AiVideoCoursePlan | null, installment?: Installment) {
+  await sendOne(to, fullName, "confirmation", plan, installment);
 }
 
 export async function sendAiVideoCourseReminderEmail(to: string, fullName: string, plan: AiVideoCoursePlan | null) {

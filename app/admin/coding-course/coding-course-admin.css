@@ -4,3 +4,4 @@
 .coding-email-actions{display:grid;gap:8px}.coding-email-tools .coding-reminder{border-color:#f0b86a;background:#f0b86a;color:#251603}
 .coding-plan-picker{display:flex;flex-wrap:wrap;align-items:center;gap:12px;max-width:1240px;margin:0 auto 18px;color:#c9d5d6;font-size:13px}
 .coding-plan-picker select{min-height:40px;padding:0 10px;border:1px solid #274047;border-radius:7px;background:#060a0b;color:#fff;font:inherit}
+.video-payment-stats{margin-top:-16px;margin-bottom:26px}.video-payment-filters{margin-top:-12px;margin-bottom:20px}.coding-admin-item .coding-registration-details{grid-template-columns:repeat(2,minmax(0,1fr))}@media(max-width:680px){.coding-admin-item .coding-registration-details{grid-template-columns:1fr}}

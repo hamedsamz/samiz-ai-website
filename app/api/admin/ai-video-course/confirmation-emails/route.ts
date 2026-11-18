@@ -4,7 +4,7 @@ import { isAdmin } from "../../../../../lib/admin-auth";
 import { sendAiVideoCourseConfirmationBatch, sendAiVideoCourseConfirmationEmail, sendAiVideoCourseReminderBatch, sendAiVideoCourseReminderEmail } from "../../../../../lib/ai-video-course-confirmation-email";
 import { isAiVideoCoursePlan, type AiVideoCoursePlan } from "../../../../../lib/ai-video-course-config";
 
-type EmailRecipient = { id: string; fullName: string; email: string; plan: AiVideoCoursePlan | null };
+type EmailRecipient = { id: string; fullName: string; email: string; plan: AiVideoCoursePlan | null; paymentOption?: string; secondDueAt?: number | null; paymentToken?: string | null };
 
 export const dynamic = "force-dynamic";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -31,16 +31,16 @@ export async function POST(request: Request) {
       return Response.json({ message: "نمونه ایمیل یادآوری ارسال شد." });
     }
     if (body.action === "single") {
-      const rows = await db()`SELECT id, full_name AS "fullName", email, plan, confirmation_email_sent_at AS "sentAt" FROM ai_video_course_registrations WHERE id = ${body.id ?? ""} AND status = 'approved'`;
+      const rows = await db()`SELECT id, full_name AS "fullName", email, plan, payment_option AS "paymentOption", second_due_at AS "secondDueAt", payment_token AS "paymentToken", confirmation_email_sent_at AS "sentAt" FROM ai_video_course_registrations WHERE id = ${body.id ?? ""} AND status = 'approved'`;
       const row = rows[0] as (EmailRecipient & { sentAt: number | null }) | undefined;
       if (!row) return Response.json({ error: "ثبت‌نام تأییدشده پیدا نشد." }, { status: 404 });
       if (row.sentAt) return Response.json({ error: "ایمیل این فرد قبلاً ارسال شده است." }, { status: 409 });
-      await sendAiVideoCourseConfirmationEmail(row.email, row.fullName, row.plan);
+      await sendAiVideoCourseConfirmationEmail(row.email, row.fullName, row.plan, row.paymentOption === "installments" && row.secondDueAt && row.paymentToken ? { dueAt: Number(row.secondDueAt), token: row.paymentToken } : undefined);
       await db()`UPDATE ai_video_course_registrations SET confirmation_email_sent_at = ${Date.now()} WHERE id = ${row.id}`;
       return Response.json({ message: "ایمیل تأیید ارسال شد." });
     }
     if (body.action === "bulk") {
-      const rows = await db()`SELECT id, full_name AS "fullName", email, plan FROM ai_video_course_registrations WHERE status = 'approved' AND confirmation_email_sent_at IS NULL AND plan IS NOT DISTINCT FROM ${plan}::text ORDER BY created_at LIMIT 100` as EmailRecipient[];
+      const rows = await db()`SELECT id, full_name AS "fullName", email, plan, payment_option AS "paymentOption", second_due_at AS "secondDueAt", payment_token AS "paymentToken" FROM ai_video_course_registrations WHERE status = 'approved' AND confirmation_email_sent_at IS NULL AND plan IS NOT DISTINCT FROM ${plan}::text ORDER BY created_at LIMIT 100` as EmailRecipient[];
       if (!rows.length) return Response.json({ error: "ایمیل ارسال‌نشده‌ای وجود ندارد." }, { status: 409 });
       await sendAiVideoCourseConfirmationBatch(rows);
       const now = Date.now();

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   AI_VIDEO_COURSE_CARD_HOLDER,
   AI_VIDEO_COURSE_PAYMENT_TELEGRAM_URL,
   AI_VIDEO_COURSE_PLANS,
+  AI_VIDEO_INSTALLMENT_DAYS,
+  AI_VIDEO_SUPPORT_CAPACITY,
   AI_VIDEO_COURSE_START_DATE,
   normalizeAiVideoCourseEmail,
   type AiVideoCoursePlan,
@@ -18,12 +20,22 @@ const ALLOWED_RECEIPT_TYPES = new Set(["image/jpeg", "image/png", "image/webp", 
 export default function VideoCourseRegistration() {
   const [location, setLocation] = useState<Location>("iran");
   const [plan, setPlan] = useState<AiVideoCoursePlan>("without-support");
+  const [paymentOption, setPaymentOption] = useState<"full" | "installments">("full");
+  const [supportRemaining, setSupportRemaining] = useState<number | null>(null);
   const [emailMismatch, setEmailMismatch] = useState(false);
   const selectedPlan = AI_VIDEO_COURSE_PLANS[plan];
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [fileName, setFileName] = useState("");
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/ai-video-course/registration", { cache: "no-store" })
+      .then(response => response.json())
+      .then(data => { if (typeof data.support?.remaining === "number") setSupportRemaining(data.support.remaining); })
+      .catch(() => {});
+  }, []);
+  const amountNow = plan === "with-support" && paymentOption === "installments" ? selectedPlan.fee / 2 : selectedPlan.fee;
 
   async function copyCard(cardNumber: string) {
     await navigator.clipboard.writeText(cardNumber);
@@ -43,6 +55,7 @@ export default function VideoCourseRegistration() {
       return;
     }
     formData.set("plan", plan);
+    formData.set("paymentOption", plan === "with-support" ? paymentOption : "full");
     setBusy(true);
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 90_000);
@@ -122,13 +135,22 @@ export default function VideoCourseRegistration() {
           <div className="avc-location-picker">
             {(Object.keys(AI_VIDEO_COURSE_PLANS) as AiVideoCoursePlan[]).map(option => (
               <label key={option} className={plan === option ? "active" : ""}>
-                <input type="radio" name="videoPlan" checked={plan === option} onChange={() => { setPlan(option); setCopied(false); setMessage(null); }} />
+                <input type="radio" name="videoPlan" checked={plan === option} disabled={option === "with-support" && supportRemaining === 0} onChange={() => { setPlan(option); setPaymentOption("full"); setCopied(false); setMessage(null); }} />
                 <span>{AI_VIDEO_COURSE_PLANS[option].label}</span>
-                <small>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].fee)} تومان</small>
+                <small className="avc-picker-price"><del>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].originalFee)}</del><b>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].fee)} تومان</b></small>
+                <small>{option === "with-support" ? supportRemaining === 0 ? "ظرفیت تکمیل شده" : `ظرفیت ${formatPrice.format(AI_VIDEO_SUPPORT_CAPACITY)} نفر${supportRemaining !== null ? ` · ${formatPrice.format(supportRemaining)} جای باقی‌مانده` : ""}` : "ظرفیت نامحدود"}</small>
               </label>
             ))}
           </div>
         </fieldset>
+
+        {plan === "with-support" && <fieldset className="avc-plan-picker avc-installment-picker" disabled={busy}>
+          <legend>روش پرداخت</legend>
+          <div className="avc-location-picker">
+            <label className={paymentOption === "full" ? "active" : ""}><input type="radio" name="paymentChoice" checked={paymentOption === "full"} onChange={() => setPaymentOption("full")} /><span>پرداخت یکجا</span><small>۸ میلیون تومان</small></label>
+            <label className={paymentOption === "installments" ? "active" : ""}><input type="radio" name="paymentChoice" checked={paymentOption === "installments"} onChange={() => setPaymentOption("installments")} /><span>پرداخت دو مرحله‌ای</span><small>۴ میلیون اکنون + ۴ میلیون، ۲۰ روز بعد</small></label>
+          </div>
+        </fieldset>}
 
         <div className="avc-location-picker" role="group" aria-label="محل زندگی">
           <button type="button" aria-pressed={location === "iran"} disabled={busy} className={location === "iran" ? "active" : ""} onClick={() => { setLocation("iran"); setMessage(null); }}><span>داخل ایران</span><small>کارت‌به‌کارت</small></button>
@@ -138,17 +160,18 @@ export default function VideoCourseRegistration() {
         <div className={`avc-payment-card ${location}`}>
           <div className="avc-payment-heading">
             <small>{selectedPlan.label}</small>
-            <strong>{formatPrice.format(selectedPlan.fee)} <i>تومان</i></strong>
+            <div className="avc-price-stack"><del>{formatPrice.format(selectedPlan.originalFee)} تومان</del><strong>{formatPrice.format(selectedPlan.fee)} <i>تومان</i></strong></div>
           </div>
+          <p className="avc-payment-summary">{paymentOption === "installments" && plan === "with-support" ? `مبلغ قابل واریز اکنون: ${formatPrice.format(amountNow)} تومان. قسط دوم ${formatPrice.format(amountNow)} تومان، ${AI_VIDEO_INSTALLMENT_DAYS} روز پس از ارسال رسید قسط اول؛ لینک کانال پس از تأیید قسط اول ایمیل می‌شود.` : `مبلغ قابل واریز اکنون: ${formatPrice.format(amountNow)} تومان.`}</p>
           {location === "iran" ? (
             <>
-              <p>مبلغ پلن انتخابی را به کارت زیر واریز کنید و تصویر رسید را در فرم بارگذاری کنید.</p>
+              <p>مبلغ قابل واریز اکنون را به کارت زیر واریز کنید و تصویر رسید را در فرم بارگذاری کنید.</p>
               <div className="avc-card-number" dir="ltr"><code>{selectedPlan.cardNumber.replace(/(\d{4})(?=\d)/g, "$1 ")}</code><button type="button" onClick={() => copyCard(selectedPlan.cardNumber)}>{copied ? "کپی شد ✓" : "کپی شماره"}</button></div>
               <small className="avc-holder">به نام {AI_VIDEO_COURSE_CARD_HOLDER}</small>
             </>
           ) : (
             <>
-              <p>برای هماهنگی معادل مبلغ پلن و جزئیات پرداخت، در تلگرام به حامد پیام بدهید. پس از پرداخت، رسید را بارگذاری کنید.</p>
+              <p>برای هماهنگی معادل مبلغ قابل پرداخت اکنون و جزئیات پرداخت، در تلگرام به حامد پیام بدهید. پس از پرداخت، رسید را بارگذاری کنید.</p>
               <a href={AI_VIDEO_COURSE_PAYMENT_TELEGRAM_URL} target="_blank" rel="noreferrer">پیام در تلگرام · @hamedsamiz <span>↗</span></a>
             </>
           )}
@@ -169,7 +192,7 @@ export default function VideoCourseRegistration() {
             <input className="avc-file-input" id="videoReceipt" name="receipt" type="file" required accept="image/jpeg,image/png,image/webp,application/pdf" onChange={selectReceipt} />
           </div>
           <label className="avc-consent"><input type="checkbox" required /><span>تأیید می‌کنم اطلاعات واردشده صحیح است و پرداخت مربوط به ثبت‌نام همین دوره است.</span></label>
-          <button className="avc-submit" type="submit" disabled={busy}>{busy ? "در حال ارسال؛ لطفاً این صفحه را نبندید…" : "ارسال رسید و ثبت درخواست"}<span>↙</span></button>
+          <button className="avc-submit" type="submit" disabled={busy || (plan === "with-support" && supportRemaining === 0)}>{busy ? "در حال ارسال؛ لطفاً این صفحه را نبندید…" : "ارسال رسید و ثبت درخواست"}<span>↙</span></button>
           <div className="avc-review-note">
             <span aria-hidden="true">✓</span>
             <div><strong>بررسی رسید حداکثر تا ۴۸ ساعت</strong><p>پس از تأیید، لینک ورود به کانال پلن انتخابی به همین ایمیل ارسال می‌شود. پوشه Spam را هم بررسی کنید.</p></div>

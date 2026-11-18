@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 
-import { AI_VIDEO_COURSE_PLANS, type AiVideoCoursePlan } from "../../../lib/ai-video-course-config";
+import { AI_VIDEO_COURSE_PLANS, AI_VIDEO_SUPPORT_CAPACITY, type AiVideoCoursePlan } from "../../../lib/ai-video-course-config";
 
 type RegistrationPlan = AiVideoCoursePlan | "legacy";
 type Status = "pending" | "approved" | "rejected";
@@ -22,6 +22,15 @@ type Registration = {
   status: Status;
   emailSentAt: number | null;
   createdAt: number;
+  paymentOption?: "full" | "installments";
+  totalAmount?: number | null;
+  firstPaidAt?: number | null;
+  secondDueAt?: number | null;
+  secondStatus?: "pending" | "approved" | "rejected" | null;
+  secondPaidAt?: number | null;
+  secondReceiptName?: string | null;
+  paymentToken?: string | null;
+  seatNumber?: number | null;
 };
 type Stats = { pending: number; approved: number; iran: number; international: number };
 const statusLabels: Record<Status, string> = { pending: "در انتظار", approved: "تأییدشده", rejected: "ردشده" };
@@ -43,6 +52,8 @@ export default function CodingCourseAdminPanel({
   const [emailBusy, setEmailBusy] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<RegistrationPlan>("without-support");
   const [filter, setFilter] = useState<"all" | "iran" | "international">("all");
+  const [paymentFilter, setPaymentFilter] = useState<"all" | "second-pending" | "second-due" | "settled">("all");
+  const [asOf, setAsOf] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -51,6 +62,7 @@ export default function CodingCourseAdminPanel({
     setAuthorized(response.ok);
     setItems(data.registrations ?? []);
     setStats(data.stats ?? null);
+    setAsOf(Date.now());
     setLoading(false);
   }, [apiBase]);
 
@@ -78,6 +90,14 @@ export default function CodingCourseAdminPanel({
     const response = await fetch(`${apiBase}/registrations/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
     const data = await response.json();
     setNotice(data.message ?? data.warning ?? data.error ?? "عملیات انجام شد.");
+    await load();
+  }
+
+  async function decideSecond(id: string, status: "approved" | "rejected") {
+    setNotice("");
+    const response = await fetch(`${apiBase}/second-payments/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+    const data = await response.json();
+    setNotice(data.message ?? data.error ?? "عملیات انجام نشد.");
     await load();
   }
 
@@ -110,7 +130,12 @@ export default function CodingCourseAdminPanel({
 
   const selectedPlanLabel = selectedPlan === "legacy" ? "نوبت قبلی" : AI_VIDEO_COURSE_PLANS[selectedPlan].label;
   const planItems = enableReminder ? items.filter(item => (item.plan ?? "legacy") === selectedPlan) : items;
-  const visibleItems = filter === "all" ? planItems : planItems.filter(item => item.location === filter);
+  const locationItems = filter === "all" ? planItems : planItems.filter(item => item.location === filter);
+  const visibleItems = !enableReminder || paymentFilter === "all" ? locationItems : locationItems.filter(item =>
+    paymentFilter === "second-pending" ? item.secondStatus === "pending" :
+    paymentFilter === "second-due" ? item.paymentOption === "installments" && item.status === "approved" && item.secondStatus !== "approved" && item.secondStatus !== "pending" :
+    item.status === "approved" && (item.paymentOption !== "installments" || item.secondStatus === "approved")
+  );
   const approvedForEmail = planItems.filter(item => item.status === "approved");
   const iranItems = planItems.filter(item => item.location === "iran");
   const internationalItems = planItems.filter(item => item.location === "international");
@@ -121,6 +146,14 @@ export default function CodingCourseAdminPanel({
     international: internationalItems.filter(item => item.status !== "rejected").length,
   } : stats;
   const approvedWithoutEmail = approvedForEmail.filter(item => !item.emailSentAt).length;
+  const supportedApproved = items.filter(item => item.plan === "with-support" && item.status === "approved").length;
+  const secondPending = planItems.filter(item => item.secondStatus === "pending").length;
+  const secondOutstanding = planItems.filter(item => item.paymentOption === "installments" && item.status === "approved" && item.secondStatus !== "approved").length;
+  const outstandingAmount = planItems.filter(item => item.paymentOption === "installments" && item.status === "approved" && item.secondStatus !== "approved")
+    .reduce((sum, item) => sum + Number(item.totalAmount ?? 8_000_000) - Number(item.paidAmount), 0);
+  const confirmedAmount = planItems.filter(item => item.status === "approved")
+    .reduce((sum, item) => sum + Number(item.paidAmount) + (item.secondStatus === "approved" ? Number(item.totalAmount ?? 8_000_000) - Number(item.paidAmount) : 0), 0);
+  const date = (value: number) => new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeZone: "Asia/Tehran" }).format(value);
 
   if (authorized === false) return <form className="admin-login" onSubmit={login}><h2>ورود مدیر</h2><p>رمز مدیریت را وارد کنید.</p><input name="password" type="password" required placeholder="رمز مدیریت" /><button className="gold-button">ورود به پنل</button>{loginError && <p className="form-message error">{loginError}</p>}</form>;
 
@@ -148,6 +181,13 @@ export default function CodingCourseAdminPanel({
         <div><span>ثبت‌نام خارج ایران</span><strong>{displayStats?.international ?? "—"}</strong></div>
       </div>
 
+      {enableReminder && <div className="admin-stats coding-stats video-payment-stats">
+        <div><span>ظرفیت با پشتیبانی</span><strong>{number(supportedApproved)} / {number(AI_VIDEO_SUPPORT_CAPACITY)}</strong></div>
+        <div><span>رسید قسط دوم برای بررسی</span><strong>{number(secondPending)}</strong></div>
+        <div><span>مانده قسط دوم · {number(secondOutstanding)} نفر</span><strong>{number(outstandingAmount)} تومان</strong></div>
+        <div><span>پرداخت تأییدشده</span><strong>{number(confirmedAmount)} تومان</strong></div>
+      </div>}
+
       <section className="coding-email-tools">
         <div><p className="eyebrow">ایمیل کانال دوره</p><h2>ارسال لینک ورود</h2><span>{number(approvedWithoutEmail)} نفر تأییدشده هنوز ایمیل نگرفته‌اند.</span></div>
         <form onSubmit={testEmail}><input name="email" type="email" required placeholder="ایمیل آزمایشی" /><button disabled={emailBusy}>{enableReminder ? "تست ایمیل یادآوری" : "ارسال تست"}</button></form>
@@ -164,6 +204,12 @@ export default function CodingCourseAdminPanel({
         <button className={filter === "iran" ? "active" : ""} onClick={() => setFilter("iran")}>داخل ایران ({number(iranItems.length)})</button>
         <button className={filter === "international" ? "active" : ""} onClick={() => setFilter("international")}>خارج ایران ({number(internationalItems.length)})</button>
       </div>
+      {enableReminder && <div className="admin-filters video-payment-filters">
+        <button className={paymentFilter === "all" ? "active" : ""} onClick={() => setPaymentFilter("all")}>همه پرداخت‌ها</button>
+        <button className={paymentFilter === "second-pending" ? "active" : ""} onClick={() => setPaymentFilter("second-pending")}>رسید قسط دوم برای بررسی</button>
+        <button className={paymentFilter === "second-due" ? "active" : ""} onClick={() => setPaymentFilter("second-due")}>قسط دوم تسویه‌نشده</button>
+        <button className={paymentFilter === "settled" ? "active" : ""} onClick={() => setPaymentFilter("settled")}>تسویه‌شده</button>
+      </div>}
 
       <div className="admin-list">
         {loading ? <p>در حال دریافت اطلاعات…</p> : visibleItems.length === 0 ? <p>هنوز درخواستی در این بخش ثبت نشده است.</p> : visibleItems.map(item => (
@@ -178,13 +224,26 @@ export default function CodingCourseAdminPanel({
             <div className="coding-registration-details">
               {enableReminder && <span><b>پلن:</b> {item.plan ? AI_VIDEO_COURSE_PLANS[item.plan].label : "نوبت قبلی"}</span>}
               <span><b>سن:</b> {number(item.age)} سال</span>
-              <span><b>مبلغ:</b> {item.paymentCurrency === "toman" ? `${number(Number(item.paidAmount))} تومان` : `${number(Number(item.paidAmount))} USDT`}</span>
+              <span><b>{enableReminder ? "رسید قسط اول / پرداخت یکجا:" : "مبلغ:"}</b> {item.paymentCurrency === "toman" ? `${number(Number(item.paidAmount))} تومان` : `${number(Number(item.paidAmount))} USDT`}</span>
+              {enableReminder && item.plan && <>
+                <span><b>روش پرداخت:</b> {item.paymentOption === "installments" ? "دو قسط" : "یکجا"}</span>
+                <span><b>مبلغ کل این ثبت‌نام:</b> {number(Number(item.totalAmount ?? item.paidAmount))} تومان</span>
+                {item.paymentOption === "installments" && <>
+                  <span><b>مانده:</b> {item.secondStatus === "approved" ? "صفر · تسویه‌شده" : `${number(Number(item.totalAmount ?? 8_000_000) - Number(item.paidAmount))} تومان`}</span>
+                  <span><b>موعد قسط دوم:</b> {item.secondDueAt ? date(Number(item.secondDueAt)) : "—"}{item.secondDueAt && item.secondStatus !== "approved" && asOf > Number(item.secondDueAt) ? " · سررسید گذشته" : ""}</span>
+                  <span><b>وضعیت قسط دوم:</b> {item.secondStatus === "approved" ? "تأییدشده ✓" : item.secondStatus === "pending" ? "رسید رسیده، در انتظار بررسی" : item.secondStatus === "rejected" ? "رسید ردشده، منتظر ارسال مجدد" : "هنوز رسیدی ارسال نشده"}</span>
+                  {item.secondPaidAt && <span><b>تاریخ تأیید قسط دوم:</b> {date(Number(item.secondPaidAt))}</span>}
+                </>}
+              </>}
               <span><b>تلگرام:</b> {item.telegramUsername ? <a href={`https://t.me/${item.telegramUsername}`} target="_blank" rel="noreferrer">@{item.telegramUsername}</a> : "—"}</span>
               <span><b>ایمیل کانال:</b> {item.emailSentAt ? "ارسال شده ✓" : "ارسال نشده"}</span>
             </div>
             <div className="admin-actions">
               <a className="receipt-button" href={`${apiBase}/receipts/${item.id}`} target="_blank">مشاهده رسید</a>
+              {enableReminder && item.secondReceiptName && <a className="receipt-button" href={`${apiBase}/second-payments/${item.id}/receipt`} target="_blank">رسید قسط دوم</a>}
               {item.status === "pending" && <><button className="approve" onClick={() => decide(item.id, "approved")}>تأیید</button><button className="reject" onClick={() => decide(item.id, "rejected")}>رد</button></>}
+              {enableReminder && item.status === "approved" && item.secondStatus === "pending" && <><button className="approve" onClick={() => decideSecond(item.id, "approved")}>تأیید قسط دوم</button><button className="reject" onClick={() => decideSecond(item.id, "rejected")}>رد رسید قسط دوم</button></>}
+              {enableReminder && item.status === "approved" && item.paymentToken && item.secondStatus !== "approved" && <button onClick={async () => { await navigator.clipboard.writeText(`${window.location.origin}/ai-video-creation/second-payment?token=${item.paymentToken}`); setNotice("لینک شخصی پرداخت قسط دوم کپی شد."); }}>کپی لینک قسط دوم</button>}
               {item.status === "approved" && !item.emailSentAt && <button disabled={emailBusy} onClick={() => emailAction({ action: "single", id: item.id })}>ارسال ایمیل</button>}
               {item.emailSentAt && <span className="email-sent">ایمیل ارسال شد ✓</span>}
             </div>

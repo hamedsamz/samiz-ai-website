@@ -1,10 +1,18 @@
 import { AI_VIDEO_COURSE_REGISTRATION_OPEN, COURSE_REGISTRATION_CLOSED_MESSAGE } from "../../../../lib/course-registration-status";
-import { ensureAiVideoCourseSchema, type AiVideoCourseLocation } from "../../../../db/ai-video-course-registrations";
+import { aiVideoSupportCapacity, ensureAiVideoCourseSchema, type AiVideoCourseLocation } from "../../../../db/ai-video-course-registrations";
 import { db } from "../../../../db/registrations";
-import { AI_VIDEO_COURSE_PLANS, isAiVideoCoursePlan, normalizeAiVideoCourseEmail } from "../../../../lib/ai-video-course-config";
+import { AI_VIDEO_COURSE_PLANS, AI_VIDEO_INSTALLMENT_DAYS, isAiVideoCoursePlan, normalizeAiVideoCourseEmail } from "../../../../lib/ai-video-course-config";
 
 export const dynamic = "force-dynamic";
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+
+export async function GET() {
+  try {
+    return Response.json({ support: await aiVideoSupportCapacity() }, { headers: { "Cache-Control": "no-store" } });
+  } catch {
+    return Response.json({ error: "وضعیت ظرفیت در دسترس نیست." }, { status: 503 });
+  }
+}
 
 export async function POST(request: Request) {
   if (!AI_VIDEO_COURSE_REGISTRATION_OPEN) {
@@ -17,6 +25,7 @@ export async function POST(request: Request) {
     const form = await request.formData();
     const location = String(form.get("location") ?? "") as AiVideoCourseLocation;
     const plan = form.get("plan");
+    const paymentOption = String(form.get("paymentOption") ?? "full");
     const fullName = String(form.get("fullName") ?? "").trim();
     const phone = String(form.get("phone") ?? "").replace(/[\s()-]/g, "").trim();
     const email = normalizeAiVideoCourseEmail(form.get("email"));
@@ -33,6 +42,9 @@ export async function POST(request: Request) {
 
     if (location !== "iran" && location !== "international") return Response.json({ error: "محل زندگی را انتخاب کنید." }, { status: 400 });
     if (!isAiVideoCoursePlan(plan)) return Response.json({ error: "یکی از دو پلن ثبت‌نام را انتخاب کنید." }, { status: 400 });
+    if (paymentOption !== "full" && paymentOption !== "installments") return Response.json({ error: "روش پرداخت معتبر نیست." }, { status: 400 });
+    if (paymentOption === "installments" && plan !== "with-support") return Response.json({ error: "پرداخت قسطی فقط برای پلن با پشتیبانی است." }, { status: 400 });
+    if (plan === "with-support" && (await aiVideoSupportCapacity()).full) return Response.json({ error: "ظرفیت پلن با پشتیبانی تکمیل شده است. می‌توانید پلن بدون پشتیبانی را انتخاب کنید." }, { status: 409 });
     if (fullName.length < 3 || fullName.length > 80) return Response.json({ error: "نام و نام خانوادگی را کامل وارد کنید." }, { status: 400 });
     if (!Number.isInteger(age) || age < 12 || age > 100) return Response.json({ error: "سن معتبر وارد کنید." }, { status: 400 });
     if (!/^\+?[0-9۰-۹]{7,15}$/.test(phone)) return Response.json({ error: "شماره تماس دارای واتساپ را درست وارد کنید." }, { status: 400 });
@@ -46,13 +58,18 @@ export async function POST(request: Request) {
     const sql = db();
     const now = Date.now();
     const receiptData = Buffer.from(await receipt.arrayBuffer()).toString("base64");
-    const paidAmount = AI_VIDEO_COURSE_PLANS[plan].fee;
+    const totalAmount = AI_VIDEO_COURSE_PLANS[plan].fee;
+    const paidAmount = paymentOption === "installments" ? totalAmount / 2 : totalAmount;
+    const secondDueAt = paymentOption === "installments" ? now + AI_VIDEO_INSTALLMENT_DAYS * 24 * 60 * 60 * 1000 : null;
+    const paymentToken = paymentOption === "installments" ? crypto.randomUUID() + crypto.randomUUID() : null;
     const inserted = await sql`INSERT INTO ai_video_course_registrations (
       id, location, plan, full_name, age, phone, email, telegram_username, paid_amount, payment_currency,
-      receipt_name, receipt_type, receipt_data, status, created_at, updated_at
+      receipt_name, receipt_type, receipt_data, status, created_at, updated_at,
+      payment_option, total_amount, first_paid_at, second_due_at, payment_token
     ) VALUES (
       ${crypto.randomUUID()}, ${location}, ${plan}, ${fullName}, ${age}, ${phone}, ${email}, ${telegramUsername || null}, ${paidAmount}, 'toman',
-      ${receipt.name.slice(0, 160)}, ${receipt.type}, ${receiptData}, 'pending', ${now}, ${now}
+      ${receipt.name.slice(0, 160)}, ${receipt.type}, ${receiptData}, 'pending', ${now}, ${now},
+      ${paymentOption}, ${totalAmount}, ${now}, ${secondDueAt}, ${paymentToken}
     ) ON CONFLICT DO NOTHING RETURNING id`;
     if (!inserted.length) {
       return Response.json({ error: "با این شماره تماس یا ایمیل قبلاً برای این نوبت دوره ثبت‌نام شده است." }, { status: 409 });
