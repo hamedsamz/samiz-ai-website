@@ -138,7 +138,7 @@ export default function VideoCourseRegistration() {
               <label key={option} className={plan === option ? "active" : ""}>
                 <input type="radio" name="videoPlan" value={option} checked={plan === option} aria-controls="video-purchase-details" disabled={option === "with-support" && supportRemaining === 0} onChange={() => { setPlan(option); setPaymentOption("full"); setCopied(false); setMessage(null); }} />
                 <span>{AI_VIDEO_COURSE_PLANS[option].label}</span>
-                <small className="avc-picker-price"><del>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].originalFee)}</del><b>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].fee)} تومان</b></small>
+                {location === "iran" ? <small className="avc-picker-price"><del>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].originalFee)}</del><b>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].fee)} تومان</b></small> : <small className="avc-picker-price">برای اطلاع از قیمت، پیام بدهید</small>}
                 <small>{option === "with-support" ? supportRemaining === 0 ? "ظرفیت تکمیل شده" : `ظرفیت محدود · ${formatPrice.format(AI_VIDEO_SUPPORT_CAPACITY)} نفر` : "ظرفیت نامحدود"}</small>
               </label>
             ))}
@@ -150,8 +150,8 @@ export default function VideoCourseRegistration() {
         {plan === "with-support" && <fieldset className="avc-plan-picker avc-installment-picker" disabled={busy}>
           <legend>روش پرداخت</legend>
           <div className="avc-location-picker">
-            <label className={paymentOption === "full" ? "active" : ""}><input type="radio" name="paymentChoice" checked={paymentOption === "full"} onChange={() => setPaymentOption("full")} /><span>پرداخت یکجا</span><small>۸ میلیون تومان</small></label>
-            <label className={paymentOption === "installments" ? "active" : ""}><input type="radio" name="paymentChoice" checked={paymentOption === "installments"} onChange={() => setPaymentOption("installments")} /><span>پرداخت دو مرحله‌ای</span><small>۴ میلیون اکنون + ۴ میلیون، ۲۰ روز بعد</small></label>
+            <label className={paymentOption === "full" ? "active" : ""}><input type="radio" name="paymentChoice" checked={paymentOption === "full"} onChange={() => setPaymentOption("full")} /><span>پرداخت یکجا</span>{location === "iran" ? <small>۸ میلیون تومان</small> : <small>برای اطلاع از قیمت، پیام بدهید</small>}</label>
+            <label className={paymentOption === "installments" ? "active" : ""}><input type="radio" name="paymentChoice" checked={paymentOption === "installments"} onChange={() => setPaymentOption("installments")} /><span>پرداخت دو مرحله‌ای</span>{location === "iran" ? <small>۴ میلیون اکنون + ۴ میلیون، ۲۰ روز بعد</small> : <small>برای اطلاع از قیمت و شرایط پرداخت، پیام بدهید</small>}</label>
           </div>
         </fieldset>}
 
@@ -163,9 +163,9 @@ export default function VideoCourseRegistration() {
         <div className={`avc-payment-card ${location}`}>
           <div className="avc-payment-heading">
             <small>{selectedPlan.label}</small>
-            <div className="avc-price-stack"><del>{formatPrice.format(selectedPlan.originalFee)} تومان</del><strong>{formatPrice.format(selectedPlan.fee)} <i>تومان</i></strong></div>
+            {location === "iran" && <div className="avc-price-stack"><del>{formatPrice.format(selectedPlan.originalFee)} تومان</del><strong>{formatPrice.format(selectedPlan.fee)} <i>تومان</i></strong></div>}
           </div>
-          <p className="avc-payment-summary">{paymentOption === "installments" && plan === "with-support" ? `مبلغ قابل واریز اکنون: ${formatPrice.format(amountNow)} تومان. قسط دوم ${formatPrice.format(amountNow)} تومان، ${AI_VIDEO_INSTALLMENT_DAYS} روز پس از ارسال رسید قسط اول؛ لینک کانال پس از تأیید قسط اول ایمیل می‌شود.` : `مبلغ قابل واریز اکنون: ${formatPrice.format(amountNow)} تومان.`}</p>
+          {location === "iran" ? <p className="avc-payment-summary">{paymentOption === "installments" && plan === "with-support" ? `مبلغ قابل واریز اکنون: ${formatPrice.format(amountNow)} تومان. قسط دوم ${formatPrice.format(amountNow)} تومان، ${AI_VIDEO_INSTALLMENT_DAYS} روز پس از ارسال رسید قسط اول؛ لینک کانال پس از تأیید قسط اول ایمیل می‌شود.` : `مبلغ قابل واریز اکنون: ${formatPrice.format(amountNow)} تومان.`}</p> : <p className="avc-payment-summary">برای اطلاع از قیمت پلن و هماهنگی پرداخت، پیام بدهید.</p>}
           {location === "iran" ? (
             <>
               <p>مبلغ قابل واریز اکنون را به کارت زیر واریز کنید و تصویر رسید را در فرم بارگذاری کنید.</p>
@@ -174,7 +174,7 @@ export default function VideoCourseRegistration() {
             </>
           ) : (
             <>
-              <p>برای هماهنگی معادل مبلغ قابل پرداخت اکنون و جزئیات پرداخت، در تلگرام به حامد پیام بدهید. پس از پرداخت، رسید را بارگذاری کنید.</p>
+              <p>برای اطلاع از قیمت این پلن و هماهنگی روش پرداخت، در تلگرام به حامد پیام بدهید. پس از پرداخت، رسید را بارگذاری کنید.</p>
               <a href={AI_VIDEO_COURSE_PAYMENT_TELEGRAM_URL} target="_blank" rel="noreferrer">پیام در تلگرام · @hamedsamiz <span>↗</span></a>
             </>
           )}
