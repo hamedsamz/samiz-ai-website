@@ -2,13 +2,13 @@ export const AI_VIDEO_COURSE_NAME = "ساخت ویدیو با هوش مصنوع�
 export const AI_VIDEO_COURSE_START_DATE = "۱ آذر";
 export const AI_VIDEO_COURSE_PLANS = {
   "without-support": {
-    label: "بدون پشتیبانی",
+    label: "دسترسی به ویدیو جلسات",
     originalFee: 5_000_000,
     fee: 3_000_000,
     cardNumber: process.env.NEXT_PUBLIC_AI_VIDEO_COURSE_CARD_NUMBER ?? "6104338929517668",
   },
   "with-support": {
-    label: "با پشتیبانی",
+    label: "دوره همراه با پشتیبانی",
     originalFee: 15_000_000,
     fee: 8_000_000,
     cardNumber: "6063731052733806",

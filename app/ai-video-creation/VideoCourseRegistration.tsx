@@ -19,11 +19,11 @@ const ALLOWED_RECEIPT_TYPES = new Set(["image/jpeg", "image/png", "image/webp", 
 
 export default function VideoCourseRegistration() {
   const [location, setLocation] = useState<Location>("iran");
-  const [plan, setPlan] = useState<AiVideoCoursePlan>("without-support");
+  const [plan, setPlan] = useState<AiVideoCoursePlan | null>(null);
   const [paymentOption, setPaymentOption] = useState<"full" | "installments">("full");
   const [supportRemaining, setSupportRemaining] = useState<number | null>(null);
   const [emailMismatch, setEmailMismatch] = useState(false);
-  const selectedPlan = AI_VIDEO_COURSE_PLANS[plan];
+  const selectedPlan = plan ? AI_VIDEO_COURSE_PLANS[plan] : null;
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -35,7 +35,7 @@ export default function VideoCourseRegistration() {
       .then(data => { if (typeof data.support?.remaining === "number") setSupportRemaining(data.support.remaining); })
       .catch(() => {});
   }, []);
-  const amountNow = plan === "with-support" && paymentOption === "installments" ? selectedPlan.fee / 2 : selectedPlan.fee;
+  const amountNow = selectedPlan ? (plan === "with-support" && paymentOption === "installments" ? selectedPlan.fee / 2 : selectedPlan.fee) : 0;
 
   async function copyCard(cardNumber: string) {
     await navigator.clipboard.writeText(cardNumber);
@@ -45,6 +45,7 @@ export default function VideoCourseRegistration() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!plan) return;
     setMessage(null);
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -130,12 +131,12 @@ export default function VideoCourseRegistration() {
       </div>
 
       <div className="avc-form-card">
-        <fieldset className="avc-plan-picker" disabled={busy}>
-          <legend>پلن ثبت‌نام</legend>
+        <fieldset className="avc-plan-picker avc-course-plan-picker" disabled={busy}>
+          <legend>ابتدا پلن خود را انتخاب کنید</legend>
           <div className="avc-location-picker">
             {(Object.keys(AI_VIDEO_COURSE_PLANS) as AiVideoCoursePlan[]).map(option => (
               <label key={option} className={plan === option ? "active" : ""}>
-                <input type="radio" name="videoPlan" checked={plan === option} disabled={option === "with-support" && supportRemaining === 0} onChange={() => { setPlan(option); setPaymentOption("full"); setCopied(false); setMessage(null); }} />
+                <input type="radio" name="videoPlan" value={option} checked={plan === option} aria-controls="video-purchase-details" disabled={option === "with-support" && supportRemaining === 0} onChange={() => { setPlan(option); setPaymentOption("full"); setCopied(false); setMessage(null); }} />
                 <span>{AI_VIDEO_COURSE_PLANS[option].label}</span>
                 <small className="avc-picker-price"><del>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].originalFee)}</del><b>{formatPrice.format(AI_VIDEO_COURSE_PLANS[option].fee)} تومان</b></small>
                 <small>{option === "with-support" ? supportRemaining === 0 ? "ظرفیت تکمیل شده" : `ظرفیت محدود · ${formatPrice.format(AI_VIDEO_SUPPORT_CAPACITY)} نفر` : "ظرفیت نامحدود"}</small>
@@ -144,6 +145,8 @@ export default function VideoCourseRegistration() {
           </div>
         </fieldset>
 
+        {!plan && <p className="avc-plan-prompt">برای مشاهده اطلاعات پرداخت و فرم ثبت‌نام، یکی از پلن‌های بالا را انتخاب کنید.</p>}
+        {selectedPlan && <div id="video-purchase-details">
         {plan === "with-support" && <fieldset className="avc-plan-picker avc-installment-picker" disabled={busy}>
           <legend>روش پرداخت</legend>
           <div className="avc-location-picker">
@@ -199,6 +202,7 @@ export default function VideoCourseRegistration() {
           </div>
           {message && <p className={message.error ? "avc-message error" : "avc-message success"} role="status" aria-live="polite">{message.text}</p>}
         </form>
+        </div>}
       </div>
     </section>
   );

@@ -123,8 +123,8 @@ export default function AiVideoCreationPage() {
         <div><small>نحوه برگزاری</small><strong>ضبط‌شده در کانال تلگرام</strong></div>
         <div className="avc-fact-fee">
           <small>هزینه ثبت‌نام</small>
-          {Object.values(AI_VIDEO_COURSE_PLANS).map(plan => (
-            <strong key={plan.label}>{plan.label} · <del>{formatPrice.format(plan.originalFee)}</del> {formatPrice.format(plan.fee)} تومان{plan.label === "با پشتیبانی" && <span className="avc-fact-installments"> · امکان پرداخت اقساطی</span>}</strong>
+          {Object.entries(AI_VIDEO_COURSE_PLANS).map(([planId, plan]) => (
+            <strong key={planId}>{plan.label} · <del>{formatPrice.format(plan.originalFee)}</del> {formatPrice.format(plan.fee)} تومان{planId === "with-support" && <span className="avc-fact-installments"> · امکان پرداخت اقساطی</span>}</strong>
           ))}
         </div>
       </section>
